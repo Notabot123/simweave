@@ -13,6 +13,8 @@ Run:
 """
 from __future__ import annotations
 
+import _bootstrap  # noqa: F401  (adds src/ to sys.path when not pip-installed)
+
 import numpy as np
 
 from simeng.supplychain.inventory import InventoryItems

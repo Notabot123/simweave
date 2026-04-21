@@ -81,8 +81,9 @@ pytest                  # should show green
 
 ## Worked examples
 
-Eight runnable scripts live under [`demos/`](demos/):
+Twelve runnable scripts live under [`demos/`](demos/):
 
+**Discrete-event / agents / Monte Carlo**
 1. `01_simple_queue.py` — M/M/1 queue, Little's law diagnostics
 2. `02_chained_services.py` — three-stage production line with blocking
 3. `03_resource_pool.py` — bounded concurrency via a physician pool
@@ -92,7 +93,16 @@ Eight runnable scripts live under [`demos/`](demos/):
 7. `07_monte_carlo.py` — serial vs threads vs processes vs batched numpy
 8. `08_hybrid_continuous_discrete.py` — queue coupled to an MSD
 
-Run any with `python demos/NN_name.py` from the repo root.
+**Continuous dynamical systems** (added for teaching use)
+
+9. `09_mass_spring_damper.py` — under-, critical-, over-damped responses
+10. `10_quarter_car.py` — 2-DOF suspension over a speed bump, three damper setups
+11. `11_series_rlc.py` — RLC step and resonant drive, reports ω₀, ζ, Q
+12. `12_thermal_system.py` — single-body RC thermal + CPU/heatsink two-mass model
+
+Run any with `python demos/NN_name.py` from the repo root — a small
+`demos/_bootstrap.py` shim adds `src/` to `sys.path` if the package isn't
+installed. With `pip install -e .` in place, the shim becomes a no-op.
 
 ## Monte Carlo performance: picking the right strategy
 
@@ -144,6 +154,34 @@ Every Monte Carlo run receives a seed. `run_monte_carlo` materialises
 its own `np.random.Generator`, so results are deterministic per seed.
 That determinism holds even when replicates are farmed across processes
 — every worker sees the same integer seed.
+
+## Packaging, CI, and releases
+
+Continuous integration runs on every push and PR — see `.github/workflows/ci.yml`.
+It matrixes `pytest --cov=simeng` across Python 3.10–3.13 on ubuntu / macos /
+windows, runs `ruff` and `mypy`, and builds both `sdist` and `wheel` with
+`python -m build`. Artefacts are uploaded on every green build and can be
+downloaded from the Actions UI for local testing.
+
+`release.yml` publishes on tag push:
+
+- Tags matching a stable semver shape (`v0.1.0`, `v0.2.0`, `v1.0.0`) →
+  **PyPI**.
+- Tags with a pre-release suffix (`v0.1.0rc1`, `v0.1.0a2`, `v0.1.0-beta`) →
+  **TestPyPI**.
+- Both use PyPA's trusted publishing (OIDC). No API tokens in GitHub
+  secrets — configure once per project on pypi.org / test.pypi.org.
+
+See [`PACKAGING.md`](PACKAGING.md) for the full release checklist and
+recommended strategy (pure-Python wheels today; numba for hot paths
+before Cython).
+
+## Public API reference
+
+[`SIMENG_API.md`](SIMENG_API.md) is a drop-in reference suitable for
+copying into a consuming app's repo (e.g. EdgeWeave). It documents the
+top-level imports, the continuous-dynamics protocol for plug-in systems,
+and a code-generation template to follow.
 
 ## Integration with EdgeWeave
 
@@ -202,3 +240,8 @@ sim_engine/
 - **Numba hot paths.** The A* inner loop and the warehouse vectorised
   reorder step are obvious first targets for `@njit` under
   `simeng[fast]`.
+- **Monetary quantities.** [`CURRENCY_DESIGN.md`](CURRENCY_DESIGN.md)
+  sketches a `simeng.currency` module modelled on the SI-exponent
+  discipline: typed `Money` with enforced same-currency arithmetic, a
+  user-supplied FX converter protocol, and a pluggable formatter.
+  Designed for finance simulations without dragging in live-rate data.

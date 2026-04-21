@@ -11,6 +11,8 @@ from simeng.continuous.systems import (
     SimplePendulum,
     QuarterCarModel,
     SeriesRLC,
+    ThermalRC,
+    TwoMassThermal,
 )
 
 __all__ = [
@@ -23,4 +25,6 @@ __all__ = [
     "SimplePendulum",
     "QuarterCarModel",
     "SeriesRLC",
+    "ThermalRC",
+    "TwoMassThermal",
 ]

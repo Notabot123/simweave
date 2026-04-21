@@ -37,6 +37,8 @@ from simeng.continuous import (
     SimplePendulum,
     QuarterCarModel,
     SeriesRLC,
+    ThermalRC,
+    TwoMassThermal,
 )
 from simeng.spatial import Graph, grid_graph
 from simeng.agents import (
@@ -78,6 +80,7 @@ __all__ = [
     "DynamicSystem", "SupportsDynamics", "SimulationResult", "simulate",
     "ContinuousProcess",
     "MassSpringDamper", "SimplePendulum", "QuarterCarModel", "SeriesRLC",
+    "ThermalRC", "TwoMassThermal",
     # Spatial / Agents
     "Graph", "grid_graph",
     "Compass", "Agent", "a_star", "dijkstra", "NoPathError",

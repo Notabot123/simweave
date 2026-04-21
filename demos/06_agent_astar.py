@@ -10,6 +10,8 @@ Run:
 """
 from __future__ import annotations
 
+import _bootstrap  # noqa: F401  (adds src/ to sys.path when not pip-installed)
+
 from simeng.core.environment import SimEnvironment
 from simeng.spatial.graph import grid_graph
 from simeng.agents.agent import Agent
