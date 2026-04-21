@@ -3,7 +3,7 @@ import numpy as np
 from collections import deque
 import scipy.stats as stats
 import pandas as pd
-from qsim_engine import print_display, simEnvironment
+from discrete.simeng.qsim_engine import print_display, simEnvironment
 from scipy.optimize import differential_evolution, NonlinearConstraint, Bounds
 import matplotlib.pyplot as plt
 

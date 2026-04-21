@@ -1,4 +1,4 @@
-from qsim_engine import pds, simEnvironment, simEntity, Queue, Service
+from discrete.simeng.qsim_engine import pds, simEnvironment, simEntity, Queue, Service
 
 carLength = 2
 

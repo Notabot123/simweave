@@ -1,4 +1,4 @@
-from qsim_engine import pds, simEnvironment, simEntity
+from discrete.simeng.qsim_engine import pds, simEnvironment, simEntity
 import networkx as nx
 import numpy as np
 
