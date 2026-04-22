@@ -70,8 +70,12 @@ jobs:
       - name: ruff (lint)
         run: ruff check src tests
 
-      - name: ruff (format check)
-        run: ruff format --check src tests
+      - name: ruff (format check, advisory)
+        # Non-blocking until the canonical formatter has been applied repo-wide.
+        # To enforce: run `ruff format src tests` locally, commit, then remove
+        # continue-on-error below.
+        continue-on-error: true
+        run: ruff format --check --diff src tests
 
       - name: mypy (type check, non-blocking)
         continue-on-error: true

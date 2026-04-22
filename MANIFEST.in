@@ -1,0 +1,51 @@
+# Controls what setuptools ships in the source distribution (sdist).
+# The wheel is narrower still (only src/simeng/**/*.py) and governed by
+# [tool.setuptools] in pyproject.toml.
+#
+# Rule of thumb: the sdist should contain everything needed to rebuild
+# the wheel from a clean checkout, and NOTHING that's internal dev
+# documentation, scratchpads, or editor/tool metadata.
+
+# --- include the essentials ------------------------------------------------
+include README.md
+include LICENSE
+include pyproject.toml
+include requirements.txt
+include requirements-dev.txt
+
+# Package sources only; no tests, no demos in the sdist.
+recursive-include src *.py
+
+# --- exclude internal design / integration docs ---------------------------
+# These are for contributors and for the EdgeWeave repo, not end users of
+# the PyPI package.
+exclude PACKAGING.md
+exclude CURRENCY_DESIGN.md
+exclude SIMENG_API.md
+exclude EdgeWeave.md
+exclude VIZ_DESIGN.md
+
+# --- exclude repo-level directories that don't belong in the sdist --------
+prune .github
+prune .claude
+prune .idea
+prune .vscode
+prune archive
+prune demos
+prune docs
+prune tests
+
+# --- exclude common editor / tool metadata anywhere in the tree -----------
+global-exclude .DS_Store
+global-exclude Thumbs.db
+global-exclude .claude*
+global-exclude .cursor*
+global-exclude CLAUDE.md
+global-exclude .ruff_cache
+global-exclude .mypy_cache
+global-exclude .pytest_cache
+global-exclude __pycache__
+global-exclude *.py[co]
+global-exclude *.log
+global-exclude *.swp
+global-exclude *~

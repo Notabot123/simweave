@@ -183,3 +183,12 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Claude / Cowork / Cursor scratch and memory
+.claude/
+.claude*
+CLAUDE.md
+.cursor/
+.cursor*
+.aider*
+

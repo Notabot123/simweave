@@ -33,8 +33,18 @@ all = [
     "numba>=0.58",
 ]
 
+[tool.setuptools]
+# Keep the wheel lean: only Python sources under src/simeng go in.
+# README/LICENSE/pyproject are included automatically as distribution metadata.
+include-package-data = false
+
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+# If we ever need to ship data files inside the package, list them here
+# explicitly. Leaving empty keeps the wheel to *.py only.
+simeng = []
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
