@@ -85,4 +85,4 @@ def test_scenario_name_preserved():
     r = run_monte_carlo(
         _scalar_scenario, n_runs=3, executor="serial", scenario_name="demo"
     )
-    assert r.scenario_name == "d
+    assert r.scenario_name == "demo"

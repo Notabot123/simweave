@@ -21,4 +21,5 @@ def rng() -> np.random.Generator:
 
 @pytest.fixture(autouse=True)
 def _seed_default_rng():
-    set_def
+    set_default_seed(42)
+    yield

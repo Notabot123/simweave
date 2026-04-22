@@ -39,4 +39,5 @@ def test_same_time_preserves_insertion_order():
     eq.schedule(1.0, lambda: fired.append("second"))
     eq.schedule(1.0, lambda: fired.append("third"))
     for evt in eq.pop_due(now=1.0):
-        evt.callb
+        evt.callback()
+    assert fired == ["first", "second", "third"]

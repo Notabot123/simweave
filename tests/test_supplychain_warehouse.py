@@ -164,4 +164,8 @@ def test_warehouse_in_environment_ticks():
 
 def test_has_work_reflects_outstanding_orders():
     w = Warehouse(_inv(n=1, stock=10.0, rop=2.0))
-    env = SimEnvironm
+    env = SimEnvironment(dt=1.0, end=5.0)
+    assert not w.has_work(env)
+    w.inv.stock_level[0] = 1.0
+    w.process_orders(elapsed=1.0)
+    assert w.has_work(env)

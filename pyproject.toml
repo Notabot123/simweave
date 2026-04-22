@@ -53,4 +53,6 @@ where = ["src"]
 simweave = []
 
 [tool.pytest.ini_options]
-testpa
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-q"

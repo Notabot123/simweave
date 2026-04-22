@@ -98,4 +98,7 @@ def test_priority_queue_orders_by_priority():
     low = _item("low")
     pq.enqueue(low, priority=10)
     pq.enqueue(high, priority=1)
-    pq.enqueue(med, priorit
+    pq.enqueue(med, priority=5)
+    assert pq.dequeue() is high
+    assert pq.dequeue() is med
+    assert pq.dequeue() is low

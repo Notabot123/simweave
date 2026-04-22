@@ -115,4 +115,11 @@ def test_pipeline_conservation():
     n_inject = 50
     for i in range(n_inject):
         e = Entity(name=f"e{i}")
-        e.sim_properties = EntityPrope
+        e.sim_properties = EntityProperties(service_time=deterministic(1.0))
+        svc.enqueue(e)
+    env.run()
+
+    in_buffer = len(svc)
+    in_channels = sum(1 for ch in svc.channels if ch.is_busy())
+    in_sink = len(sink)
+    assert in_buffer + in_channels + in_sink == n_inject
