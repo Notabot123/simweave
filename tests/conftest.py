@@ -1,4 +1,5 @@
 """Pytest fixtures shared across the simeng test suite."""
+
 import numpy as np
 import pytest
 

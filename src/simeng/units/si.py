@@ -10,6 +10,7 @@ concrete type.
 This module is pure-Python and has no numpy dependency so it can be used in
 tight inner loops without allocating ndarrays.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -62,7 +63,9 @@ class SIUnit:
 
     def __add__(self, other: object) -> "SIUnit":
         if not isinstance(other, SIUnit):
-            raise TypeError(f"Cannot add {type(self).__name__} and {type(other).__name__}.")
+            raise TypeError(
+                f"Cannot add {type(self).__name__} and {type(other).__name__}."
+            )
         self._check_same_dim(other)
         cls = type(self) if type(self) is type(other) else SIUnit
         if cls is SIUnit:
@@ -71,7 +74,9 @@ class SIUnit:
 
     def __sub__(self, other: object) -> "SIUnit":
         if not isinstance(other, SIUnit):
-            raise TypeError(f"Cannot subtract {type(other).__name__} from {type(self).__name__}.")
+            raise TypeError(
+                f"Cannot subtract {type(other).__name__} from {type(self).__name__}."
+            )
         self._check_same_dim(other)
         cls = type(self) if type(self) is type(other) else SIUnit
         if cls is SIUnit:
@@ -81,13 +86,18 @@ class SIUnit:
     # -- multiplicative -----------------------------------------------
     def __mul__(self, other: object) -> "SIUnit":
         if isinstance(other, (int, float)):
-            return type(self)(self.value * float(other)) if type(self) is not SIUnit \
+            return (
+                type(self)(self.value * float(other))
+                if type(self) is not SIUnit
                 else SIUnit(self.value * float(other), self.unit, list(self.exponents))
+            )
         if isinstance(other, SIUnit):
             new_exp = tuple(a + b for a, b in zip(self.exponents, other.exponents))
             cls = _known_unit(new_exp)
             if cls is None:
-                return SIUnit(self.value * other.value, _unit_string(new_exp), list(new_exp))
+                return SIUnit(
+                    self.value * other.value, _unit_string(new_exp), list(new_exp)
+                )
             return cls(self.value * other.value)
         raise TypeError(f"Unsupported multiplication with {type(other).__name__}.")
 
@@ -96,21 +106,28 @@ class SIUnit:
 
     def __truediv__(self, other: object) -> "SIUnit":
         if isinstance(other, (int, float)):
-            return type(self)(self.value / float(other)) if type(self) is not SIUnit \
+            return (
+                type(self)(self.value / float(other))
+                if type(self) is not SIUnit
                 else SIUnit(self.value / float(other), self.unit, list(self.exponents))
+            )
         if isinstance(other, SIUnit):
             new_exp = tuple(a - b for a, b in zip(self.exponents, other.exponents))
             cls = _known_unit(new_exp)
             if cls is None:
-                return SIUnit(self.value / other.value, _unit_string(new_exp), list(new_exp))
+                return SIUnit(
+                    self.value / other.value, _unit_string(new_exp), list(new_exp)
+                )
             return cls(self.value / other.value)
         raise TypeError(f"Unsupported division with {type(other).__name__}.")
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, SIUnit):
             return NotImplemented
-        return (tuple(self.exponents) == tuple(other.exponents)
-                and self.value == other.value)
+        return (
+            tuple(self.exponents) == tuple(other.exponents)
+            and self.value == other.value
+        )
 
     def __hash__(self) -> int:
         return hash((type(self), self.value, tuple(self.exponents)))
@@ -120,6 +137,7 @@ class SIUnit:
 # Concrete dimensioned units. The existing public names are preserved so that
 # the quarter-car / pendulum / RLC examples remain compatible.
 # ---------------------------------------------------------------------------
+
 
 class Distance(SIUnit):
     def __init__(self, value: float | SIUnit):
@@ -160,11 +178,15 @@ class TimeUnit(SIUnit):
     """Time, stored canonically in seconds regardless of input unit."""
 
     _SCALE_MAP: ClassVar[dict[str, float]] = {
-        "s": 1.0, "sec": 1.0,
+        "s": 1.0,
+        "sec": 1.0,
         "ms": 1e-3,
-        "mins": 60.0, "min": 60.0,
-        "hrs": 3600.0, "h": 3600.0,
-        "days": 86400.0, "day": 86400.0,
+        "mins": 60.0,
+        "min": 60.0,
+        "hrs": 3600.0,
+        "h": 3600.0,
+        "days": 86400.0,
+        "day": 86400.0,
     }
 
     def __init__(self, value: float | SIUnit, unit: str = "s"):
@@ -172,8 +194,11 @@ class TimeUnit(SIUnit):
             value = value.value
         if unit not in self._SCALE_MAP:
             raise ValueError(f"Unsupported time unit: {unit}")
-        super().__init__(value=float(value) * self._SCALE_MAP[unit],
-                         unit="s", exponents=[0, 0, 0, 0, 0, 0, 1])
+        super().__init__(
+            value=float(value) * self._SCALE_MAP[unit],
+            unit="s",
+            exponents=[0, 0, 0, 0, 0, 0, 1],
+        )
 
 
 _KNOWN_BY_EXP: dict[tuple[int, ...], type[SIUnit]] = {

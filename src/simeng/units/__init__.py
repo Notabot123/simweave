@@ -1,4 +1,5 @@
 """Dimensional quantities with SI exponent tracking."""
+
 from simeng.units.si import (
     SIUnit,
     Distance,

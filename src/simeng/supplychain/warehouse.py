@@ -11,6 +11,7 @@ demand. Wire two Warehouses via ``parent_warehouse=`` to form multi-echelon
 supply chains; the outermost one uses the sentinel string ``"industry"``
 for infinite replenishment.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -25,10 +26,12 @@ log = get_logger("supplychain.warehouse")
 class Warehouse(Entity):
     """Multi-SKU warehouse with (R, Q) reorder policy."""
 
-    def __init__(self,
-                 inventory: InventoryItems,
-                 name: str | None = None,
-                 parent_warehouse: "Warehouse | str" = "industry") -> None:
+    def __init__(
+        self,
+        inventory: InventoryItems,
+        name: str | None = None,
+        parent_warehouse: "Warehouse | str" = "industry",
+    ) -> None:
         super().__init__(name=name)
         self.inv = inventory
         self.parent: "Warehouse | str" = parent_warehouse
@@ -54,8 +57,13 @@ class Warehouse(Entity):
         if self.inv.stock_level[idx] >= amount:
             self.inv.stock_level[idx] -= amount
             return True
-        log.debug("%s: item %s unavailable (have %.2f want %.2f).",
-                  self.name, self.inv.part_names[idx], self.inv.stock_level[idx], amount)
+        log.debug(
+            "%s: item %s unavailable (have %.2f want %.2f).",
+            self.name,
+            self.inv.part_names[idx],
+            self.inv.stock_level[idx],
+            amount,
+        )
         return False
 
     def decrement_vector(self, vec: np.ndarray) -> np.ndarray:
@@ -74,7 +82,9 @@ class Warehouse(Entity):
     # Reorder bookkeeping
     # ------------------------------------------------------------------
     def _receive_pending(self, elapsed: float = 1.0) -> None:
-        self._reorder_time_remaining = np.maximum(0.0, self._reorder_time_remaining - elapsed)
+        self._reorder_time_remaining = np.maximum(
+            0.0, self._reorder_time_remaining - elapsed
+        )
         arrived = (self._reorder_time_remaining == 0) & (self._reorders_volume > 0)
         if arrived.any():
             deliveries = self._reorders_volume * arrived
@@ -83,7 +93,9 @@ class Warehouse(Entity):
             self._orders_placed_bool[arrived] = False
 
     def _place_reorders(self) -> None:
-        need_reorder = (self.inv.stock_level <= self.inv.reorder_points) & (~self._orders_placed_bool)
+        need_reorder = (self.inv.stock_level <= self.inv.reorder_points) & (
+            ~self._orders_placed_bool
+        )
         if not need_reorder.any():
             return
         reorders = self.inv.batchsize * need_reorder
@@ -95,7 +107,9 @@ class Warehouse(Entity):
             assert isinstance(self.parent, Warehouse)
             avail = self.parent.check_items_available(reorders)
             # Decrement parent for the subset that is available.
-            self.parent.inv.stock_level = self.parent.inv.stock_level - reorders * avail.astype(float)
+            self.parent.inv.stock_level = (
+                self.parent.inv.stock_level - reorders * avail.astype(float)
+            )
             if not avail.all():
                 missing = ~avail & need_reorder
                 if missing.any():
@@ -105,7 +119,9 @@ class Warehouse(Entity):
 
         self._orders_placed_bool = self._orders_placed_bool | need_reorder
         self._reorders_volume = self._reorders_volume + reorders
-        self._reorder_time_remaining[need_reorder] = self.inv.newbuy_leadtimes[need_reorder]
+        self._reorder_time_remaining[need_reorder] = self.inv.newbuy_leadtimes[
+            need_reorder
+        ]
         self._lifetime_total_orders = self._lifetime_total_orders + reorders
 
     def process_orders(self, elapsed: float = 1.0) -> None:

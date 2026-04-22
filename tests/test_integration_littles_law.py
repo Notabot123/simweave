@@ -6,6 +6,7 @@ where L is the mean number in the system, lambda is the arrival rate, and
 W is the mean residence time. We run a long M/M/1-ish simulation and
 check the identity holds to a tolerance.
 """
+
 import numpy as np
 
 from simeng.core.entity import Entity
@@ -20,6 +21,7 @@ def _factory(service_time_dist):
         e = Entity()
         e.sim_properties = EntityProperties(service_time=service_time_dist)
         return e
+
     return make
 
 
@@ -27,8 +29,14 @@ def test_littles_law_single_server_stable():
     # lambda = 0.7, mu = 1.0 -> rho = 0.7, stable.
     rng = np.random.default_rng(123)
     sink = Queue(maxlen=10_000, name="sink")
-    svc = Service(capacity=1, buffer_size=10_000, next_q=sink,
-                  default_service_time=1.0, rng=rng, name="svc")
+    svc = Service(
+        capacity=1,
+        buffer_size=10_000,
+        next_q=sink,
+        default_service_time=1.0,
+        rng=rng,
+        name="svc",
+    )
     gen = ArrivalGenerator(
         interarrival=lambda r: r.exponential(1.0 / 0.7),
         factory=_factory(exponential(1.0)),
@@ -57,15 +65,22 @@ def test_littles_law_single_server_stable():
 
 def test_utilisation_tracks_load():
     """Heavier load -> higher measured utilisation."""
+
     def run(rho):
         rng = np.random.default_rng(7)
         sink = Queue(maxlen=10_000)
-        svc = Service(capacity=1, buffer_size=10_000, next_q=sink,
-                      default_service_time=1.0, rng=rng)
+        svc = Service(
+            capacity=1,
+            buffer_size=10_000,
+            next_q=sink,
+            default_service_time=1.0,
+            rng=rng,
+        )
         gen = ArrivalGenerator(
             interarrival=lambda r: r.exponential(1.0 / rho),
             factory=_factory(exponential(1.0)),
-            target=svc, rng=rng,
+            target=svc,
+            rng=rng,
         )
         env = SimEnvironment(dt=0.1, end=500.0)
         env.register(gen)
@@ -85,8 +100,13 @@ def test_utilisation_tracks_load():
 def test_pipeline_conservation():
     """Items entering == items currently held + items that left the system."""
     sink = Queue(maxlen=10_000, name="sink")
-    svc = Service(capacity=2, buffer_size=10_000, next_q=sink,
-                  default_service_time=1.0, name="svc")
+    svc = Service(
+        capacity=2,
+        buffer_size=10_000,
+        next_q=sink,
+        default_service_time=1.0,
+        name="svc",
+    )
     env = SimEnvironment(dt=1.0, end=100.0)
     env.register(svc)
     env.register(sink)

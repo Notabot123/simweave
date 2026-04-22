@@ -12,8 +12,13 @@ class MassSpringDamper(DynamicSystem):
     Equation: m x'' + c x' + k x = F(t)
     """
 
-    def __init__(self, mass: float, damping: float, stiffness: float,
-                 x0: tuple[float, float] = (0.0, 0.0)):
+    def __init__(
+        self,
+        mass: float,
+        damping: float,
+        stiffness: float,
+        x0: tuple[float, float] = (0.0, 0.0),
+    ):
         if mass <= 0:
             raise ValueError("mass must be positive")
         self.mass = float(mass)
@@ -27,9 +32,12 @@ class MassSpringDamper(DynamicSystem):
     def state_labels(self) -> tuple[str, str]:
         return ("x", "x_dot")
 
-    def derivatives(self, t: float, state: np.ndarray,
-                    inputs: float | int | None = None) -> np.ndarray:
+    def derivatives(
+        self, t: float, state: np.ndarray, inputs: float | int | None = None
+    ) -> np.ndarray:
         displacement, velocity = state
         force = 0.0 if inputs is None else float(inputs)
-        acceleration = (force - self.damping * velocity - self.stiffness * displacement) / self.mass
+        acceleration = (
+            force - self.damping * velocity - self.stiffness * displacement
+        ) / self.mass
         return np.array([velocity, acceleration], dtype=float)

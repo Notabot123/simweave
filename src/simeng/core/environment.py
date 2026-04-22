@@ -14,6 +14,7 @@ Run styles
   events are dense, and approaches DEVS efficiency when they are sparse.
 * ``env.step()`` -- advance exactly one tick (useful in tests).
 """
+
 from __future__ import annotations
 
 from typing import Any, Callable, Iterable, Protocol, runtime_checkable
@@ -35,11 +36,13 @@ class Process(Protocol):
 class SimEnvironment:
     """Container for a clock, an event queue, and registered processes."""
 
-    def __init__(self,
-                 start: float = 0.0,
-                 dt: float = 1.0,
-                 end: float | None = None,
-                 graph: Any = None) -> None:
+    def __init__(
+        self,
+        start: float = 0.0,
+        dt: float = 1.0,
+        end: float | None = None,
+        graph: Any = None,
+    ) -> None:
         self.clock = Clock(start=start, dt=dt, end=end)
         self.events = EventQueue()
         self.graph = graph
@@ -69,12 +72,14 @@ class SimEnvironment:
     # ------------------------------------------------------------------
     # Event scheduling helpers
     # ------------------------------------------------------------------
-    def schedule_at(self, time: float, callback: Callable[..., Any],
-                    *args: Any, **kwargs: Any) -> ScheduledEvent:
+    def schedule_at(
+        self, time: float, callback: Callable[..., Any], *args: Any, **kwargs: Any
+    ) -> ScheduledEvent:
         return self.events.schedule(time, callback, *args, **kwargs)
 
-    def schedule_after(self, delay: float, callback: Callable[..., Any],
-                       *args: Any, **kwargs: Any) -> ScheduledEvent:
+    def schedule_after(
+        self, delay: float, callback: Callable[..., Any], *args: Any, **kwargs: Any
+    ) -> ScheduledEvent:
         return self.events.schedule(self.clock.t + delay, callback, *args, **kwargs)
 
     # ------------------------------------------------------------------
@@ -88,8 +93,7 @@ class SimEnvironment:
             p.tick(self.clock.dt, self)
         self.clock.advance()
 
-    def run(self, until: float | None = None,
-            skip_idle_gaps: bool = False) -> None:
+    def run(self, until: float | None = None, skip_idle_gaps: bool = False) -> None:
         """Run the simulation until ``until`` or ``clock.end``."""
         if until is None:
             until = self.clock.end
@@ -106,7 +110,10 @@ class SimEnvironment:
                     continue
                 # Nothing has work and no future events -> nothing will change.
                 if next_evt is None:
-                    log.debug("No work and no pending events; halting early at t=%s.", self.clock.t)
+                    log.debug(
+                        "No work and no pending events; halting early at t=%s.",
+                        self.clock.t,
+                    )
                     break
             self.step()
 

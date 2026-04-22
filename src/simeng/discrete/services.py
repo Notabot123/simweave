@@ -5,6 +5,7 @@ independent :class:`_WorkChannel` instances. Each channel processes one item
 at a time; if a completed item cannot be forwarded downstream (because the
 next queue is full) it sits in a "blocked-completion" slot until it clears.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Callable
@@ -119,14 +120,16 @@ class Service(Queue):
         Optional numpy Generator used when drawing service times.
     """
 
-    def __init__(self,
-                 capacity: int = 1,
-                 buffer_size: int = 10,
-                 next_q: "Queue | str" = "terminus",
-                 resources: ResourcePool | None = None,
-                 default_service_time: float = 1.0,
-                 rng: np.random.Generator | None = None,
-                 name: str | None = None) -> None:
+    def __init__(
+        self,
+        capacity: int = 1,
+        buffer_size: int = 10,
+        next_q: "Queue | str" = "terminus",
+        resources: ResourcePool | None = None,
+        default_service_time: float = 1.0,
+        rng: np.random.Generator | None = None,
+        name: str | None = None,
+    ) -> None:
         super().__init__(maxlen=buffer_size, name=name, next_q=next_q)
         if capacity < 1:
             raise ValueError("Service capacity must be >= 1.")
@@ -136,7 +139,9 @@ class Service(Queue):
         self.rng = rng if rng is not None else np.random.default_rng()
         self.channels = [_WorkChannel(self, i) for i in range(capacity)]
         self.completed_count: int = 0
-        self.completed_total_time: float = 0.0  # sum of (wait + service) across completed
+        self.completed_total_time: float = (
+            0.0  # sum of (wait + service) across completed
+        )
 
     # ------------------------------------------------------------------
     # next_q propagation to channels is implicit: they read parent.next_q.
@@ -177,6 +182,7 @@ class Service(Queue):
 # Arrival generator
 # ---------------------------------------------------------------------------
 
+
 class ArrivalGenerator(Entity):
     """Generates new entities according to an inter-arrival distribution.
 
@@ -186,12 +192,14 @@ class ArrivalGenerator(Entity):
     tick are handled correctly.
     """
 
-    def __init__(self,
-                 interarrival: Callable[[np.random.Generator], float],
-                 factory: Callable[[SimEnvironment], Entity],
-                 target: Queue,
-                 rng: np.random.Generator | None = None,
-                 name: str | None = None) -> None:
+    def __init__(
+        self,
+        interarrival: Callable[[np.random.Generator], float],
+        factory: Callable[[SimEnvironment], Entity],
+        target: Queue,
+        rng: np.random.Generator | None = None,
+        name: str | None = None,
+    ) -> None:
         super().__init__(name=name)
         self.interarrival = interarrival
         self.factory = factory

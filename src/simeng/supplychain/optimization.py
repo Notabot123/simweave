@@ -16,6 +16,7 @@ These are *approximations* for planning purposes. For true sim-based
 optimisation, wrap your simulation in ``simulate_cost(stock_levels)`` and
 pass that to :func:`cost_optimise_stock_sim`.
 """
+
 from __future__ import annotations
 
 from typing import Callable
@@ -36,10 +37,12 @@ def _ensure_scipy():
         ) from e
 
 
-def poisson_reorder_points(warehouse: Warehouse,
-                           target_availability: float = 0.9,
-                           quantize_by_batchsize: bool = False,
-                           assign: bool = False) -> tuple[np.ndarray, float]:
+def poisson_reorder_points(
+    warehouse: Warehouse,
+    target_availability: float = 0.9,
+    quantize_by_batchsize: bool = False,
+    assign: bool = False,
+) -> tuple[np.ndarray, float]:
     """Return the Poisson-based reorder points ``k`` for each SKU.
 
     The per-SKU availability target ``p = target_availability ** (1/n_items)``
@@ -59,8 +62,10 @@ def poisson_reorder_points(warehouse: Warehouse,
 
     demand = warehouse._demand_rate
     inv = warehouse.inv
-    logistics_delay = (inv.repairable_prc * inv.repair_times
-                       + (1 - inv.repairable_prc) * inv.newbuy_leadtimes)
+    logistics_delay = (
+        inv.repairable_prc * inv.repair_times
+        + (1 - inv.repairable_prc) * inv.newbuy_leadtimes
+    )
     lam = demand * logistics_delay
     per_item_avail = target_availability ** (1.0 / inv.n_items)
 
@@ -77,13 +82,15 @@ def poisson_reorder_points(warehouse: Warehouse,
     return k, total_cost
 
 
-def cost_optimise_stock(warehouse: Warehouse,
-                         target_availability: float = 0.9,
-                         quantize_by_batchsize: bool = False,
-                         assign: bool = False,
-                         ub: float = 100.0,
-                         seed: int | None = 1,
-                         maxiter: int = 200) -> tuple[np.ndarray, float]:
+def cost_optimise_stock(
+    warehouse: Warehouse,
+    target_availability: float = 0.9,
+    quantize_by_batchsize: bool = False,
+    assign: bool = False,
+    ub: float = 100.0,
+    seed: int | None = 1,
+    maxiter: int = 200,
+) -> tuple[np.ndarray, float]:
     """Differential-evolution cost minimisation with availability constraint.
 
     This balances cost vs availability on a whole-warehouse basis rather than
@@ -103,8 +110,10 @@ def cost_optimise_stock(warehouse: Warehouse,
 
     inv = warehouse.inv
     demand = warehouse._demand_rate
-    logistics_delay = (inv.repairable_prc * inv.repair_times
-                       + (1 - inv.repairable_prc) * inv.newbuy_leadtimes)
+    logistics_delay = (
+        inv.repairable_prc * inv.repair_times
+        + (1 - inv.repairable_prc) * inv.newbuy_leadtimes
+    )
     lam = demand * logistics_delay
     quant = inv.batchsize if quantize_by_batchsize else np.ones(inv.n_items)
 
@@ -117,8 +126,9 @@ def cost_optimise_stock(warehouse: Warehouse,
     bounds = Bounds(lb=np.zeros(inv.n_items), ub=ub * np.ones(inv.n_items))
     nlc = NonlinearConstraint(availability_con, target_availability, 1.0)
 
-    result = differential_evolution(objective, bounds, constraints=nlc,
-                                    seed=seed, maxiter=maxiter, polish=True)
+    result = differential_evolution(
+        objective, bounds, constraints=nlc, seed=seed, maxiter=maxiter, polish=True
+    )
 
     solution = np.round(result.x * quant)
     total_cost = float(np.sum(inv.unit_cost * (inv.batchsize + solution)))
@@ -130,8 +140,9 @@ def cost_optimise_stock(warehouse: Warehouse,
     return solution, total_cost
 
 
-def pareto_sweep(warehouse: Warehouse,
-                 availability_range: np.ndarray | None = None) -> dict[str, np.ndarray]:
+def pareto_sweep(
+    warehouse: Warehouse, availability_range: np.ndarray | None = None
+) -> dict[str, np.ndarray]:
     """Sweep availability targets and return costs for both heuristic and DE."""
     if availability_range is None:
         availability_range = np.clip(np.arange(0.1, 1.0, 0.05), 0.0, 0.99)
@@ -155,11 +166,14 @@ def pareto_sweep(warehouse: Warehouse,
 # Simulation-based optimisation hook.
 # ---------------------------------------------------------------------------
 
-def cost_optimise_stock_sim(simulate_cost: Callable[[np.ndarray], float],
-                            lower: np.ndarray,
-                            upper: np.ndarray,
-                            maxiter: int = 50,
-                            seed: int | None = 1) -> tuple[np.ndarray, float]:
+
+def cost_optimise_stock_sim(
+    simulate_cost: Callable[[np.ndarray], float],
+    lower: np.ndarray,
+    upper: np.ndarray,
+    maxiter: int = 50,
+    seed: int | None = 1,
+) -> tuple[np.ndarray, float]:
     """Optimise stock levels using a user-supplied simulation callback.
 
     Parameters
@@ -174,7 +188,10 @@ def cost_optimise_stock_sim(simulate_cost: Callable[[np.ndarray], float],
     _ensure_scipy()
     from scipy.optimize import differential_evolution, Bounds
 
-    bounds = Bounds(lb=np.asarray(lower, dtype=float), ub=np.asarray(upper, dtype=float))
-    result = differential_evolution(simulate_cost, bounds, seed=seed,
-                                    maxiter=maxiter, polish=False)
+    bounds = Bounds(
+        lb=np.asarray(lower, dtype=float), ub=np.asarray(upper, dtype=float)
+    )
+    result = differential_evolution(
+        simulate_cost, bounds, seed=seed, maxiter=maxiter, polish=False
+    )
     return result.x, float(result.fun)

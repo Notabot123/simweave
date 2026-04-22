@@ -6,6 +6,7 @@ ages the items it contains. Balking and reneging (via
 :class:`EntityProperties <simeng.discrete.properties.EntityProperties>`) are
 handled on :meth:`enqueue` and :meth:`tick` respectively.
 """
+
 from __future__ import annotations
 
 import heapq
@@ -34,8 +35,12 @@ class Queue(Entity):
         string ``"terminus"`` meaning "remove from the system".
     """
 
-    def __init__(self, maxlen: int = 10, name: str | None = None,
-                 next_q: "Queue | str" = "terminus") -> None:
+    def __init__(
+        self,
+        maxlen: int = 10,
+        name: str | None = None,
+        next_q: "Queue | str" = "terminus",
+    ) -> None:
         super().__init__(name=name)
         if maxlen <= 0:
             raise ValueError("Queue maxlen must be positive.")
@@ -47,8 +52,8 @@ class Queue(Entity):
         self.reneged_count: int = 0
         self.balked_count: int = 0
         # Metrics accumulated over the lifetime of the queue.
-        self.cumulative_length_time: float = 0.0   # integral of len(q) * dt
-        self.cumulative_wait_time: float = 0.0      # sum of total_wait_time on departure
+        self.cumulative_length_time: float = 0.0  # integral of len(q) * dt
+        self.cumulative_wait_time: float = 0.0  # sum of total_wait_time on departure
         self.arrivals: int = 0
         self.departures: int = 0
 
@@ -101,10 +106,20 @@ class Queue(Entity):
         Honours ``item.sim_properties.balk_on_length`` if present.
         """
         sim_props = getattr(item, "sim_properties", None)
-        balk = getattr(sim_props, "balk_on_length", None) if sim_props is not None else None
+        balk = (
+            getattr(sim_props, "balk_on_length", None)
+            if sim_props is not None
+            else None
+        )
         if balk is not None and len(self._deque) >= balk:
             self.balked_count += 1
-            log.debug("%s: %s balked (len %d >= %d).", self.name, item.name, len(self._deque), balk)
+            log.debug(
+                "%s: %s balked (len %d >= %d).",
+                self.name,
+                item.name,
+                len(self._deque),
+                balk,
+            )
             return False
 
         if self.is_full:
@@ -180,7 +195,12 @@ class Queue(Entity):
             try:
                 self._deque.remove(item)
                 self.reneged_count += 1
-                log.debug("%s: %s reneged after %.2f.", self.name, item.name, item.current_wait_time)
+                log.debug(
+                    "%s: %s reneged after %.2f.",
+                    self.name,
+                    item.name,
+                    item.current_wait_time,
+                )
             except ValueError:
                 pass
 
@@ -208,6 +228,7 @@ class Queue(Entity):
 # Priority queue
 # ---------------------------------------------------------------------------
 
+
 @dataclass(order=True)
 class _PItem:
     priority: float
@@ -222,8 +243,12 @@ class PriorityQueue(Queue):
     payload doesn't need to be comparable.
     """
 
-    def __init__(self, maxlen: int = 10, name: str | None = None,
-                 next_q: "Queue | str" = "terminus") -> None:
+    def __init__(
+        self,
+        maxlen: int = 10,
+        name: str | None = None,
+        next_q: "Queue | str" = "terminus",
+    ) -> None:
         super().__init__(maxlen=maxlen, name=name, next_q=next_q)
         self._heap: list[_PItem] = []
         self._seq_counter = 0
@@ -252,7 +277,9 @@ class PriorityQueue(Queue):
             self.dropped_count += 1
             return False
         item.current_wait_time = 0.0
-        heapq.heappush(self._heap, _PItem(priority=priority, seq=self._seq_counter, item=item))
+        heapq.heappush(
+            self._heap, _PItem(priority=priority, seq=self._seq_counter, item=item)
+        )
         self._seq_counter += 1
         self.arrivals += 1
         return True

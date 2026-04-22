@@ -4,6 +4,7 @@ A thin record type that captures the per-SKU attributes needed by a
 :class:`~simeng.supplychain.warehouse.Warehouse`. Lengths of every field
 must match; constructor validates this.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field

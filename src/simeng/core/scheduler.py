@@ -13,6 +13,7 @@ powers a DEVS-style fast path: if every registered process reports
 fast-forwards directly to ``t_next`` rather than grinding through empty
 ticks.
 """
+
 from __future__ import annotations
 
 import heapq
@@ -49,11 +50,13 @@ class EventQueue:
     def __bool__(self) -> bool:
         return len(self) > 0
 
-    def schedule(self, time: float, callback: Callable[..., Any],
-                 *args: Any, **kwargs: Any) -> ScheduledEvent:
+    def schedule(
+        self, time: float, callback: Callable[..., Any], *args: Any, **kwargs: Any
+    ) -> ScheduledEvent:
         """Schedule ``callback(*args, **kwargs)`` to fire at simulation ``time``."""
-        evt = ScheduledEvent(time=float(time), seq=self._seq,
-                             callback=callback, args=args, kwargs=kwargs)
+        evt = ScheduledEvent(
+            time=float(time), seq=self._seq, callback=callback, args=args, kwargs=kwargs
+        )
         heapq.heappush(self._heap, evt)
         self._seq += 1
         return evt

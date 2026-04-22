@@ -3,6 +3,7 @@
 Used by :class:`~simeng.agents.agent.Agent` for cheap orientation tracking
 independent of any graph topology.
 """
+
 from __future__ import annotations
 
 

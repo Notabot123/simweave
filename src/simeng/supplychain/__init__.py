@@ -1,4 +1,5 @@
 """Inventory and supply-chain simulation primitives."""
+
 from simeng.supplychain.inventory import InventoryItems
 from simeng.supplychain.warehouse import Warehouse
 

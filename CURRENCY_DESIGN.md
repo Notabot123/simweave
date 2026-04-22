@@ -1,13 +1,31 @@
-# Design proposal: `simeng.currency`
+# Design: `simeng.currency`
 
-Status: **proposal** (not implemented).
+Status: **implemented** in v0.2 (module: `src/simeng/currency/`).
 Purpose: support monetary quantities in simulations for finance
 practitioners, mirroring the dimensional-analysis discipline of
 `simeng.units` without falsely implying that currency is a physical
 dimension.
 
-This document is the argument and the shape. Whether to build it is a
-follow-on decision.
+This document records the argument that drove the design and the
+decisions taken. For day-to-day usage see `SIMENG_API.md` §Currency
+and the demo at `demos/13_money_cashflow.py`.
+
+## Implementation summary
+
+The module layout is:
+
+| File                              | Responsibility                                               |
+|-----------------------------------|--------------------------------------------------------------|
+| `currency/codes.py`               | ISO 4217 registry, `register_custom` escape hatch.           |
+| `currency/money.py`               | `Money` frozen dataclass, `CurrencyMismatchError`.           |
+| `currency/fx.py`                  | `FXConverter` protocol, `StaticFXConverter`, `CallableFXConverter`. |
+| `currency/format.py`              | `format_money`, ASCII default + optional babel locale path.  |
+
+Tests: `tests/test_currency.py` (construction, arithmetic, comparison,
+conversion, registry, formatting, edge cases).
+
+Locale-aware formatting is gated behind the `simeng[intl]` extra
+(`babel>=2.14`).
 
 ---
 

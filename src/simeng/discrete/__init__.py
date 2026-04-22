@@ -1,4 +1,5 @@
 """Discrete-event primitives: queues, services, resources, arrival generators."""
+
 from simeng.discrete.properties import (
     EntityProperties,
     exponential,

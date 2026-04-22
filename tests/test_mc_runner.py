@@ -37,8 +37,7 @@ def test_run_serial_is_deterministic_by_seed():
 
 def test_run_serial_with_custom_seeds():
     seeds = [100, 200, 300]
-    r = run_monte_carlo(_scalar_scenario, n_runs=3, seeds=seeds,
-                        executor="serial")
+    r = run_monte_carlo(_scalar_scenario, n_runs=3, seeds=seeds, executor="serial")
     assert r.seeds == seeds
 
 
@@ -49,8 +48,7 @@ def test_bad_executor_raises():
 
 def test_seeds_length_mismatch_raises():
     with pytest.raises(ValueError):
-        run_monte_carlo(_scalar_scenario, n_runs=3, seeds=[1, 2],
-                        executor="serial")
+        run_monte_carlo(_scalar_scenario, n_runs=3, seeds=[1, 2], executor="serial")
 
 
 def test_vector_samples_stack_to_array():
@@ -61,8 +59,7 @@ def test_vector_samples_stack_to_array():
 
 
 def test_threads_executor_runs():
-    r = run_monte_carlo(_scalar_scenario, n_runs=5, executor="threads",
-                        n_workers=2)
+    r = run_monte_carlo(_scalar_scenario, n_runs=5, executor="threads", n_workers=2)
     assert r.n_runs == 5
 
 
@@ -85,6 +82,7 @@ def test_batched_mc_shape_mismatch_raises():
 
 
 def test_scenario_name_preserved():
-    r = run_monte_carlo(_scalar_scenario, n_runs=3, executor="serial",
-                        scenario_name="demo")
+    r = run_monte_carlo(
+        _scalar_scenario, n_runs=3, executor="serial", scenario_name="demo"
+    )
     assert r.scenario_name == "demo"

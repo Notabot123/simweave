@@ -23,6 +23,7 @@ state as arrays with a ``replicate`` axis and step all N replicates in a
 single numpy operation. That typically beats process-pool parallelism by
 10-100x. See the README for guidance.
 """
+
 from __future__ import annotations
 
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
@@ -60,12 +61,14 @@ def _run_single(payload: tuple[Callable[[int], Any], int]) -> Any:
     return builder(seed)
 
 
-def run_monte_carlo(scenario_builder: Callable[[int], Any],
-                     n_runs: int,
-                     seeds: Iterable[int] | None = None,
-                     executor: str = "serial",
-                     n_workers: int | None = None,
-                     scenario_name: str = "default") -> MCResult:
+def run_monte_carlo(
+    scenario_builder: Callable[[int], Any],
+    n_runs: int,
+    seeds: Iterable[int] | None = None,
+    executor: str = "serial",
+    n_workers: int | None = None,
+    scenario_name: str = "default",
+) -> MCResult:
     """Run Monte Carlo replicates.
 
     Parameters
@@ -120,10 +123,13 @@ def run_monte_carlo(scenario_builder: Callable[[int], Any],
 # Batched / vectorised Monte Carlo helper.
 # ---------------------------------------------------------------------------
 
-def run_batched_mc(batched_step: Callable[[np.random.Generator, int], np.ndarray],
-                    n_runs: int,
-                    seed: int | None = 0,
-                    scenario_name: str = "batched") -> MCResult:
+
+def run_batched_mc(
+    batched_step: Callable[[np.random.Generator, int], np.ndarray],
+    n_runs: int,
+    seed: int | None = 0,
+    scenario_name: str = "batched",
+) -> MCResult:
     """Run a vectorised Monte Carlo where ``batched_step`` returns an
     ``(n_runs, ...)`` ndarray, all replicates progressed in one numpy op.
 
