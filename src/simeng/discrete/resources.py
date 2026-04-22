@@ -5,6 +5,7 @@ before serving an item and release afterwards. Resources are held in a
 :class:`ResourcePool`, which is itself a :class:`Queue` so it enjoys the
 same tick semantics and bookkeeping.
 """
+
 from __future__ import annotations
 
 from simeng.core.entity import Entity
@@ -14,8 +15,9 @@ from simeng.discrete.queues import Queue
 class Resource(Entity):
     """A reusable resource that can be checked out of a pool."""
 
-    def __init__(self, name: str | None = None,
-                 home_pool: "ResourcePool | str" = "terminus") -> None:
+    def __init__(
+        self, name: str | None = None, home_pool: "ResourcePool | str" = "terminus"
+    ) -> None:
         super().__init__(name=name)
         self.home_pool: "ResourcePool | str" = home_pool
         self.times_acquired: int = 0
@@ -35,7 +37,9 @@ class Resource(Entity):
         elif target == "terminus":
             return
         else:
-            raise TypeError("Resource.release target must be a ResourcePool or 'terminus'.")
+            raise TypeError(
+                "Resource.release target must be a ResourcePool or 'terminus'."
+            )
 
     def tick(self, dt: float, env) -> None:
         super().tick(dt, env)

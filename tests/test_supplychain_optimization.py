@@ -3,6 +3,7 @@
 These tests are skipped when scipy isn't installed, matching the library's
 stance that scipy is an optional extra (``simeng[optim]``).
 """
+
 import numpy as np
 import pytest
 
@@ -52,9 +53,14 @@ def test_poisson_rejects_bad_target():
 
 def test_poisson_requires_demand_rate():
     inv = InventoryItems(
-        part_names=["a"], unit_cost=[1.0], stock_level=[10.0],
-        batchsize=[5.0], reorder_points=[2.0], repairable_prc=[0.0],
-        repair_times=[0.0], newbuy_leadtimes=[1.0],
+        part_names=["a"],
+        unit_cost=[1.0],
+        stock_level=[10.0],
+        batchsize=[5.0],
+        reorder_points=[2.0],
+        repairable_prc=[0.0],
+        repair_times=[0.0],
+        newbuy_leadtimes=[1.0],
     )
     w = Warehouse(inv)
     with pytest.raises(ValueError):
@@ -69,13 +75,18 @@ def test_poisson_assign_mutates_inventory():
     # Stock set to k + batchsize.
     assert np.array_equal(w.inv.stock_level, k + w.inv.batchsize)
     # Confirm we actually changed it.
-    assert not np.array_equal(w.inv.reorder_points, original_rop) or np.all(k == original_rop)
+    assert not np.array_equal(w.inv.reorder_points, original_rop) or np.all(
+        k == original_rop
+    )
 
 
 def test_cost_optimise_stock_runs():
     w = _warehouse_with_demand(n=2, rate=1.0)
     solution, cost = cost_optimise_stock(
-        w, target_availability=0.8, maxiter=20, seed=0,
+        w,
+        target_availability=0.8,
+        maxiter=20,
+        seed=0,
     )
     assert solution.shape == (2,)
     assert np.all(solution >= 0)
@@ -89,8 +100,11 @@ def test_cost_optimise_stock_sim_respects_bounds():
         return float(np.sum((x - target) ** 2))
 
     x, c = cost_optimise_stock_sim(
-        sim_cost, lower=np.zeros(2), upper=np.full(2, 10.0),
-        maxiter=30, seed=0,
+        sim_cost,
+        lower=np.zeros(2),
+        upper=np.full(2, 10.0),
+        maxiter=30,
+        seed=0,
     )
     assert x.shape == (2,)
     assert c < 1.0  # should get close to the target

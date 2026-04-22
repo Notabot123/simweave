@@ -10,6 +10,7 @@ Every distribution accepts an optional ``rng`` (``numpy.random.Generator``)
 so that Monte Carlo runs can be seeded independently without touching the
 legacy global ``np.random`` state.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field

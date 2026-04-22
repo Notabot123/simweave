@@ -12,6 +12,7 @@ Items flowing through queues do not need to be registered themselves; they
 ride along with whatever process owns them. Queues and services age their
 contained items in their own ``tick``.
 """
+
 from __future__ import annotations
 
 from itertools import count
@@ -28,7 +29,9 @@ class Entity:
 
     def __init__(self, name: str | None = None) -> None:
         self.id: int = next(Entity._id_counter)
-        self.name: str = name if name is not None else f"{type(self).__name__}_{self.id}"
+        self.name: str = (
+            name if name is not None else f"{type(self).__name__}_{self.id}"
+        )
         self.created_at: float | None = None
         self.age: float = 0.0
         # Queue residency bookkeeping.

@@ -10,6 +10,7 @@ reductions rather than ragged joins. Where sparse events would otherwise waste
 cycles, the environment can cooperate with the optional ``EventQueue`` to
 fast-forward idle gaps (see :mod:`simeng.core.scheduler`).
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass

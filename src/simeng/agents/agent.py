@@ -10,6 +10,7 @@ An Agent traverses a graph under its own steam. On each tick:
 The Agent holds only a reference to the graph; it does not own it. Several
 agents may share a graph.
 """
+
 from __future__ import annotations
 
 from typing import Any, Callable, Hashable, Sequence
@@ -47,15 +48,17 @@ class Agent(Entity):
         Optional agent name.
     """
 
-    def __init__(self,
-                 graph: Any,
-                 start_node: Node,
-                 tasks: Sequence[Node] | None = None,
-                 speed: float = 1.0,
-                 heuristic: Callable[[Node, Node], float] | None = None,
-                 on_arrive: Callable[["Agent", Node, Any], None] | None = None,
-                 weight_attr: str = "weight",
-                 name: str | None = None) -> None:
+    def __init__(
+        self,
+        graph: Any,
+        start_node: Node,
+        tasks: Sequence[Node] | None = None,
+        speed: float = 1.0,
+        heuristic: Callable[[Node, Node], float] | None = None,
+        on_arrive: Callable[["Agent", Node, Any], None] | None = None,
+        weight_attr: str = "weight",
+        name: str | None = None,
+    ) -> None:
         super().__init__(name=name)
         self.graph = graph
         self.position: Node = start_node
@@ -78,8 +81,13 @@ class Agent(Entity):
     def plan_to(self, target: Node) -> None:
         """Replan to ``target`` from the current position using A*."""
         try:
-            path = a_star(self.graph, self.position, target,
-                          heuristic=self.heuristic, weight_attr=self.weight_attr)
+            path = a_star(
+                self.graph,
+                self.position,
+                target,
+                heuristic=self.heuristic,
+                weight_attr=self.weight_attr,
+            )
         except NoPathError:
             log.warning("%s: no path from %s to %s", self.name, self.position, target)
             self.path = []
@@ -115,8 +123,12 @@ class Agent(Entity):
                 next_node = self.path[0]
                 nbrs = adj_view(self.graph, self.position)
                 if next_node not in nbrs:
-                    log.warning("%s: edge %s->%s missing; replanning.",
-                                self.name, self.position, next_node)
+                    log.warning(
+                        "%s: edge %s->%s missing; replanning.",
+                        self.name,
+                        self.position,
+                        next_node,
+                    )
                     if self.path:
                         target = self.path[-1]
                         self.path = []

@@ -10,6 +10,7 @@ Two use modes:
    dynamics share a timeline (e.g. a vehicle queued at a junction whose
    suspension is still integrating over bumps).
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -109,8 +110,12 @@ def _step_rk4(system, t, x, dt, external_inputs):
     u1 = _resolve_inputs(system, external_inputs, t)
     k1 = np.asarray(system.derivatives(t, x, u1), dtype=float)
     u2 = _resolve_inputs(system, external_inputs, t + 0.5 * dt)
-    k2 = np.asarray(system.derivatives(t + 0.5 * dt, x + 0.5 * dt * k1, u2), dtype=float)
-    k3 = np.asarray(system.derivatives(t + 0.5 * dt, x + 0.5 * dt * k2, u2), dtype=float)
+    k2 = np.asarray(
+        system.derivatives(t + 0.5 * dt, x + 0.5 * dt * k1, u2), dtype=float
+    )
+    k3 = np.asarray(
+        system.derivatives(t + 0.5 * dt, x + 0.5 * dt * k2, u2), dtype=float
+    )
     u4 = _resolve_inputs(system, external_inputs, t + dt)
     k4 = np.asarray(system.derivatives(t + dt, x + dt * k3, u4), dtype=float)
     return x + (dt / 6.0) * (k1 + 2.0 * k2 + 2.0 * k3 + k4)
@@ -151,8 +156,11 @@ def simulate(
     for i in range(1, time.size):
         state[i] = stepper(system, time[i - 1], state[i - 1], dt, inputs)
 
-    labels = tuple(system.state_labels()) if hasattr(system, "state_labels") \
+    labels = (
+        tuple(system.state_labels())
+        if hasattr(system, "state_labels")
         else tuple(f"x{i}" for i in range(x_init.size))
+    )
     return SimulationResult(
         time=time,
         state=state,
@@ -166,6 +174,7 @@ def simulate(
 # Hybrid wrapper: turn a DynamicSystem into a SimEnvironment process.
 # ---------------------------------------------------------------------------
 
+
 class ContinuousProcess(Entity):
     """Drive a DynamicSystem from a SimEnvironment's tick loop.
 
@@ -174,13 +183,17 @@ class ContinuousProcess(Entity):
     time in ``history_time``.
     """
 
-    def __init__(self,
-                 system: SupportsDynamics,
-                 method: str = "rk4",
-                 n_substeps: int = 1,
-                 inputs: InputFunc | None = None,
-                 name: str | None = None) -> None:
-        super().__init__(name=name or getattr(system, "name", system.__class__.__name__))
+    def __init__(
+        self,
+        system: SupportsDynamics,
+        method: str = "rk4",
+        n_substeps: int = 1,
+        inputs: InputFunc | None = None,
+        name: str | None = None,
+    ) -> None:
+        super().__init__(
+            name=name or getattr(system, "name", system.__class__.__name__)
+        )
         if method not in _STEPPERS:
             raise ValueError(f"Unknown method '{method}'")
         if n_substeps < 1:
@@ -216,8 +229,9 @@ class ContinuousProcess(Entity):
         return SimulationResult(
             time=np.asarray(self.history_time),
             state=np.asarray(self.history_state),
-            state_labels=tuple(self.system.state_labels()) if hasattr(self.system, "state_labels")
-                else tuple(f"x{i}" for i in range(self.state.size)),
+            state_labels=tuple(self.system.state_labels())
+            if hasattr(self.system, "state_labels")
+            else tuple(f"x{i}" for i in range(self.state.size)),
             system_name=getattr(self.system, "name", self.system.__class__.__name__),
             method=self.method,
         )

@@ -20,17 +20,20 @@ plot = ["matplotlib>=3.7"]
 graph = ["networkx>=3.0"]
 geo = ["osmnx>=1.8", "networkx>=3.0"]
 fast = ["numba>=0.58"]
+intl = ["babel>=2.14"]
 dev = [
     "pytest>=8.0",
     "pytest-cov>=4.1",
     "scipy>=1.10",
     "networkx>=3.0",
+    "babel>=2.14",
 ]
 all = [
     "scipy>=1.10",
     "matplotlib>=3.7",
     "networkx>=3.0",
     "numba>=0.58",
+    "babel>=2.14",
 ]
 
 [tool.setuptools]

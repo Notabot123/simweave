@@ -14,10 +14,15 @@ class QuarterCarModel(DynamicSystem):
         z_u: unsprung mass displacement
     """
 
-    def __init__(self, sprung_mass: float, unsprung_mass: float,
-                 suspension_stiffness: float, damping: float,
-                 tyre_stiffness: float,
-                 x0: tuple[float, float, float, float] = (0.0, 0.0, 0.0, 0.0)):
+    def __init__(
+        self,
+        sprung_mass: float,
+        unsprung_mass: float,
+        suspension_stiffness: float,
+        damping: float,
+        tyre_stiffness: float,
+        x0: tuple[float, float, float, float] = (0.0, 0.0, 0.0, 0.0),
+    ):
         if sprung_mass <= 0 or unsprung_mass <= 0:
             raise ValueError("Masses must be positive")
         self.m_s = float(sprung_mass)
@@ -33,15 +38,18 @@ class QuarterCarModel(DynamicSystem):
     def state_labels(self) -> tuple[str, str, str, str]:
         return ("z_s", "z_s_dot", "z_u", "z_u_dot")
 
-    def derivatives(self, t: float, state: np.ndarray,
-                    inputs: float | int | None = None) -> np.ndarray:
+    def derivatives(
+        self, t: float, state: np.ndarray, inputs: float | int | None = None
+    ) -> np.ndarray:
         z_s, z_s_dot, z_u, z_u_dot = state
         z_r = 0.0 if inputs is None else float(inputs)
 
         suspension_deflection = z_s - z_u
         suspension_velocity = z_s_dot - z_u_dot
 
-        z_s_ddot = (-self.k_s * suspension_deflection - self.c_s * suspension_velocity) / self.m_s
+        z_s_ddot = (
+            -self.k_s * suspension_deflection - self.c_s * suspension_velocity
+        ) / self.m_s
         z_u_ddot = (
             self.k_s * suspension_deflection
             + self.c_s * suspension_velocity

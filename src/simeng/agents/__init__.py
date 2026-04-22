@@ -1,4 +1,5 @@
 """Agents, routing, and orientation primitives."""
+
 from simeng.agents.compass import Compass
 from simeng.agents.routing import (
     a_star,

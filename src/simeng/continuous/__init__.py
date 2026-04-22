@@ -1,4 +1,5 @@
 """Continuous-time dynamics: state-space solver, plug-in systems, hybrid wrapper."""
+
 from simeng.continuous.solver import (
     DynamicSystem,
     SupportsDynamics,

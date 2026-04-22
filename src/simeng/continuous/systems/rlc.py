@@ -13,8 +13,13 @@ class SeriesRLC(DynamicSystem):
         L q'' + R q' + (1/C) q = V(t)
     """
 
-    def __init__(self, resistance: float, inductance: float, capacitance: float,
-                 x0: tuple[float, float] = (0.0, 0.0)):
+    def __init__(
+        self,
+        resistance: float,
+        inductance: float,
+        capacitance: float,
+        x0: tuple[float, float] = (0.0, 0.0),
+    ):
         if inductance <= 0 or capacitance <= 0:
             raise ValueError("inductance and capacitance must be positive")
         self.resistance = float(resistance)
@@ -28,9 +33,12 @@ class SeriesRLC(DynamicSystem):
     def state_labels(self) -> tuple[str, str]:
         return ("charge", "current")
 
-    def derivatives(self, t: float, state: np.ndarray,
-                    inputs: float | int | None = None) -> np.ndarray:
+    def derivatives(
+        self, t: float, state: np.ndarray, inputs: float | int | None = None
+    ) -> np.ndarray:
         charge, current = state
         voltage = 0.0 if inputs is None else float(inputs)
-        current_dot = (voltage - self.resistance * current - charge / self.capacitance) / self.inductance
+        current_dot = (
+            voltage - self.resistance * current - charge / self.capacitance
+        ) / self.inductance
         return np.array([current, current_dot], dtype=float)

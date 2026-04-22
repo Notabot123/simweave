@@ -15,6 +15,7 @@ Both directed and undirected are supported -- the class does not enforce
 symmetry, so :meth:`Graph.add_edge` with ``directed=False`` inserts both
 ``u->v`` and ``v->u``.
 """
+
 from __future__ import annotations
 
 from typing import Any, Hashable, Iterable
@@ -80,7 +81,10 @@ def adj_view(graph: Any, node: Node) -> dict[Node, dict[str, Any]]:
         return graph[node]
     if isinstance(graph, dict):
         nbrs = graph[node]
-        return {v: (d if isinstance(d, dict) else {"weight": float(d)}) for v, d in nbrs.items()}
+        return {
+            v: (d if isinstance(d, dict) else {"weight": float(d)})
+            for v, d in nbrs.items()
+        }
     # networkx-style: has .neighbors and __getitem__ returning AtlasView
     if hasattr(graph, "neighbors") and hasattr(graph, "__getitem__"):
         nbrs = graph[node]
@@ -96,7 +100,9 @@ def adj_view(graph: Any, node: Node) -> dict[Node, dict[str, Any]]:
     raise TypeError(f"Unsupported graph type: {type(graph).__name__}")
 
 
-def edge_weight(edge_data: Any, weight_attr: str = "weight", default: float = 1.0) -> float:
+def edge_weight(
+    edge_data: Any, weight_attr: str = "weight", default: float = 1.0
+) -> float:
     if isinstance(edge_data, dict):
         return float(edge_data.get(weight_attr, default))
     if isinstance(edge_data, (int, float)):
@@ -104,8 +110,14 @@ def edge_weight(edge_data: Any, weight_attr: str = "weight", default: float = 1.
     return default
 
 
-def grid_graph(nrows: int, ncols: int, *, diagonal: bool = False,
-               weight: float = 1.0, diagonal_weight: float | None = None) -> Graph:
+def grid_graph(
+    nrows: int,
+    ncols: int,
+    *,
+    diagonal: bool = False,
+    weight: float = 1.0,
+    diagonal_weight: float | None = None,
+) -> Graph:
     """Build a 2D lattice graph with nodes ``(r, c)``.
 
     Parameters
@@ -114,7 +126,7 @@ def grid_graph(nrows: int, ncols: int, *, diagonal: bool = False,
         If True, add 45-degree edges (cost defaults to ``sqrt(2) * weight``).
     """
     if diagonal and diagonal_weight is None:
-        diagonal_weight = weight * (2 ** 0.5)
+        diagonal_weight = weight * (2**0.5)
 
     g = Graph(directed=False)
     for r in range(nrows):

@@ -246,6 +246,110 @@ else by supplying the 7-tuple of exponents
 
 ---
 
+## Currency (`simeng.currency`)
+
+Decimal-backed, currency-tagged monetary amounts with strict same-currency
+arithmetic, explicit FX conversion, and ASCII-default formatting. Designed
+so financial quantities inside a simulation behave like units — you cannot
+silently add pounds to dollars, you cannot float-drift your way into
+phantom pennies, and cross-currency work always goes through a user-owned
+FX converter.
+
+```python
+from simeng import Money, StaticFXConverter
+
+rent  = Money(1500, "GBP")
+bonus = Money("123.45", "USD")
+
+fx = StaticFXConverter({("GBP", "USD"): "1.27"})
+
+total_gbp = (rent + bonus.to("GBP", fx)).round_to_currency()
+print(total_gbp)                     # "GBP 1,597.21"
+```
+
+### `Money`
+
+Frozen, hashable dataclass. Amount is stored as `decimal.Decimal`; int /
+float / str inputs are coerced via `Decimal(str(value))` to avoid
+binary-float drift. Currency code is an ISO 4217 three-letter identifier
+(case-insensitive; normalised to uppercase).
+
+| Operation                     | Result                                           |
+|-------------------------------|--------------------------------------------------|
+| `Money + Money` (same ccy)    | `Money` — sums amounts                           |
+| `Money + Money` (diff ccy)    | `CurrencyMismatchError` (subclass of `TypeError`)|
+| `Money * scalar`              | `Money`                                          |
+| `Money * Money`               | `TypeError` (dimensionally ill-defined)          |
+| `Money / scalar`              | `Money`                                          |
+| `Money / Money` (same ccy)    | `float` (ratio)                                  |
+| `Money // Money` (same ccy)   | `int` (integer ratio)                            |
+| `Money == Money`              | `True` iff both currency and amount match        |
+| `<`, `<=`, `>`, `>=`          | Same-currency only; cross-ccy raises             |
+| `sum([...])` without start    | `TypeError` — use `sum([...], start=Money(0, cc))` |
+| `m.round_to_currency()`       | `Money` quantised to the currency's minor units, banker's rounding |
+| `m.to(target, fx)`            | `Money` in `target` currency via `fx.rate(...)`  |
+| `m.decimals`                  | `int` — minor-unit places for that currency      |
+| `m.is_negative()`, `is_zero()`| `bool`                                           |
+
+Negatives are legitimate (debts, refunds, signed cashflows). Rounding is
+only applied when you ask for it — `round_to_currency` or format time.
+
+### FX conversion
+
+simeng deliberately ships **no live rates**. You supply a converter:
+
+```python
+from simeng import StaticFXConverter, CallableFXConverter
+
+# In-memory table. Inverse lookups happen automatically:
+fx = StaticFXConverter({("GBP", "USD"): "1.27"})
+fx.rate("GBP", "USD")  # Decimal('1.27')
+fx.rate("USD", "GBP")  # Decimal('1') / Decimal('1.27')
+
+# Wrap an arbitrary callable (e.g. your existing rate-lookup function):
+my_fx = CallableFXConverter(lambda src, tgt, at=None: my_lookup(src, tgt, at))
+```
+
+Both satisfy the `FXConverter` runtime-checkable `Protocol`, so you can
+type-annotate against the protocol and swap implementations.
+
+### Formatting
+
+```python
+from simeng import Money, format_money
+
+m = Money("1234.567", "GBP")
+
+str(m)                      # "GBP 1,234.57"    (default, banker's-rounded)
+f"{m}"                      # "GBP 1,234.57"
+f"{m:r}"                    # "GBP 1,234.57"    (explicit round)
+f"{m:raw}"                  # "1234.567"        (full-precision, no tag)
+format_money(m, "en_GB")    # "£1,234.57"       (needs simeng[intl])
+```
+
+The locale-aware path requires `babel`. Install with:
+
+```bash
+pip install "simeng[intl]"
+```
+
+### Non-ISO currencies (crypto, fixtures)
+
+```python
+from simeng import register_custom, unregister_custom, Money
+
+register_custom("BTC", decimals=8)
+Money("0.00000001", "BTC")
+
+unregister_custom("BTC")
+```
+
+`register_custom` refuses to shadow a real ISO 4217 code. Custom
+registrations are **process-local** — they do not persist across
+interpreter invocations.
+
+---
+
 ## Code-generation contract for EdgeWeave
 
 When the app generates Python for a user, prefer the **top-level import** so

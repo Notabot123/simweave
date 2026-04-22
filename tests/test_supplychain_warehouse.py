@@ -23,6 +23,7 @@ def _inv(n=2, stock=10.0, rop=2.0, batch=5.0, lt=3.0):
 # InventoryItems
 # ---------------------------------------------------------------------------
 
+
 def test_inventory_coerces_to_ndarray():
     inv = _inv(n=3)
     assert isinstance(inv.stock_level, np.ndarray)
@@ -54,6 +55,7 @@ def test_inventory_defaults_shelf_life_and_failure_rate():
 # Warehouse stock ops
 # ---------------------------------------------------------------------------
 
+
 def test_decrement_and_increment():
     w = Warehouse(_inv(n=2, stock=5.0))
     assert w.decrement_by_idx(0, 2.0) is True
@@ -78,6 +80,7 @@ def test_decrement_vector_returns_mask():
 # ---------------------------------------------------------------------------
 # Reorder logic
 # ---------------------------------------------------------------------------
+
 
 def test_reorder_places_order_below_rop():
     w = Warehouse(_inv(n=1, stock=2.0, rop=2.0, batch=5.0, lt=3.0))
@@ -105,10 +108,12 @@ def test_reorder_arrives_after_leadtime():
 
 
 def test_parent_child_backorder_when_parent_empty():
-    parent = Warehouse(_inv(n=1, stock=0.0, rop=0.0, batch=5.0, lt=1.0),
-                       name="parent")
-    child = Warehouse(_inv(n=1, stock=1.0, rop=2.0, batch=5.0, lt=1.0),
-                     name="child", parent_warehouse=parent)
+    parent = Warehouse(_inv(n=1, stock=0.0, rop=0.0, batch=5.0, lt=1.0), name="parent")
+    child = Warehouse(
+        _inv(n=1, stock=1.0, rop=2.0, batch=5.0, lt=1.0),
+        name="child",
+        parent_warehouse=parent,
+    )
     child.process_orders(elapsed=1.0)
     # Parent empty -> no decrement and backorder recorded.
     assert parent.inv.stock_level[0] == 0.0
@@ -116,10 +121,12 @@ def test_parent_child_backorder_when_parent_empty():
 
 
 def test_parent_child_successful_transfer():
-    parent = Warehouse(_inv(n=1, stock=20.0, rop=0.0, batch=5.0, lt=1.0),
-                       name="parent")
-    child = Warehouse(_inv(n=1, stock=1.0, rop=2.0, batch=5.0, lt=1.0),
-                     name="child", parent_warehouse=parent)
+    parent = Warehouse(_inv(n=1, stock=20.0, rop=0.0, batch=5.0, lt=1.0), name="parent")
+    child = Warehouse(
+        _inv(n=1, stock=1.0, rop=2.0, batch=5.0, lt=1.0),
+        name="child",
+        parent_warehouse=parent,
+    )
     child.process_orders(elapsed=1.0)
     assert parent.inv.stock_level[0] == 15.0
     assert child._reorders_volume[0] == 5.0
@@ -144,6 +151,7 @@ def test_estimate_demand_rate_rejects_zero():
 # ---------------------------------------------------------------------------
 # Integration with SimEnvironment
 # ---------------------------------------------------------------------------
+
 
 def test_warehouse_in_environment_ticks():
     w = Warehouse(_inv(n=2, stock=2.0, rop=2.0, batch=5.0, lt=2.0))

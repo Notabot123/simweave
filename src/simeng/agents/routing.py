@@ -3,6 +3,7 @@
 Pure stdlib; networkx is not required. If ``heuristic`` is ``None`` the
 algorithm degrades to Dijkstra (heuristic = 0 is admissible).
 """
+
 from __future__ import annotations
 
 import heapq
@@ -20,11 +21,13 @@ class NoPathError(ValueError):
     """Raised when A* cannot reach the goal from the start node."""
 
 
-def a_star(graph: Any,
-           start: Node,
-           goal: Node,
-           heuristic: Heuristic | None = None,
-           weight_attr: str = "weight") -> list[Node]:
+def a_star(
+    graph: Any,
+    start: Node,
+    goal: Node,
+    heuristic: Heuristic | None = None,
+    weight_attr: str = "weight",
+) -> list[Node]:
     """Compute shortest path from ``start`` to ``goal``.
 
     Parameters
@@ -42,6 +45,7 @@ def a_star(graph: Any,
         Path from start to goal inclusive.
     """
     if heuristic is None:
+
         def heuristic(a: Node, b: Node) -> float:
             return 0.0
 
@@ -74,8 +78,9 @@ def a_star(graph: Any,
     raise NoPathError(f"No path from {start!r} to {goal!r}.")
 
 
-def dijkstra(graph: Any, start: Node, goal: Node,
-             weight_attr: str = "weight") -> list[Node]:
+def dijkstra(
+    graph: Any, start: Node, goal: Node, weight_attr: str = "weight"
+) -> list[Node]:
     """Convenience wrapper -- A* with zero heuristic."""
     return a_star(graph, start, goal, heuristic=None, weight_attr=weight_attr)
 
@@ -92,6 +97,7 @@ def _reconstruct(came_from: dict[Node, Node], current: Node) -> list[Node]:
 # ---------------------------------------------------------------------------
 # Heuristics for 2D grid-like nodes (tuples of (row, col) or (x, y)).
 # ---------------------------------------------------------------------------
+
 
 def manhattan(a: Node, b: Node) -> float:
     return abs(a[0] - b[0]) + abs(a[1] - b[1])  # type: ignore[index]
