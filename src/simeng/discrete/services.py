@@ -7,7 +7,7 @@ next queue is full) it sits in a "blocked-completion" slot until it clears.
 """
 from __future__ import annotations
 
-from typing import Callable, Iterable
+from typing import TYPE_CHECKING, Callable
 
 import numpy as np
 
@@ -15,6 +15,9 @@ from simeng.core.entity import Entity
 from simeng.core.logging import get_logger
 from simeng.discrete.queues import Queue
 from simeng.discrete.resources import ResourcePool
+
+if TYPE_CHECKING:
+    from simeng.core.environment import SimEnvironment
 
 log = get_logger("discrete.service")
 
@@ -185,7 +188,7 @@ class ArrivalGenerator(Entity):
 
     def __init__(self,
                  interarrival: Callable[[np.random.Generator], float],
-                 factory: Callable[["SimEnvironment"], Entity],
+                 factory: Callable[[SimEnvironment], Entity],
                  target: Queue,
                  rng: np.random.Generator | None = None,
                  name: str | None = None) -> None:

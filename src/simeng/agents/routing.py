@@ -42,7 +42,8 @@ def a_star(graph: Any,
         Path from start to goal inclusive.
     """
     if heuristic is None:
-        heuristic = lambda a, b: 0.0
+        def heuristic(a: Node, b: Node) -> float:
+            return 0.0
 
     open_heap: list[tuple[float, int, Node]] = [(0.0, 0, start)]
     came_from: dict[Node, Node] = {}

@@ -1,5 +1,4 @@
 import numpy as np
-import pytest
 
 from simeng.core.entity import Entity
 from simeng.core.environment import SimEnvironment
@@ -19,7 +18,8 @@ def test_single_server_processes_items():
     sink = Queue(maxlen=10, name="sink")
     svc = Service(capacity=1, buffer_size=5, next_q=sink, name="svc")
     env = SimEnvironment(dt=1.0, end=10.0)
-    env.register(svc); env.register(sink)
+    env.register(svc)
+    env.register(sink)
     for i in range(3):
         svc.enqueue(_mk_item(f"e{i}", service_time=1.0))
     env.run()
@@ -31,7 +31,8 @@ def test_parallel_capacity_doubles_throughput():
     sink = Queue(maxlen=20, name="sink")
     svc = Service(capacity=2, buffer_size=20, next_q=sink, name="svc")
     env = SimEnvironment(dt=1.0, end=5.0)
-    env.register(svc); env.register(sink)
+    env.register(svc)
+    env.register(sink)
     for i in range(10):
         svc.enqueue(_mk_item(f"e{i}", service_time=1.0))
     env.run()
@@ -43,7 +44,8 @@ def test_blocked_output_does_not_lose_items():
     sink = Queue(maxlen=2, name="sink")
     svc = Service(capacity=1, buffer_size=5, next_q=sink, name="svc")
     env = SimEnvironment(dt=1.0, end=10.0)
-    env.register(svc); env.register(sink)
+    env.register(svc)
+    env.register(sink)
     for i in range(5):
         svc.enqueue(_mk_item(f"e{i}", service_time=1.0))
     env.run(until=3.0)  # sink fills, service blocks
@@ -63,7 +65,9 @@ def test_resource_pool_limits_concurrency():
                   resources=pool, name="svc")
 
     env = SimEnvironment(dt=1.0, end=5.0)
-    env.register(pool); env.register(svc); env.register(sink)
+    env.register(pool)
+    env.register(svc)
+    env.register(sink)
     for i in range(10):
         svc.enqueue(_mk_item(f"e{i}", service_time=1.0))
     env.run()
@@ -90,7 +94,9 @@ def test_arrival_generator_feeds_service():
         name="gen",
     )
     env = SimEnvironment(dt=1.0, end=20.0)
-    env.register(gen); env.register(svc); env.register(sink)
+    env.register(gen)
+    env.register(svc)
+    env.register(sink)
     env.run()
     # 20 arrivals at 1 per tick; service at 1 per tick => steady state, about 19 completed.
     assert gen.generated >= 19

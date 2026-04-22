@@ -11,7 +11,7 @@ from __future__ import annotations
 import heapq
 from collections import deque
 from dataclasses import dataclass, field
-from typing import Any, Iterable
+from typing import Any
 
 from simeng.core.entity import Entity
 from simeng.core.logging import get_logger

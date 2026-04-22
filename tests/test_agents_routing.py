@@ -65,7 +65,8 @@ def test_astar_with_manhattan_heuristic():
 
 def test_no_path_raises():
     g = Graph()
-    g.add_node("A"); g.add_node("B")
+    g.add_node("A")
+    g.add_node("B")
     with pytest.raises(NoPathError):
         a_star(g, "A", "B")
 
@@ -116,7 +117,8 @@ def test_agent_speed_scales_traversal_time():
     slow = Agent(graph=g, start_node=(0, 0), tasks=[(1, 1)], speed=0.5,
                  heuristic=manhattan, name="slow")
     env = SimEnvironment(dt=0.1, end=10.0)
-    env.register(fast); env.register(slow)
+    env.register(fast)
+    env.register(slow)
     env.run()
     # Fast finishes; slow might still be en route at t=10 only if 2 hops * 1.0 weight
     # divided by 0.5 speed = 4 steps, well within 10.

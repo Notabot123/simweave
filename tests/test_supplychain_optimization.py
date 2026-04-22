@@ -8,9 +8,11 @@ import pytest
 
 scipy = pytest.importorskip("scipy")
 
-from simeng.supplychain.inventory import InventoryItems
-from simeng.supplychain.warehouse import Warehouse
-from simeng.supplychain.optimization import (
+# The imports below are intentionally placed after the scipy skip-gate so that
+# the whole file is bypassed cleanly when scipy isn't installed.
+from simeng.supplychain.inventory import InventoryItems  # noqa: E402
+from simeng.supplychain.warehouse import Warehouse  # noqa: E402
+from simeng.supplychain.optimization import (  # noqa: E402
     poisson_reorder_points,
     cost_optimise_stock,
     pareto_sweep,

@@ -5,8 +5,10 @@ from simeng.discrete.resources import Resource, ResourcePool
 
 def test_acquire_and_release():
     pool = ResourcePool(maxlen=3, name="pool")
-    r0 = Resource(name="r0"); r1 = Resource(name="r1")
-    pool.deposit(r0); pool.deposit(r1)
+    r0 = Resource(name="r0")
+    r1 = Resource(name="r1")
+    pool.deposit(r0)
+    pool.deposit(r1)
     assert len(pool) == 2
 
     acquired = pool.try_acquire()

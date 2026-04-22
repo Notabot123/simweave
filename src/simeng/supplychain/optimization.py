@@ -18,7 +18,7 @@ pass that to :func:`cost_optimise_stock_sim`.
 """
 from __future__ import annotations
 
-from typing import Any, Callable
+from typing import Callable
 
 import numpy as np
 

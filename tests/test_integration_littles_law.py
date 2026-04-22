@@ -7,7 +7,6 @@ W is the mean residence time. We run a long M/M/1-ish simulation and
 check the identity holds to a tolerance.
 """
 import numpy as np
-import pytest
 
 from simeng.core.entity import Entity
 from simeng.core.environment import SimEnvironment
@@ -38,7 +37,9 @@ def test_littles_law_single_server_stable():
         name="gen",
     )
     env = SimEnvironment(dt=0.05, end=2000.0)
-    env.register(gen); env.register(svc); env.register(sink)
+    env.register(gen)
+    env.register(svc)
+    env.register(sink)
     env.run()
 
     elapsed = env.clock.t - env.clock.start
@@ -67,7 +68,9 @@ def test_utilisation_tracks_load():
             target=svc, rng=rng,
         )
         env = SimEnvironment(dt=0.1, end=500.0)
-        env.register(gen); env.register(svc); env.register(sink)
+        env.register(gen)
+        env.register(svc)
+        env.register(sink)
         env.run()
         return svc.utilisation(env.clock.t - env.clock.start)
 
@@ -85,7 +88,8 @@ def test_pipeline_conservation():
     svc = Service(capacity=2, buffer_size=10_000, next_q=sink,
                   default_service_time=1.0, name="svc")
     env = SimEnvironment(dt=1.0, end=100.0)
-    env.register(svc); env.register(sink)
+    env.register(svc)
+    env.register(sink)
 
     # Inject a known number of items up front.
     n_inject = 50
