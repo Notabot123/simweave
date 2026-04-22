@@ -112,4 +112,7 @@ def test_cost_optimise_stock_sim_respects_bounds():
 
 def test_pareto_sweep_returns_expected_keys():
     w = _warehouse_with_demand(n=2, rate=1.0)
-    out = pareto_sweep
+    out = pareto_sweep(w, availability_range=np.array([0.5, 0.8]))
+    assert set(out) == {"availability", "cost_cost_optimal", "cost_poisson"}
+    assert out["availability"].shape == (2,)
+    assert out["cost_cost_optimal"].shape == (2,)

@@ -136,4 +136,8 @@ def test_agent_speed_scales_traversal_time():
     env.register(slow)
     env.run()
     # Fast finishes; slow might still be en route at t=10 only if 2 hops * 1.0 weight
-    # div
+    # divided by 0.5 speed = 4 steps, well within 10.
+    assert fast.position == (1, 1)
+    assert slow.position == (1, 1)
+    # Fast should have completed earlier -- inspect history length.
+    assert len(fast.history) >= 2

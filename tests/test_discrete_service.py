@@ -98,4 +98,6 @@ def test_arrival_generator_feeds_service():
     env.register(svc)
     env.register(sink)
     env.run()
-    # 20 arrivals at 1 per tick; service at 1 per tick => steady state, about 19 c
+    # 20 arrivals at 1 per tick; service at 1 per tick => steady state, about 19 completed.
+    assert gen.generated >= 19
+    assert svc.completed_count >= 18
