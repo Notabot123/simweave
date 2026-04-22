@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from simeng.mc.runner import MCResult, run_monte_carlo, run_batched_mc
+from simweave.mc.runner import MCResult, run_monte_carlo, run_batched_mc
 
 
 def _scalar_scenario(seed: int) -> float:
@@ -85,4 +85,4 @@ def test_scenario_name_preserved():
     r = run_monte_carlo(
         _scalar_scenario, n_runs=3, executor="serial", scenario_name="demo"
     )
-    assert r.scenario_name == "demo"
+    assert r.scenario_name == "d

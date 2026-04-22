@@ -9,11 +9,11 @@ check the identity holds to a tolerance.
 
 import numpy as np
 
-from simeng.core.entity import Entity
-from simeng.core.environment import SimEnvironment
-from simeng.discrete.properties import EntityProperties, exponential, deterministic
-from simeng.discrete.queues import Queue
-from simeng.discrete.services import Service, ArrivalGenerator
+from simweave.core.entity import Entity
+from simweave.core.environment import SimEnvironment
+from simweave.discrete.properties import EntityProperties, exponential, deterministic
+from simweave.discrete.queues import Queue
+from simweave.discrete.services import Service, ArrivalGenerator
 
 
 def _factory(service_time_dist):
@@ -115,11 +115,4 @@ def test_pipeline_conservation():
     n_inject = 50
     for i in range(n_inject):
         e = Entity(name=f"e{i}")
-        e.sim_properties = EntityProperties(service_time=deterministic(1.0))
-        svc.enqueue(e)
-    env.run()
-
-    in_buffer = len(svc)
-    in_channels = sum(1 for ch in svc.channels if ch.is_busy())
-    in_sink = len(sink)
-    assert in_buffer + in_channels + in_sink == n_inject
+        e.sim_properties = EntityPrope

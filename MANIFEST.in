@@ -1,5 +1,5 @@
 # Controls what setuptools ships in the source distribution (sdist).
-# The wheel is narrower still (only src/simeng/**/*.py) and governed by
+# The wheel is narrower still (only src/simweave/**/*.py) and governed by
 # [tool.setuptools] in pyproject.toml.
 #
 # Rule of thumb: the sdist should contain everything needed to rebuild
@@ -21,7 +21,7 @@ recursive-include src *.py
 # the PyPI package.
 exclude PACKAGING.md
 exclude CURRENCY_DESIGN.md
-exclude SIMENG_API.md
+exclude SIMWEAVE_API.md
 exclude EdgeWeave.md
 exclude VIZ_DESIGN.md
 

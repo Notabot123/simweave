@@ -1,4 +1,4 @@
-"""Tests for :mod:`simeng.currency`.
+"""Tests for :mod:`simweave.currency`.
 
 Covers the full Money / FX / format contract: construction, rounding,
 arithmetic, comparison, conversion, registry, formatting, and the
@@ -11,7 +11,7 @@ from decimal import Decimal
 
 import pytest
 
-from simeng.currency import (
+from simweave.currency import (
     CallableFXConverter,
     CurrencyMismatchError,
     FXConverter,

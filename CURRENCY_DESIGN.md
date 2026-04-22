@@ -1,13 +1,13 @@
-# Design: `simeng.currency`
+# Design: `simweave.currency`
 
-Status: **implemented** in v0.2 (module: `src/simeng/currency/`).
+Status: **implemented** in v0.2 (module: `src/simweave/currency/`).
 Purpose: support monetary quantities in simulations for finance
 practitioners, mirroring the dimensional-analysis discipline of
-`simeng.units` without falsely implying that currency is a physical
+`simweave.units` without falsely implying that currency is a physical
 dimension.
 
 This document records the argument that drove the design and the
-decisions taken. For day-to-day usage see `SIMENG_API.md` §Currency
+decisions taken. For day-to-day usage see `SIMWEAVE_API.md` §Currency
 and the demo at `demos/13_money_cashflow.py`.
 
 ## Implementation summary
@@ -24,7 +24,7 @@ The module layout is:
 Tests: `tests/test_currency.py` (construction, arithmetic, comparison,
 conversion, registry, formatting, edge cases).
 
-Locale-aware formatting is gated behind the `simeng[intl]` extra
+Locale-aware formatting is gated behind the `simweave[intl]` extra
 (`babel>=2.14`).
 
 ---
@@ -48,7 +48,7 @@ Locale-aware formatting is gated behind the `simeng[intl]` extra
 ## Why it's worth being cautious
 
 1. **FX rates are live data.** Hard-coding them ages badly; pulling
-   them from an API couples simeng to network, keys, and rate-limits.
+   them from an API couples simweave to network, keys, and rate-limits.
 2. **Currencies aren't truly fungible.** $1 today ≠ $1 next year;
    adding a time dimension (discount rates) is a second conversation
    that an over-eager API can pretend doesn't exist.
@@ -63,7 +63,7 @@ Locale-aware formatting is gated behind the `simeng[intl]` extra
 
 ## Recommendation
 
-**Ship it, scoped tightly.** Do the three things simeng is uniquely
+**Ship it, scoped tightly.** Do the three things simweave is uniquely
 positioned to do well:
 - tag values with an immutable currency code,
 - refuse cross-currency arithmetic unless a converter is explicitly
@@ -79,10 +79,10 @@ Users who need those things bring them as a strategy object.
 
 ---
 
-## Proposed surface (`simeng.currency`)
+## Proposed surface (`simweave.currency`)
 
 ```python
-from simeng.currency import Money, FXConverter, format_money
+from simweave.currency import Money, FXConverter, format_money
 ```
 
 ### `Money`
@@ -133,7 +133,7 @@ class CallableFXConverter:
     """Wrap any callable of signature (src, tgt, at) -> rate."""
 ```
 
-The point: simeng **never ships live rates**. If the user wants real
+The point: simweave **never ships live rates**. If the user wants real
 rates, they build a converter that calls their broker/API and inject it.
 
 ### `format_money`
@@ -149,7 +149,7 @@ format_money(Money(1235, "JPY"))     # "JPY 1,235"
 With optional extra:
 
 ```bash
-pip install simeng[intl]             # pulls in babel
+pip install simweave[intl]             # pulls in babel
 ```
 
 ```python
@@ -167,9 +167,9 @@ Tempting, since the shape is similar. **Don't.**
   muddies the meaning of "dimensional analysis."
 - SI's `_KNOWN_BY_EXP` cleverness (auto-retyping `m/s` to `Velocity`)
   makes no sense for currency — we don't have derived currency types.
-- Keeping `simeng.currency` as a parallel, narrower module means we
+- Keeping `simweave.currency` as a parallel, narrower module means we
   can evolve it (discount curves, time-value-of-money) without
-  breaking `simeng.units`.
+  breaking `simweave.units`.
 
 There's one exception worth flagging: **rates** like "£/hour" arise
 naturally (billing). A later extension can compose `Money` with
@@ -180,7 +180,7 @@ rate = Money(50, "GBP") / TimeUnit(1, "hrs")   # -> Rate(50, "GBP/h")
 rate * TimeUnit(2, "hrs")                       # -> Money(100, "GBP")
 ```
 
-This would be a `Rate` class in `simeng.currency` that stores a `Money`
+This would be a `Rate` class in `simweave.currency` that stores a `Money`
 and a `TimeUnit` and exposes `__mul__(TimeUnit) -> Money`. Worth
 scoping but not in the first cut.
 
@@ -214,7 +214,4 @@ user code.
 3. **Currency code validation** — strict ISO 4217 (~180 codes, list
    baked in) or permissive (any uppercase string)? Recommendation:
    strict list, with an escape hatch `Money.register_custom("XYZ",
-   decimals=2)` for crypto / in-game currencies / test fixtures.
-4. Does EdgeWeave's code-generation path need this early (i.e. is it
-   on the 0.2 train) or can it land later (0.3)? That drives how
-   aggressively I pursue it.
+   decimals=

@@ -1,10 +1,10 @@
-"""Pytest fixtures shared across the simeng test suite."""
+"""Pytest fixtures shared across the simweave test suite."""
 
 import numpy as np
 import pytest
 
-from simeng.core.entity import Entity
-from simeng.discrete.properties import set_default_seed
+from simweave.core.entity import Entity
+from simweave.discrete.properties import set_default_seed
 
 
 @pytest.fixture(autouse=True)
@@ -21,5 +21,4 @@ def rng() -> np.random.Generator:
 
 @pytest.fixture(autouse=True)
 def _seed_default_rng():
-    set_default_seed(42)
-    yield
+    set_def

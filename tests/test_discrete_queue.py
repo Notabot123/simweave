@@ -1,9 +1,9 @@
 import pytest
 
-from simeng.core.entity import Entity
-from simeng.core.environment import SimEnvironment
-from simeng.discrete.properties import EntityProperties, exponential
-from simeng.discrete.queues import Queue, PriorityQueue
+from simweave.core.entity import Entity
+from simweave.core.environment import SimEnvironment
+from simweave.discrete.properties import EntityProperties, exponential
+from simweave.discrete.queues import Queue, PriorityQueue
 
 
 def _item(name, balk=None, renege=None):
@@ -98,7 +98,4 @@ def test_priority_queue_orders_by_priority():
     low = _item("low")
     pq.enqueue(low, priority=10)
     pq.enqueue(high, priority=1)
-    pq.enqueue(med, priority=5)
-    assert pq.dequeue() is high
-    assert pq.dequeue() is med
-    assert pq.dequeue() is low
+    pq.enqueue(med, priorit

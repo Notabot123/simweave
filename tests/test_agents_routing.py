@@ -1,10 +1,10 @@
 import pytest
 
-from simeng.spatial.graph import Graph, grid_graph
-from simeng.agents.compass import Compass
-from simeng.agents.routing import a_star, dijkstra, manhattan, NoPathError
-from simeng.agents.agent import Agent
-from simeng.core.environment import SimEnvironment
+from simweave.spatial.graph import Graph, grid_graph
+from simweave.agents.compass import Compass
+from simweave.agents.routing import a_star, dijkstra, manhattan, NoPathError
+from simweave.agents.agent import Agent
+from simweave.core.environment import SimEnvironment
 
 
 # ---------------------------------------------------------------------------
@@ -136,8 +136,4 @@ def test_agent_speed_scales_traversal_time():
     env.register(slow)
     env.run()
     # Fast finishes; slow might still be en route at t=10 only if 2 hops * 1.0 weight
-    # divided by 0.5 speed = 4 steps, well within 10.
-    assert fast.position == (1, 1)
-    assert slow.position == (1, 1)
-    # Fast should have completed earlier -- inspect history length.
-    assert len(fast.history) >= 2
+    # div

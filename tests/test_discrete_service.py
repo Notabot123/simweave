@@ -1,11 +1,11 @@
 import numpy as np
 
-from simeng.core.entity import Entity
-from simeng.core.environment import SimEnvironment
-from simeng.discrete.properties import EntityProperties, deterministic
-from simeng.discrete.queues import Queue
-from simeng.discrete.resources import Resource, ResourcePool
-from simeng.discrete.services import Service, ArrivalGenerator
+from simweave.core.entity import Entity
+from simweave.core.environment import SimEnvironment
+from simweave.discrete.properties import EntityProperties, deterministic
+from simweave.discrete.queues import Queue
+from simweave.discrete.resources import Resource, ResourcePool
+from simweave.discrete.services import Service, ArrivalGenerator
 
 
 def _mk_item(name, service_time=1.0):
@@ -98,6 +98,4 @@ def test_arrival_generator_feeds_service():
     env.register(svc)
     env.register(sink)
     env.run()
-    # 20 arrivals at 1 per tick; service at 1 per tick => steady state, about 19 completed.
-    assert gen.generated >= 19
-    assert svc.completed_count >= 18
+    # 20 arrivals at 1 per tick; service at 1 per tick => steady state, about 19 c

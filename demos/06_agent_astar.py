@@ -12,10 +12,10 @@ from __future__ import annotations
 
 import _bootstrap  # noqa: F401  (adds src/ to sys.path when not pip-installed)
 
-from simeng.core.environment import SimEnvironment
-from simeng.spatial.graph import grid_graph
-from simeng.agents.agent import Agent
-from simeng.agents.routing import manhattan
+from simweave.core.environment import SimEnvironment
+from simweave.spatial.graph import grid_graph
+from simweave.agents.agent import Agent
+from simweave.agents.routing import manhattan
 
 
 def on_arrive(agent, node, env):

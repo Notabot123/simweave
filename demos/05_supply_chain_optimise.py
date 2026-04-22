@@ -8,7 +8,7 @@ full simulation:
    availability constraint (scipy required).
 
 Run:
-    pip install simeng[optim]   # one-off
+    pip install simweave[optim]   # one-off
     python demos/05_supply_chain_optimise.py
 """
 from __future__ import annotations
@@ -17,9 +17,9 @@ import _bootstrap  # noqa: F401  (adds src/ to sys.path when not pip-installed)
 
 import numpy as np
 
-from simeng.supplychain.inventory import InventoryItems
-from simeng.supplychain.warehouse import Warehouse
-from simeng.supplychain.optimization import (
+from simweave.supplychain.inventory import InventoryItems
+from simweave.supplychain.warehouse import Warehouse
+from simweave.supplychain.optimization import (
     poisson_reorder_points,
     cost_optimise_stock,
 )
