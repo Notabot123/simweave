@@ -20,12 +20,12 @@ from statistics import mean, stdev
 
 import numpy as np
 
-from simeng.currency import (
+from simweave.currency import (
     Money,
     StaticFXConverter,
     format_money,
 )
-from simeng.mc.runner import run_monte_carlo
+from simweave.mc.runner import run_monte_carlo
 
 
 def sample_project_cost_gbp(seed: int) -> float:
@@ -86,7 +86,7 @@ def main() -> None:
     print(f"  p90     : {format_money(Money(str(round(p90, 2)), 'GBP'))}")
     print(f"  p99     : {format_money(Money(str(round(p99, 2)), 'GBP'))}")
     print()
-    print("Note: no live FX is shipped with simeng. The rates used here")
+    print("Note: no live FX is shipped with simweave. The rates used here")
     print("were drawn inside each replicate from hard-coded distributions")
     print("purely for illustrative purposes.")
 

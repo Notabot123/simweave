@@ -1,4 +1,4 @@
-from simeng.core.scheduler import EventQueue
+from simweave.core.scheduler import EventQueue
 
 
 def test_scheduled_events_fire_in_time_order():

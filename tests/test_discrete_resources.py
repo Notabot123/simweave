@@ -1,6 +1,6 @@
 import pytest
 
-from simeng.discrete.resources import Resource, ResourcePool
+from simweave.discrete.resources import Resource, ResourcePool
 
 
 def test_acquire_and_release():

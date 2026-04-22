@@ -14,8 +14,8 @@ import _bootstrap  # noqa: F401
 
 import numpy as np
 
-from simeng.continuous.solver import simulate
-from simeng.continuous.systems import QuarterCarModel
+from simweave.continuous.solver import simulate
+from simweave.continuous.systems import QuarterCarModel
 
 
 def road_input(t: float) -> float:

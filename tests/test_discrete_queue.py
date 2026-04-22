@@ -1,9 +1,9 @@
 import pytest
 
-from simeng.core.entity import Entity
-from simeng.core.environment import SimEnvironment
-from simeng.discrete.properties import EntityProperties, exponential
-from simeng.discrete.queues import Queue, PriorityQueue
+from simweave.core.entity import Entity
+from simweave.core.environment import SimEnvironment
+from simweave.discrete.properties import EntityProperties, exponential
+from simweave.discrete.queues import Queue, PriorityQueue
 
 
 def _item(name, balk=None, renege=None):

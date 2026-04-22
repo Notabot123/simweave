@@ -1,10 +1,10 @@
 import pytest
 
-from simeng.spatial.graph import Graph, grid_graph
-from simeng.agents.compass import Compass
-from simeng.agents.routing import a_star, dijkstra, manhattan, NoPathError
-from simeng.agents.agent import Agent
-from simeng.core.environment import SimEnvironment
+from simweave.spatial.graph import Graph, grid_graph
+from simweave.agents.compass import Compass
+from simweave.agents.routing import a_star, dijkstra, manhattan, NoPathError
+from simweave.agents.agent import Agent
+from simweave.core.environment import SimEnvironment
 
 
 # ---------------------------------------------------------------------------

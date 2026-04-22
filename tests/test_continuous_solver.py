@@ -1,14 +1,14 @@
 import numpy as np
 import pytest
 
-from simeng.continuous.solver import DynamicSystem, simulate, ContinuousProcess
-from simeng.continuous.systems import (
+from simweave.continuous.solver import DynamicSystem, simulate, ContinuousProcess
+from simweave.continuous.systems import (
     MassSpringDamper,
     SimplePendulum,
     QuarterCarModel,
     SeriesRLC,
 )
-from simeng.core.environment import SimEnvironment
+from simweave.core.environment import SimEnvironment
 
 
 class ExponentialDecay(DynamicSystem):

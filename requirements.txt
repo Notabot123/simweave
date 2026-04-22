@@ -1,3 +1,3 @@
-# Minimal runtime requirements for simeng.
+# Minimal runtime requirements for simweave.
 # Optional features pulled in via `pip install .[optim,plot,graph,fast]`.
 numpy>=1.23

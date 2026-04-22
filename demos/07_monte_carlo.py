@@ -16,12 +16,12 @@ import time
 
 import numpy as np
 
-from simeng.core.entity import Entity
-from simeng.core.environment import SimEnvironment
-from simeng.discrete.properties import EntityProperties, exponential
-from simeng.discrete.queues import Queue
-from simeng.discrete.services import Service, ArrivalGenerator
-from simeng.mc.runner import run_monte_carlo, run_batched_mc
+from simweave.core.entity import Entity
+from simweave.core.environment import SimEnvironment
+from simweave.discrete.properties import EntityProperties, exponential
+from simweave.discrete.queues import Queue
+from simweave.discrete.services import Service, ArrivalGenerator
+from simweave.mc.runner import run_monte_carlo, run_batched_mc
 
 
 def single_queue_mean_wait(seed: int) -> float:

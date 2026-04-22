@@ -1,4 +1,4 @@
-# Design note: `simeng.viz`
+# Design note: `simweave.viz`
 
 Status: **proposal**.
 Purpose: give users one-liner plotting helpers that turn the standard
@@ -10,21 +10,21 @@ the plots a simulation engineer reaches for most often.
 
 ## Extras vs separate library — my recommendation
 
-**Ship as a submodule under a `simeng[viz]` extra first.** Split into
-`simeng-viz` only if specific triggers fire later.
+**Ship as a submodule under a `simweave[viz]` extra first.** Split into
+`simweave-viz` only if specific triggers fire later.
 
 ### Why extras first
 
-1. **Cohesion.** Every plot helper touches simeng's internal data
+1. **Cohesion.** Every plot helper touches simweave's internal data
    models (`SimulationResult.state`, `Service.utilisation(…)`, etc.).
    Splitting them means duplicating those types in a "protocol" layer
-   or pulling simeng as a dep of the viz package — either way you pay
+   or pulling simweave as a dep of the viz package — either way you pay
    for the split.
-2. **Discovery.** `pip install simeng[viz]` is one line and users
-   already know simeng. A separate `simeng-viz` on PyPI adds a
-   discovery step and a version-pinning puzzle (does `simeng-viz 0.2`
-   work with `simeng 0.1`?).
-3. **matplotlib is already optional.** `simeng[plot]` exists already.
+2. **Discovery.** `pip install simweave[viz]` is one line and users
+   already know simweave. A separate `simweave-viz` on PyPI adds a
+   discovery step and a version-pinning puzzle (does `simweave-viz 0.2`
+   work with `simweave 0.1`?).
+3. **matplotlib is already optional.** `simweave[plot]` exists already.
    Nothing forces headless users to install it. So the core stays
    slim regardless.
 4. **Low initial surface.** Five or six plot functions will not
@@ -35,12 +35,12 @@ the plots a simulation engineer reaches for most often.
 
 - You want **multiple viz backends** (matplotlib, plotly, bokeh,
   altair) as independent packages. An extras matrix with five
-  backends gets ugly; separate backend packages (`simeng-viz-plotly`,
-  `simeng-viz-mpl`) keep install graphs clean.
+  backends gets ugly; separate backend packages (`simweave-viz-plotly`,
+  `simweave-viz-mpl`) keep install graphs clean.
 - A dedicated **viz team** wants to iterate on their own release
   schedule.
 - The viz code grows a **genuine dependency footprint** (pandas,
-  bokeh server components, xarray, panel) that core simeng users
+  bokeh server components, xarray, panel) that core simweave users
   shouldn't incur.
 - You want to produce **interactive dashboards** (panel / streamlit /
   dash) which pull in a web runtime. That absolutely belongs in a
@@ -50,14 +50,14 @@ None of those triggers apply yet. Start small.
 
 ---
 
-## Proposed surface (`simeng.viz`)
+## Proposed surface (`simweave.viz`)
 
 Convention: every function **returns the `matplotlib.axes.Axes`** (or a
 list of axes) so users can further customise. Each also accepts an
 optional `ax=` argument to plug into existing figures.
 
 ```python
-from simeng.viz import (
+from simweave.viz import (
     plot_state_trajectories,
     plot_phase_portrait,
     plot_queue_length,
@@ -74,7 +74,7 @@ Line plot of each state channel vs. `result.time`, labelled with
 `result.state_labels`. One-liner on top of `SimulationResult`.
 
 ```python
-from simeng.viz import plot_state_trajectories
+from simweave.viz import plot_state_trajectories
 plot_state_trajectories(res)               # all channels on shared axes
 plot_state_trajectories(res, channels=(0,)) # just the first
 ```
@@ -112,17 +112,17 @@ traversal as a coloured path with task-completion markers.
 
 ---
 
-## What `simeng.viz` will **not** do
+## What `simweave.viz` will **not** do
 
 - **No live/streaming dashboards.** That belongs in a separate
-  `simeng-dashboard` package or a notebook pattern.
+  `simweave-dashboard` package or a notebook pattern.
 - **No 3-D rendering.** Engineering users sometimes want 3-D trajectories;
   keep that on the roadmap but not in first-cut.
 - **No non-matplotlib backends.** Intentional to keep scope small. If
-  and when plotly is needed, ship a parallel `simeng.viz.plotly`
+  and when plotly is needed, ship a parallel `simweave.viz.plotly`
   subpackage and keep the function signatures identical so swapping is
   trivial.
-- **No custom "simeng theme".** Use matplotlib defaults; users have
+- **No custom "simweave theme".** Use matplotlib defaults; users have
   their own styles.
 
 ---
@@ -146,8 +146,8 @@ traversal as a coloured path with task-completion markers.
 
 Following the pattern we've been using:
 
-- **0.2**: `simeng.currency` per `CURRENCY_DESIGN.md`.
-- **0.3**: `simeng.viz` first-cut (state trajectories, phase portrait,
+- **0.2**: `simweave.currency` per `CURRENCY_DESIGN.md`.
+- **0.3**: `simweave.viz` first-cut (state trajectories, phase portrait,
   queue length, utilisation, MC fan, warehouse stock, agent path).
 - **0.4+**: optional plotly backend, optional 3-D, revisit whether a
   split-out package makes sense by then.

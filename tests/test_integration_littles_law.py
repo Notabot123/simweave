@@ -9,11 +9,11 @@ check the identity holds to a tolerance.
 
 import numpy as np
 
-from simeng.core.entity import Entity
-from simeng.core.environment import SimEnvironment
-from simeng.discrete.properties import EntityProperties, exponential, deterministic
-from simeng.discrete.queues import Queue
-from simeng.discrete.services import Service, ArrivalGenerator
+from simweave.core.entity import Entity
+from simweave.core.environment import SimEnvironment
+from simweave.discrete.properties import EntityProperties, exponential, deterministic
+from simweave.discrete.queues import Queue
+from simweave.discrete.services import Service, ArrivalGenerator
 
 
 def _factory(service_time_dist):

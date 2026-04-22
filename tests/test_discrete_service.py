@@ -1,11 +1,11 @@
 import numpy as np
 
-from simeng.core.entity import Entity
-from simeng.core.environment import SimEnvironment
-from simeng.discrete.properties import EntityProperties, deterministic
-from simeng.discrete.queues import Queue
-from simeng.discrete.resources import Resource, ResourcePool
-from simeng.discrete.services import Service, ArrivalGenerator
+from simweave.core.entity import Entity
+from simweave.core.environment import SimEnvironment
+from simweave.discrete.properties import EntityProperties, deterministic
+from simweave.discrete.queues import Queue
+from simweave.discrete.resources import Resource, ResourcePool
+from simweave.discrete.services import Service, ArrivalGenerator
 
 
 def _mk_item(name, service_time=1.0):

@@ -1,6 +1,6 @@
-"""Path shim so demos work even when ``simeng`` hasn't been pip-installed.
+"""Path shim so demos work even when ``simweave`` hasn't been pip-installed.
 
-The ``src/`` layout means ``import simeng`` only resolves after
+The ``src/`` layout means ``import simweave`` only resolves after
 ``pip install -e .`` (or with ``PYTHONPATH=src``). This shim adds
 ``<repo>/src`` to ``sys.path`` so the demos can be run directly as
 scripts without any prior setup.

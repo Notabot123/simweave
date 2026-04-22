@@ -20,8 +20,8 @@ import _bootstrap  # noqa: F401
 
 import numpy as np
 
-from simeng.continuous.solver import simulate
-from simeng.continuous.systems import ThermalRC, TwoMassThermal
+from simweave.continuous.solver import simulate
+from simweave.continuous.systems import ThermalRC, TwoMassThermal
 
 
 def scenario_1_single_body() -> None:

@@ -14,12 +14,12 @@ import _bootstrap  # noqa: F401  (adds src/ to sys.path when not pip-installed)
 
 import numpy as np
 
-from simeng.core.entity import Entity
-from simeng.core.environment import SimEnvironment
-from simeng.discrete.properties import EntityProperties, exponential
-from simeng.discrete.queues import Queue
-from simeng.discrete.resources import Resource, ResourcePool
-from simeng.discrete.services import Service, ArrivalGenerator
+from simweave.core.entity import Entity
+from simweave.core.environment import SimEnvironment
+from simweave.discrete.properties import EntityProperties, exponential
+from simweave.discrete.queues import Queue
+from simweave.discrete.resources import Resource, ResourcePool
+from simweave.discrete.services import Service, ArrivalGenerator
 
 
 def main(horizon: float = 200.0, dt: float = 0.25, seed: int = 0) -> None:

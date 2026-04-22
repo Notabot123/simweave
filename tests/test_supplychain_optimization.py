@@ -1,7 +1,7 @@
 """Tests for the steady-state reorder-point / cost-optimisation helpers.
 
 These tests are skipped when scipy isn't installed, matching the library's
-stance that scipy is an optional extra (``simeng[optim]``).
+stance that scipy is an optional extra (``simweave[optim]``).
 """
 
 import numpy as np
@@ -11,9 +11,9 @@ scipy = pytest.importorskip("scipy")
 
 # The imports below are intentionally placed after the scipy skip-gate so that
 # the whole file is bypassed cleanly when scipy isn't installed.
-from simeng.supplychain.inventory import InventoryItems  # noqa: E402
-from simeng.supplychain.warehouse import Warehouse  # noqa: E402
-from simeng.supplychain.optimization import (  # noqa: E402
+from simweave.supplychain.inventory import InventoryItems  # noqa: E402
+from simweave.supplychain.warehouse import Warehouse  # noqa: E402
+from simweave.supplychain.optimization import (  # noqa: E402
     poisson_reorder_points,
     cost_optimise_stock,
     pareto_sweep,

@@ -1,9 +1,9 @@
 import numpy as np
 import pytest
 
-from simeng.core.environment import SimEnvironment
-from simeng.supplychain.inventory import InventoryItems
-from simeng.supplychain.warehouse import Warehouse
+from simweave.core.environment import SimEnvironment
+from simweave.supplychain.inventory import InventoryItems
+from simweave.supplychain.warehouse import Warehouse
 
 
 def _inv(n=2, stock=10.0, rop=2.0, batch=5.0, lt=3.0):

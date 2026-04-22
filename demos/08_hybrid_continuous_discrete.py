@@ -15,13 +15,13 @@ import _bootstrap  # noqa: F401  (adds src/ to sys.path when not pip-installed)
 
 import numpy as np
 
-from simeng.continuous.solver import ContinuousProcess
-from simeng.continuous.systems import MassSpringDamper
-from simeng.core.entity import Entity
-from simeng.core.environment import SimEnvironment
-from simeng.discrete.properties import EntityProperties, exponential
-from simeng.discrete.queues import Queue
-from simeng.discrete.services import Service, ArrivalGenerator
+from simweave.continuous.solver import ContinuousProcess
+from simweave.continuous.systems import MassSpringDamper
+from simweave.core.entity import Entity
+from simweave.core.environment import SimEnvironment
+from simweave.discrete.properties import EntityProperties, exponential
+from simweave.discrete.queues import Queue
+from simweave.discrete.services import Service, ArrivalGenerator
 
 
 class QueueDrivenMSD(MassSpringDamper):

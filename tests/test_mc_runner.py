@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from simeng.mc.runner import MCResult, run_monte_carlo, run_batched_mc
+from simweave.mc.runner import MCResult, run_monte_carlo, run_batched_mc
 
 
 def _scalar_scenario(seed: int) -> float:
