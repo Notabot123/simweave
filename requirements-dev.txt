@@ -1,0 +1,7 @@
+# Developer + test dependencies.
+-r requirements.txt
+pytest>=8.0
+pytest-cov>=4.1
+scipy>=1.10
+networkx>=3.0
+matplotlib>=3.7

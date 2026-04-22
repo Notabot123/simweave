@@ -1,0 +1,52 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "simeng"
+version = "0.1.0"
+description = "Atomic-clock hybrid simulation engine: discrete-event queues, continuous dynamics, agents, supply chains, Monte Carlo."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Stuart" }]
+dependencies = [
+    "numpy>=1.23",
+]
+
+[project.optional-dependencies]
+optim = ["scipy>=1.10"]
+plot = ["matplotlib>=3.7"]
+graph = ["networkx>=3.0"]
+geo = ["osmnx>=1.8", "networkx>=3.0"]
+fast = ["numba>=0.58"]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=4.1",
+    "scipy>=1.10",
+    "networkx>=3.0",
+]
+all = [
+    "scipy>=1.10",
+    "matplotlib>=3.7",
+    "networkx>=3.0",
+    "numba>=0.58",
+]
+
+[tool.setuptools]
+# Keep the wheel lean: only Python sources under src/simeng go in.
+# README/LICENSE/pyproject are included automatically as distribution metadata.
+include-package-data = false
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+# If we ever need to ship data files inside the package, list them here
+# explicitly. Leaving empty keeps the wheel to *.py only.
+simeng = []
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-q"

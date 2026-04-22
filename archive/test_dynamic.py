@@ -1,6 +1,6 @@
 import os
-import simeng.dynamic_systems as ds
-from simeng.dynamic_systems import kg, dot, cross
+import archive.dynamic_systems as ds
+from archive.dynamic_systems import kg, dot, cross
 import numpy as np
 
 

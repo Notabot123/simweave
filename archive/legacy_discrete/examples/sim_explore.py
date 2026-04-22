@@ -1,4 +1,4 @@
-import simeng.qsim_engine as qsim
+import discrete.simeng.qsim_engine as qsim
 import time
 from multiprocessing import Process
 import random
