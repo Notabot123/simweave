@@ -87,7 +87,7 @@ pytest                  # should show green
 
 ## Worked examples
 
-Twelve runnable scripts live under [`demos/`](demos/):
+Sixteen runnable scripts live under [`demos/`](demos/):
 
 **Discrete-event / agents / Monte Carlo**
 1. `01_simple_queue.py` — M/M/1 queue, Little's law diagnostics
@@ -106,9 +106,18 @@ Twelve runnable scripts live under [`demos/`](demos/):
 11. `11_series_rlc.py` — RLC step and resonant drive, reports ω₀, ζ, Q
 12. `12_thermal_system.py` — single-body RC thermal + CPU/heatsink two-mass model
 
-Run any with `python demos/NN_name.py` from the repo root — a small
-`demos/_bootstrap.py` shim adds `src/` to `sys.path` if the package isn't
-installed. With `pip install -e .` in place, the shim becomes a no-op.
+**Currency, visualisation, units, optimisation**
+
+13. `13_money_cashflow.py` — `Money`, FX conversion, locale-aware formatting
+14. `14_viz_tour.py` — every `simweave.viz` plot helper end-to-end, with HTML index
+15. `15_units_dimensional.py` — SI-units algebra (`Distance / TimeUnit → Velocity`)
+16. `16_inventory_optimisation.py` — recover demand rate from a sim, then optimise reorder points
+
+Run any of them directly, e.g. `python demos/01_simple_queue.py` from
+the repo root. The two-digit prefix is just an ordering hint; the
+scripts have no dependency on each other. A small `demos/_bootstrap.py`
+shim adds `src/` to `sys.path` if the package isn't installed; with
+`pip install -e .` in place, the shim becomes a no-op.
 
 ## Monte Carlo performance: picking the right strategy
 
@@ -243,11 +252,4 @@ sim_engine/
   Graph, dict-of-dict, and networkx; next is an osmnx adapter so
   `simweave[geo]` lets agents route on real road networks without
   baking osmnx into the core.
-- **Numba hot paths.** The A* inner loop and the warehouse vectorised
-  reorder step are obvious first targets for `@njit` under
-  `simweave[fast]`.
-- **Monetary quantities.** [`CURRENCY_DESIGN.md`](CURRENCY_DESIGN.md)
-  sketches a `simweave.currency` module modelled on the SI-exponent
-  discipline: typed `Money` with enforced same-currency arithmetic, a
-  user-supplied FX converter protocol, and a pluggable formatter.
-  Designed for finance simulations without dragging in live-rate data.
+- **Numba hot paths.** The A* inner loop and the warehouse vecto

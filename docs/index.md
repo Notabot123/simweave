@@ -59,7 +59,7 @@ fig.write_html("msd.html", include_plotlyjs="cdn")
 - New to the library? Read [Concepts](concepts.md) and then work
   through [Quickstart](quickstart.md).
 - Want runnable end-to-end examples? See [Worked demos](#worked-demos)
-  below — every subpackage has at least one `demos/NN_*.py` script.
+  below — every subpackage has at least one numbered script in `demos/`.
 - Looking for a specific component? The
   [module guide](modules/index.md) walks each subpackage in turn.
 - Building a frontend? See

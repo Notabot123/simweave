@@ -107,6 +107,7 @@ nav:
       - EdgeWeave integration: design/edgeweave.md
       - Packaging: design/packaging.md
       - API surface: design/api-surface.md
+      - Parameter sweeps & sensitivity: design/sweeps.md
   - API reference: api.md
 
 watch:
@@ -116,3 +117,4 @@ watch:
   - EdgeWeave.md
   - PACKAGING.md
   - SIMWEAVE_API.md
+  - SWEEP_DESIGN.md
