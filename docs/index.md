@@ -18,6 +18,11 @@ fig = sw.plot_state_trajectories(res, title="Damped MSD")
 fig.write_html("msd.html", include_plotlyjs="cdn")
 ```
 
+<iframe src="embeds/msd_states.html"
+        width="100%" height="480" frameborder="0"
+        loading="lazy"
+        title="Damped MSD trajectories"></iframe>
+
 ## Why SimWeave
 
 - **One clock, many paradigms.** Discrete events, continuous ODE
@@ -49,5 +54,4 @@ fig.write_html("msd.html", include_plotlyjs="cdn")
 SimWeave is currently 0.3.x. The public surface re-exported from
 `simweave` is considered stable; submodules may add features but are
 unlikely to break existing imports. See the
-[design notes](design/index.md) for what shipped and what is on the
-roadmap.
+[design notes](design/inde

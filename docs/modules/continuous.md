@@ -13,6 +13,16 @@ msd = sw.MassSpringDamper(m=1.0, c=0.4, k=4.0)
 res = sw.simulate(msd, t_span=(0.0, 12.0), dt=0.01, x0=np.array([1.0, 0.0]))
 ```
 
+<iframe src="../../embeds/msd_states.html"
+        width="100%" height="480" frameborder="0"
+        loading="lazy"
+        title="Damped MSD trajectories"></iframe>
+
+<iframe src="../../embeds/msd_phase.html"
+        width="100%" height="480" frameborder="0"
+        loading="lazy"
+        title="Damped MSD phase portrait"></iframe>
+
 ## Available systems
 
 - `MassSpringDamper`
@@ -35,5 +45,4 @@ call, so continuous physics share the clock with queues and agents.
 
 ::: simweave.continuous
     options:
-      show_root_heading: false
-      show_source: true
+      show_root_he

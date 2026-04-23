@@ -37,9 +37,13 @@ times   = mc.results[0].time
 sw.plot_mc_fan((times, samples), title="Displacement fan").show()
 ```
 
+<iframe src="../../embeds/mc_fan.html"
+        width="100%" height="500" frameborder="0"
+        loading="lazy"
+        title="Monte Carlo fan chart"></iframe>
+
 ## API
 
 ::: simweave.mc
     options:
-      show_root_heading: false
-      show_source: true
+      show_r

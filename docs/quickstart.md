@@ -20,6 +20,11 @@ fig = sw.plot_state_trajectories(res, title="MSD trajectories")
 fig.write_html("msd.html", include_plotlyjs="cdn")
 ```
 
+<iframe src="../embeds/msd_states.html"
+        width="100%" height="480" frameborder="0"
+        loading="lazy"
+        title="MSD state trajectories"></iframe>
+
 `simulate()` returns a [`SimulationResult`](modules/continuous.md) with
 `.time`, `.state`, `.state_labels` and `.system_name`. Plot helpers
 accept any object exposing that interface.
@@ -56,6 +61,16 @@ sw.plot_queue_length(qrec).write_html("q.html", include_plotlyjs="cdn")
 sw.plot_service_utilisation(urec).write_html("u.html", include_plotlyjs="cdn")
 ```
 
+<iframe src="../embeds/queue_length.html"
+        width="100%" height="420" frameborder="0"
+        loading="lazy"
+        title="M/M/2 buffer length"></iframe>
+
+<iframe src="../embeds/service_util.html"
+        width="100%" height="520" frameborder="0"
+        loading="lazy"
+        title="Service utilisation"></iframe>
+
 ## 3. Monte Carlo: percentile fan over replications
 
 ```python
@@ -78,6 +93,11 @@ fig = sw.plot_mc_fan((times, samples), title="MSD displacement fan")
 fig.write_html("mc.html", include_plotlyjs="cdn")
 ```
 
+<iframe src="../embeds/mc_fan.html"
+        width="100%" height="500" frameborder="0"
+        loading="lazy"
+        title="Random-walk-with-drift fan chart"></iframe>
+
 ## Where next
 
 - Read [Concepts](concepts.md) to understand the `SimEnvironment` /
@@ -85,5 +105,4 @@ fig.write_html("mc.html", include_plotlyjs="cdn")
 - Browse [Modules](modules/index.md) for module-by-module walkthroughs.
 - See the worked examples under `demos/` in the repository for end-to-end
   scripts mirroring each subpackage, including
-  [`demos/14_viz_tour.py`](https://github.com/Notabot123/simweave/blob/main/demos/14_viz_tour.py)
-  which exercises every plot helper.
+  [`demos/14_viz_tour.py`](https://github.com/
