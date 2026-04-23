@@ -59,7 +59,7 @@ def _confirm_json_roundtrip(fig: Any, name: str) -> None:
 
 
 def tour_continuous() -> list[pathlib.Path]:
-    msd = sw.MassSpringDamper(m=1.0, c=0.4, k=4.0)
+    msd = sw.MassSpringDamper(mass=1.0, damping=0.4, stiffness=4.0)
     res = sw.simulate(msd, t_span=(0.0, 12.0), dt=0.01, x0=np.array([1.0, 0.0]))
     return [
         _save(sw.plot_state_trajectories(res, title="MSD state trajectories"),
@@ -194,7 +194,7 @@ def tour_agents() -> list[pathlib.Path]:
 
 
 def tour_themes() -> list[pathlib.Path]:
-    msd = sw.MassSpringDamper(m=1.0, c=0.2, k=2.0)
+    msd = sw.MassSpringDamper(mass=1.0, damping=0.2, stiffness=2.0)
     res = sw.simulate(msd, t_span=(0.0, 16.0), dt=0.01, x0=np.array([1.5, 0.0]))
     out: list[pathlib.Path] = []
     for theme in ("light", "dark", "minimal"):
@@ -263,14 +263,4 @@ def main() -> None:
     # Confirm each figure JSON-round-trips for EdgeWeave.
     print("verifying JSON serialisability for EdgeWeave consumption ...")
     # Re-render the first figure of each section as a representative sample.
-    sample = sw.plot_state_trajectories(
-        sw.simulate(sw.MassSpringDamper(), t_span=(0.0, 1.0), dt=0.01)
-    )
-    _confirm_json_roundtrip(sample, "MSD")
-
-    index = write_index(figs)
-    print(f"done -> open {index}")
-
-
-if __name__ == "__main__":
-    main()
+  

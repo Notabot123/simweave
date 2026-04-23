@@ -10,7 +10,7 @@ SimWeave supports. Every snippet is runnable as-is once you have
 import numpy as np
 import simweave as sw
 
-msd = sw.MassSpringDamper(m=1.0, c=0.4, k=4.0)
+msd = sw.MassSpringDamper(mass=1.0, damping=0.4, stiffness=4.0)
 res = sw.simulate(msd, t_span=(0.0, 12.0), dt=0.01, x0=np.array([1.0, 0.0]))
 
 print(res.time.shape, res.state.shape)         # (1201,) (1201, 2)
@@ -79,7 +79,7 @@ import simweave as sw
 
 def scenario(seed):
     rng = np.random.default_rng(seed)
-    msd = sw.MassSpringDamper(m=1.0, c=rng.uniform(0.1, 0.6), k=4.0)
+    msd = sw.MassSpringDamper(mass=1.0, damping=rng.uniform(0.1, 0.6), stiffness=4.0)
     return sw.simulate(msd, t_span=(0.0, 8.0), dt=0.01,
                        x0=np.array([1.0, 0.0]))
 

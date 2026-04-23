@@ -36,7 +36,7 @@ def _emit(fig, name: str) -> None:
 
 
 def build_continuous() -> None:
-    msd = sw.MassSpringDamper(m=1.0, c=0.4, k=4.0)
+    msd = sw.MassSpringDamper(mass=1.0, damping=0.4, stiffness=4.0)
     res = sw.simulate(
         msd, t_span=(0.0, 12.0), dt=0.01, x0=np.array([1.0, 0.0])
     )
@@ -165,14 +165,4 @@ def build_agents() -> None:
 
 # --------------------------------------------------------------------------- #
 # Run all                                                                     #
-# --------------------------------------------------------------------------- #
-
-
-for _builder in (
-    build_continuous,
-    build_discrete,
-    build_supplychain,
-    build_monte_carlo,
-    build_agents,
-):
-    _builder()
+# -------------------------------------------------------
