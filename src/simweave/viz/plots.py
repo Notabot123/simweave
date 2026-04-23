@@ -30,7 +30,7 @@ from typing import Any, Iterable, Sequence
 
 import numpy as np
 
-from simweave.viz._plotly import require_go
+from simweave.viz import _plotly
 from simweave.viz.themes import apply_theme
 
 
@@ -62,7 +62,7 @@ def plot_state_trajectories(
     title:
         Optional figure title.
     """
-    go = require_go()
+    go = _plotly.require_go()
     time = np.asarray(result.time)
     state = np.asarray(result.state)
     labels = list(getattr(result, "state_labels", ()) or [
@@ -99,7 +99,7 @@ def plot_phase_portrait(
     title: str | None = None,
 ) -> Any:
     """Plot ``state[:, x_idx]`` vs ``state[:, y_idx]`` with a start marker."""
-    go = require_go()
+    go = _plotly.require_go()
     state = np.asarray(result.state)
     if state.shape[1] <= max(x_idx, y_idx):
         raise IndexError(
@@ -167,7 +167,7 @@ def plot_queue_length(
         A :class:`~simweave.viz.recorders.QueueLengthRecorder` (or anything
         exposing ``.times`` and ``.lengths``).
     """
-    go = require_go()
+    go = _plotly.require_go()
     times = np.asarray(recorder.times)
     lengths = np.asarray(recorder.lengths)
     qname = getattr(recorder.queue, "name", "queue") if hasattr(recorder, "queue") else "queue"
@@ -203,7 +203,7 @@ def plot_service_utilisation(
     recorder:
         A :class:`~simweave.viz.recorders.ServiceUtilisationRecorder`.
     """
-    go = require_go()
+    go = _plotly.require_go()
     times = np.asarray(recorder.times)
     util = np.asarray(recorder.utilisation)
     busy = np.asarray(recorder.busy_time)  # (T, n_channels)
@@ -274,7 +274,7 @@ def plot_warehouse_stock(
         If True, draws a horizontal dashed line at each SKU's reorder
         point in the same colour family as its stock trace.
     """
-    go = require_go()
+    go = _plotly.require_go()
     times = np.asarray(recorder.times)
     stock = np.asarray(recorder.stock)  # (T, n_skus)
     names = list(recorder.sku_names)
@@ -384,7 +384,7 @@ def plot_mc_fan(
     show_mean:
         If True, overlays the per-time mean as a thin dashed line.
     """
-    go = require_go()
+    go = _plotly.require_go()
     t, samples = _coerce_mc_input(mc_or_array, times)
 
     pct = sorted(float(p) for p in percentiles)
@@ -516,7 +516,7 @@ def plot_agent_path(
     show_graph:
         If True, draws faint lines for every edge of the graph.
     """
-    go = require_go()
+    go = _plotly.require_go()
     g = graph if graph is not None else getattr(agent, "graph", None)
 
     history: Iterable[tuple[float, Any]] = getattr(agent, "history", []) or []

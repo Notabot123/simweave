@@ -90,8 +90,8 @@ def tour_discrete() -> list[pathlib.Path]:
     urec = sw.ServiceUtilisationRecorder(svc, name="svc_util")
 
     env = sw.SimEnvironment(dt=0.1, end=200.0)
-    env.register(gen); env.register(svc); env.register(sink)
-    env.register(qrec); env.register(urec)
+    for proc in (gen, svc, sink, qrec, urec):
+        env.register(proc)
     env.run()
 
     return [
@@ -122,7 +122,8 @@ def tour_supplychain() -> list[pathlib.Path]:
     rec = sw.WarehouseStockRecorder(wh, name="store_stock")
 
     env = sw.SimEnvironment(dt=1.0, end=80.0)
-    env.register(wh); env.register(rec)
+    env.register(wh)
+    env.register(rec)
     rng = np.random.default_rng(0)
     for t in range(80):
         env.run(until=float(t + 1))
