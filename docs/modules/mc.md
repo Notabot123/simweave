@@ -46,4 +46,5 @@ sw.plot_mc_fan((times, samples), title="Displacement fan").show()
 
 ::: simweave.mc
     options:
-      show_r
+      show_root_heading: false
+      show_source: true

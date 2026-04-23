@@ -109,4 +109,7 @@ figure under `demos/viz_out/`, and produces an `index.html`.
 
 ## API
 
-::: simweave.
+::: simweave.viz
+    options:
+      show_root_heading: false
+      show_source: true

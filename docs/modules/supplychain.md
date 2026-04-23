@@ -56,4 +56,5 @@ sw.plot_warehouse_stock(rec).write_html("stock.html",
 
 ::: simweave.supplychain
     options:
-  
+      show_root_heading: false
+      show_source: true

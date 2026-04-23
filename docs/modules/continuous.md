@@ -45,4 +45,5 @@ call, so continuous physics share the clock with queues and agents.
 
 ::: simweave.continuous
     options:
-      show_root_he
+      show_root_heading: false
+      show_source: true

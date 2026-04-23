@@ -48,13 +48,16 @@ sw.plot_agent_path(agent, graph=g).write_html("path.html",
 `Compass` is a small enum for cardinal-direction logic if you need it
 when authoring custom agent behaviours.
 
-## API
+## API: `simweave.agents`
 
 ::: simweave.agents
     options:
       show_root_heading: false
       show_source: true
 
+## API: `simweave.spatial`
+
 ::: simweave.spatial
     options:
- 
+      show_root_heading: false
+      show_source: true

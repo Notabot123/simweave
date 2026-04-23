@@ -45,4 +45,5 @@ full snippet. The recorded outputs render as:
 
 ::: simweave.discrete
     options:
-      show_root_hea
+      show_root_heading: false
+      show_source: true
