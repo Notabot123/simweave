@@ -70,8 +70,15 @@ fig.write_html("msd.html", include_plotlyjs="cdn")
 
 The [`demos/`](https://github.com/Notabot123/simweave/tree/main/demos)
 folder in the repository is the fastest way to see SimWeave end-to-end.
-Every script is self-contained and runnable as `python demos/NN_*.py`
-once you have `pip install simweave[dev]` (or the relevant extra).
+Every script is self-contained — pick one and run it directly, e.g.
+
+```bash
+pip install simweave[dev]
+python demos/01_simple_queue.py
+```
+
+The two-digit prefix is just a stable ordering hint; the scripts have
+no dependency on each other.
 
 | Demo                                       | Topic                                   |
 | ------------------------------------------ | --------------------------------------- |
