@@ -9,7 +9,7 @@ import simweave as sw
 
 def scenario(seed):
     rng = np.random.default_rng(seed)
-    msd = sw.MassSpringDamper(m=1.0, c=rng.uniform(0.1, 0.6), k=4.0)
+    msd = sw.MassSpringDamper(mass=1.0, damping=rng.uniform(0.1, 0.6), stiffness=4.0)
     return sw.simulate(msd, t_span=(0.0, 8.0), dt=0.01,
                        x0=np.array([1.0, 0.0]))
 
@@ -36,6 +36,11 @@ samples = np.stack([r.state[:, 0] for r in mc.results])
 times   = mc.results[0].time
 sw.plot_mc_fan((times, samples), title="Displacement fan").show()
 ```
+
+<iframe src="../../embeds/mc_fan.html"
+        width="100%" height="500" frameborder="0"
+        loading="lazy"
+        title="Monte Carlo fan chart"></iframe>
 
 ## API
 

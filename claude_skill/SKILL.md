@@ -97,7 +97,7 @@ print(svc.completed_count, svc.utilisation(env.clock.t))
 import numpy as np
 import simweave as sw
 
-msd = sw.MassSpringDamper(m=1.0, c=0.4, k=4.0)
+msd = sw.MassSpringDamper(mass=1.0, damping=0.4, stiffness=4.0)
 res = sw.simulate(msd, t_span=(0.0, 12.0), dt=0.01, x0=np.array([1.0, 0.0]))
 res.time, res.state, res.state_labels  # ready for plotting
 ```
@@ -282,8 +282,4 @@ re-themeing on the JS side just requires merging a layout patch.
    calls so themes apply consistently and EdgeWeave gets predictable
    structure.
 3. Wire recorders before `env.run()` and place them after the entities
-   they sample.
-4. Use `MCResult.quantile(...)` for percentiles rather than re-computing
-   on `mc.samples` — the helper handles the `axis=0` convention.
-5. When unsure of a method, point the user at `SIMWEAVE_API.md` rather
-   than guessing — the API is small enough to read in full.
+   th

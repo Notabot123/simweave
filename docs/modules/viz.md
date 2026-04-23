@@ -63,6 +63,45 @@ parsed = json.loads(fig.to_json())
 assert "data" in parsed and "layout" in parsed
 ```
 
+## Gallery
+
+Live output of every helper, regenerated on each docs build:
+
+<iframe src="../../embeds/msd_states.html"
+        width="100%" height="480" frameborder="0"
+        loading="lazy"
+        title="State trajectories"></iframe>
+
+<iframe src="../../embeds/msd_phase.html"
+        width="100%" height="480" frameborder="0"
+        loading="lazy"
+        title="Phase portrait"></iframe>
+
+<iframe src="../../embeds/queue_length.html"
+        width="100%" height="420" frameborder="0"
+        loading="lazy"
+        title="Queue length"></iframe>
+
+<iframe src="../../embeds/service_util.html"
+        width="100%" height="520" frameborder="0"
+        loading="lazy"
+        title="Service utilisation"></iframe>
+
+<iframe src="../../embeds/warehouse_stock.html"
+        width="100%" height="500" frameborder="0"
+        loading="lazy"
+        title="Warehouse stock"></iframe>
+
+<iframe src="../../embeds/mc_fan.html"
+        width="100%" height="500" frameborder="0"
+        loading="lazy"
+        title="Monte Carlo fan"></iframe>
+
+<iframe src="../../embeds/agent_path.html"
+        width="100%" height="560" frameborder="0"
+        loading="lazy"
+        title="Agent path"></iframe>
+
 ## End-to-end demo
 
 `demos/14_viz_tour.py` exercises every helper, writes one HTML per

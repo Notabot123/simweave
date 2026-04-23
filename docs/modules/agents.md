@@ -40,15 +40,22 @@ sw.plot_agent_path(agent, graph=g).write_html("path.html",
                                               include_plotlyjs="cdn")
 ```
 
+<iframe src="../../embeds/agent_path.html"
+        width="100%" height="560" frameborder="0"
+        loading="lazy"
+        title="A* agent traversal over an 8x12 grid"></iframe>
+
 `Compass` is a small enum for cardinal-direction logic if you need it
 when authoring custom agent behaviours.
 
-## API
+## API: `simweave.agents`
 
 ::: simweave.agents
     options:
       show_root_heading: false
       show_source: true
+
+## API: `simweave.spatial`
 
 ::: simweave.spatial
     options:

@@ -47,6 +47,11 @@ sw.plot_warehouse_stock(rec).write_html("stock.html",
                                         include_plotlyjs="cdn")
 ```
 
+<iframe src="../../embeds/warehouse_stock.html"
+        width="100%" height="500" frameborder="0"
+        loading="lazy"
+        title="Warehouse stock vs reorder points"></iframe>
+
 ## API
 
 ::: simweave.supplychain

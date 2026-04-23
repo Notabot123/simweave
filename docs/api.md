@@ -16,15 +16,72 @@ the API for the first time.
       members_order: source
       show_source: false
 
-## Subpackages
+## simweave.core
 
 ::: simweave.core
+    options:
+      show_root_heading: true
+      show_source: false
+
+## simweave.continuous
+
 ::: simweave.continuous
+    options:
+      show_root_heading: true
+      show_source: false
+
+## simweave.discrete
+
 ::: simweave.discrete
+    options:
+      show_root_heading: true
+      show_source: false
+
+## simweave.spatial
+
 ::: simweave.spatial
+    options:
+      show_root_heading: true
+      show_source: false
+
+## simweave.agents
+
 ::: simweave.agents
+    options:
+      show_root_heading: true
+      show_source: false
+
+## simweave.supplychain
+
 ::: simweave.supplychain
+    options:
+      show_root_heading: true
+      show_source: false
+
+## simweave.mc
+
 ::: simweave.mc
+    options:
+      show_root_heading: true
+      show_source: false
+
+## simweave.currency
+
 ::: simweave.currency
+    options:
+      show_root_heading: true
+      show_source: false
+
+## simweave.units
+
 ::: simweave.units
+    options:
+      show_root_heading: true
+      show_source: false
+
+## simweave.viz
+
 ::: simweave.viz
+    options:
+      show_root_heading: true
+      show_source: false

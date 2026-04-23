@@ -10,7 +10,7 @@ SimWeave supports. Every snippet is runnable as-is once you have
 import numpy as np
 import simweave as sw
 
-msd = sw.MassSpringDamper(m=1.0, c=0.4, k=4.0)
+msd = sw.MassSpringDamper(mass=1.0, damping=0.4, stiffness=4.0)
 res = sw.simulate(msd, t_span=(0.0, 12.0), dt=0.01, x0=np.array([1.0, 0.0]))
 
 print(res.time.shape, res.state.shape)         # (1201,) (1201, 2)
@@ -19,6 +19,11 @@ print(res.state_labels)                        # ('x', 'v')
 fig = sw.plot_state_trajectories(res, title="MSD trajectories")
 fig.write_html("msd.html", include_plotlyjs="cdn")
 ```
+
+<iframe src="../embeds/msd_states.html"
+        width="100%" height="480" frameborder="0"
+        loading="lazy"
+        title="MSD state trajectories"></iframe>
 
 `simulate()` returns a [`SimulationResult`](modules/continuous.md) with
 `.time`, `.state`, `.state_labels` and `.system_name`. Plot helpers
@@ -56,6 +61,16 @@ sw.plot_queue_length(qrec).write_html("q.html", include_plotlyjs="cdn")
 sw.plot_service_utilisation(urec).write_html("u.html", include_plotlyjs="cdn")
 ```
 
+<iframe src="../embeds/queue_length.html"
+        width="100%" height="420" frameborder="0"
+        loading="lazy"
+        title="M/M/2 buffer length"></iframe>
+
+<iframe src="../embeds/service_util.html"
+        width="100%" height="520" frameborder="0"
+        loading="lazy"
+        title="Service utilisation"></iframe>
+
 ## 3. Monte Carlo: percentile fan over replications
 
 ```python
@@ -64,7 +79,7 @@ import simweave as sw
 
 def scenario(seed):
     rng = np.random.default_rng(seed)
-    msd = sw.MassSpringDamper(m=1.0, c=rng.uniform(0.1, 0.6), k=4.0)
+    msd = sw.MassSpringDamper(mass=1.0, damping=rng.uniform(0.1, 0.6), stiffness=4.0)
     return sw.simulate(msd, t_span=(0.0, 8.0), dt=0.01,
                        x0=np.array([1.0, 0.0]))
 
@@ -78,6 +93,11 @@ fig = sw.plot_mc_fan((times, samples), title="MSD displacement fan")
 fig.write_html("mc.html", include_plotlyjs="cdn")
 ```
 
+<iframe src="../embeds/mc_fan.html"
+        width="100%" height="500" frameborder="0"
+        loading="lazy"
+        title="Random-walk-with-drift fan chart"></iframe>
+
 ## Where next
 
 - Read [Concepts](concepts.md) to understand the `SimEnvironment` /
@@ -85,5 +105,5 @@ fig.write_html("mc.html", include_plotlyjs="cdn")
 - Browse [Modules](modules/index.md) for module-by-module walkthroughs.
 - See the worked examples under `demos/` in the repository for end-to-end
   scripts mirroring each subpackage, including
-  [`demos/14_viz_tour.py`](https://github.com/Notabot123/simweave/blob/main/demos/14_viz_tour.py)
+  [`demos/14_viz_tour.py`](https://github.com/Notabot123/simweave/blob/main/demos/14_viz_tour.py),
   which exercises every plot helper.

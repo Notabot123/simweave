@@ -16,4 +16,5 @@ the primitives below.
 | `simweave.units`        | [Units](units.md)                               | SI quantity helpers                                  |
 | `simweave.viz`          | [Visualisation](viz.md)                         | Plotly plot helpers, themes, recorders               |
 
-For the fully-rendered import graph, see the [API reference](../api.md).
+For the fully-rendered import graph, see the [API reference](../api.md),
+which is auto-generated from the live source tree by mkdocstrings.

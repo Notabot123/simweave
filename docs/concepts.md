@@ -78,5 +78,5 @@ A typical SimWeave program looks like this:
 3. Construct a `SimEnvironment`, register everything, call `run()`.
 4. Read `entity.history` / `recorder.times` etc. or hand them to a plot
    helper for visualisation.
-5. Wrap steps 1–4 in a function and pass it to `run_monte_carlo` to get
-   a percentile fan around your KPI.
+5. Wrap steps 1–4 in a function taking a seed, and hand it to
+   `run_monte_carlo` when you want an ensemble.

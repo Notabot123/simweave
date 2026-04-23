@@ -61,6 +61,9 @@ markdown_extensions:
 plugins:
   - search
   - include-markdown
+  - gen-files:
+      scripts:
+        - scripts/gen_embeds.py
   - mkdocstrings:
       default_handler: python
       handlers:
@@ -113,9 +116,3 @@ watch:
   - EdgeWeave.md
   - PACKAGING.md
   - SIMWEAVE_API.md
-  - README.md
-
-extra:
-  social:
-    - icon: fontawesome/brands/github
-      link: https://github.com/Notabot123/simweave

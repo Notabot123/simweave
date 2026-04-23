@@ -28,7 +28,18 @@ service_time()           # callable per draw
 
 ## Example: M/M/2
 
-See the [Quickstart](../quickstart.md#2-discrete-an-mmc-queue).
+See the [Quickstart](../quickstart.md#2-discrete-an-mmc-queue) for the
+full snippet. The recorded outputs render as:
+
+<iframe src="../../embeds/queue_length.html"
+        width="100%" height="420" frameborder="0"
+        loading="lazy"
+        title="M/M/2 buffer length"></iframe>
+
+<iframe src="../../embeds/service_util.html"
+        width="100%" height="520" frameborder="0"
+        loading="lazy"
+        title="Service utilisation (2 channels)"></iframe>
 
 ## API
 

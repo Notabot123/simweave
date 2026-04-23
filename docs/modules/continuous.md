@@ -9,9 +9,19 @@ systems used throughout the demos and tests.
 import numpy as np
 import simweave as sw
 
-msd = sw.MassSpringDamper(m=1.0, c=0.4, k=4.0)
+msd = sw.MassSpringDamper(mass=1.0, damping=0.4, stiffness=4.0)
 res = sw.simulate(msd, t_span=(0.0, 12.0), dt=0.01, x0=np.array([1.0, 0.0]))
 ```
+
+<iframe src="../../embeds/msd_states.html"
+        width="100%" height="480" frameborder="0"
+        loading="lazy"
+        title="Damped MSD trajectories"></iframe>
+
+<iframe src="../../embeds/msd_phase.html"
+        width="100%" height="480" frameborder="0"
+        loading="lazy"
+        title="Damped MSD phase portrait"></iframe>
 
 ## Available systems
 
