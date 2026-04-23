@@ -1,4 +1,4 @@
-from simeng.core.scheduler import EventQueue
+from simweave.core.scheduler import EventQueue
 
 
 def test_scheduled_events_fire_in_time_order():
@@ -22,7 +22,9 @@ def test_peek_time_reports_next():
 
 def test_cancelled_events_are_skipped():
     eq = EventQueue()
-    evt1 = eq.schedule(1.0, lambda: (_ for _ in ()).throw(RuntimeError("should not fire")))
+    evt1 = eq.schedule(
+        1.0, lambda: (_ for _ in ()).throw(RuntimeError("should not fire"))
+    )
     eq.schedule(2.0, lambda: None)
     eq.cancel(evt1)
     fired = list(eq.pop_due(5.0))

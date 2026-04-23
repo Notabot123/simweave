@@ -1,7 +1,7 @@
 import pytest
 
-from simeng.core.environment import SimEnvironment
-from simeng.core.entity import Entity
+from simweave.core.environment import SimEnvironment
+from simweave.core.entity import Entity
 
 
 class TickCounter(Entity):

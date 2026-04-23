@@ -17,8 +17,8 @@ import _bootstrap  # noqa: F401
 
 import numpy as np
 
-from simeng.continuous.solver import simulate
-from simeng.continuous.systems import MassSpringDamper
+from simweave.continuous.solver import simulate
+from simweave.continuous.systems import MassSpringDamper
 
 
 def describe(label: str, m: float, c: float, k: float) -> None:

@@ -1,6 +1,6 @@
 import pytest
 
-from simeng.core.clock import Clock
+from simweave.core.clock import Clock
 
 
 def test_clock_defaults():

@@ -1,11 +1,11 @@
 import numpy as np
 
-from simeng.core.entity import Entity
-from simeng.core.environment import SimEnvironment
-from simeng.discrete.properties import EntityProperties, deterministic
-from simeng.discrete.queues import Queue
-from simeng.discrete.resources import Resource, ResourcePool
-from simeng.discrete.services import Service, ArrivalGenerator
+from simweave.core.entity import Entity
+from simweave.core.environment import SimEnvironment
+from simweave.discrete.properties import EntityProperties, deterministic
+from simweave.discrete.queues import Queue
+from simweave.discrete.resources import Resource, ResourcePool
+from simweave.discrete.services import Service, ArrivalGenerator
 
 
 def _mk_item(name, service_time=1.0):
@@ -61,8 +61,7 @@ def test_resource_pool_limits_concurrency():
 
     sink = Queue(maxlen=20, name="sink")
     # capacity 4 but only 2 resources -> at most 2 concurrent
-    svc = Service(capacity=4, buffer_size=20, next_q=sink,
-                  resources=pool, name="svc")
+    svc = Service(capacity=4, buffer_size=20, next_q=sink, resources=pool, name="svc")
 
     env = SimEnvironment(dt=1.0, end=5.0)
     env.register(pool)
@@ -79,8 +78,9 @@ def test_resource_pool_limits_concurrency():
 
 def test_arrival_generator_feeds_service():
     sink = Queue(maxlen=100, name="sink")
-    svc = Service(capacity=1, buffer_size=100, next_q=sink,
-                  default_service_time=1.0, name="svc")
+    svc = Service(
+        capacity=1, buffer_size=100, next_q=sink, default_service_time=1.0, name="svc"
+    )
 
     def factory(env):
         return _mk_item(f"arrival_{env.clock.t}", service_time=1.0)

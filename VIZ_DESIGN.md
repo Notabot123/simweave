@@ -1,153 +1,188 @@
-# Design note: `simeng.viz`
+# Design note: `simweave.viz`
 
-Status: **proposal**.
-Purpose: give users one-liner plotting helpers that turn the standard
-simulation outputs — `SimulationResult`, `MCResult`, `Queue`/`Service`
-histories, agent `Agent.history`, `Warehouse` stock trajectories — into
-the plots a simulation engineer reaches for most often.
-
----
-
-## Extras vs separate library — my recommendation
-
-**Ship as a submodule under a `simeng[viz]` extra first.** Split into
-`simeng-viz` only if specific triggers fire later.
-
-### Why extras first
-
-1. **Cohesion.** Every plot helper touches simeng's internal data
-   models (`SimulationResult.state`, `Service.utilisation(…)`, etc.).
-   Splitting them means duplicating those types in a "protocol" layer
-   or pulling simeng as a dep of the viz package — either way you pay
-   for the split.
-2. **Discovery.** `pip install simeng[viz]` is one line and users
-   already know simeng. A separate `simeng-viz` on PyPI adds a
-   discovery step and a version-pinning puzzle (does `simeng-viz 0.2`
-   work with `simeng 0.1`?).
-3. **matplotlib is already optional.** `simeng[plot]` exists already.
-   Nothing forces headless users to install it. So the core stays
-   slim regardless.
-4. **Low initial surface.** Five or six plot functions will not
-   justify an independent release cadence, an independent CI, or its
-   own docs site.
-
-### Triggers that would justify splitting it out later
-
-- You want **multiple viz backends** (matplotlib, plotly, bokeh,
-  altair) as independent packages. An extras matrix with five
-  backends gets ugly; separate backend packages (`simeng-viz-plotly`,
-  `simeng-viz-mpl`) keep install graphs clean.
-- A dedicated **viz team** wants to iterate on their own release
-  schedule.
-- The viz code grows a **genuine dependency footprint** (pandas,
-  bokeh server components, xarray, panel) that core simeng users
-  shouldn't incur.
-- You want to produce **interactive dashboards** (panel / streamlit /
-  dash) which pull in a web runtime. That absolutely belongs in a
-  separate package.
-
-None of those triggers apply yet. Start small.
+Status: **implemented in 0.3 (Plotly-first; matplotlib not in scope)**.
+Original purpose: give users one-liner plotting helpers that turn the standard
+simulation outputs — `SimulationResult`, `MCResult`, queue/service histories,
+agent traversal, `Warehouse` stock trajectories — into the plots a simulation
+engineer reaches for most often, **and** make every figure JSON-serialisable
+so EdgeWeave (the JS frontend) can consume them directly via `fig.to_json()`.
 
 ---
 
-## Proposed surface (`simeng.viz`)
+## Extras vs separate library — decision
 
-Convention: every function **returns the `matplotlib.axes.Axes`** (or a
-list of axes) so users can further customise. Each also accepts an
-optional `ax=` argument to plug into existing figures.
+Shipped as a submodule under a `simweave[viz]` extra. The extra pulls
+`plotly>=5.18`. matplotlib remains available via the older `simweave[plot]`
+extra but no helpers in `simweave.viz` depend on it.
+
+The triggers for splitting `simweave-viz` into its own package (multiple
+backends, dashboard runtime, dedicated viz team, heavy deps like
+pandas/bokeh/panel) still do not apply.
+
+---
+
+## Shipped surface (`simweave.viz`)
+
+Convention: every helper **returns a `plotly.graph_objects.Figure`**. The
+caller can mutate, restyle, or `fig.to_json()` it. All helpers accept an
+optional `theme=` argument (string name of a registered theme) and an
+optional `title=` argument.
+
+Re-exported from the top-level `simweave` namespace as well, so:
 
 ```python
-from simeng.viz import (
-    plot_state_trajectories,
-    plot_phase_portrait,
-    plot_queue_length,
-    plot_service_utilisation,
-    plot_mc_fan,
-    plot_warehouse_stock,
-    plot_agent_path,
+import simweave as sw
+
+fig = sw.plot_state_trajectories(res, title="MSD")
+fig.write_html("msd.html", include_plotlyjs="cdn")
+blob = fig.to_json()                    # EdgeWeave consumption path
+```
+
+Public names exposed by `simweave.viz` (and re-exported on `simweave`):
+
+| Name | Kind | Notes |
+| ---- | ---- | ----- |
+| `Theme` | dataclass | Frozen record: name + plotly template + palette + layout overrides |
+| `apply_theme(fig, theme)` | helper | Mutates a figure in place to honour a theme |
+| `available_themes()` | helper | Lists registered theme names |
+| `get_theme(name)` / `get_default_theme()` | helpers | Lookup |
+| `set_default_theme(name)` | helper | Switch the default for new figures |
+| `register_theme(name, template, palette, layout_overrides, overwrite=False)` | helper | Add a brand theme |
+| `QueueLengthRecorder(queue)` | Entity | Time-samples `len(queue)` each tick |
+| `ServiceUtilisationRecorder(service)` | Entity | Per-channel busy_time + aggregate util |
+| `WarehouseStockRecorder(warehouse)` | Entity | Per-SKU stock vector each tick |
+| `plot_state_trajectories(result, channels=None, theme=None, title=None)` | plot | Continuous state vs time |
+| `plot_phase_portrait(result, x_idx=0, y_idx=1, theme=None, title=None)` | plot | 2-state phase plane with start/end markers |
+| `plot_queue_length(recorder, theme=None, title=None)` | plot | Step plot (`line.shape="hv"`) |
+| `plot_service_utilisation(recorder, theme=None, title=None)` | plot | Aggregate util on y1, per-channel busy_time on y2 |
+| `plot_warehouse_stock(recorder, sku_indices=None, theme=None, title=None, show_reorder_points=True)` | plot | Per-SKU lines + dashed reorder horizontals |
+| `plot_mc_fan(mc_or_array, times=None, percentiles=(5,25,50,75,95), theme=None, title=None, show_mean=True)` | plot | Percentile fan chart; accepts `MCResult`, 2-D ndarray, or `(times, samples)` tuple |
+| `plot_agent_path(agent, graph=None, show_graph=True, theme=None, title=None)` | plot | Agent traversal over a 2-D graph |
+| `have_plotly()` | helper | Boolean probe; safe to call without the extra |
+
+### Theme system
+
+Built-in themes:
+
+- `light` (default) — `plotly_white` template + Okabe-Ito palette
+- `dark` — `plotly_dark` template + Okabe-Ito palette
+- `presentation` — `presentation` template (large fonts)
+- `minimal` — `simple_white` template + greyscale palette
+
+Brand themes are added at import time without forking:
+
+```python
+import simweave as sw
+sw.register_theme(
+    "edgeweave",
+    template="plotly_white",
+    palette=["#1c5d99", "#f49d37", "#0b132b", "#5fad56"],
+    layout_overrides={"font": {"family": "Inter, system-ui"}},
 )
+sw.set_default_theme("edgeweave")
 ```
 
-### `plot_state_trajectories(result, channels=None, ax=None)`
+### Recorders
 
-Line plot of each state channel vs. `result.time`, labelled with
-`result.state_labels`. One-liner on top of `SimulationResult`.
+Recorders are `Entity` subclasses. They snapshot at registration **and** at
+the end of every tick, so the resulting time vector starts at `env.clock.start`.
+Recommended: register the recorder *after* the entity it observes, so the
+recorder's tick runs after the recorded entity has advanced.
 
 ```python
-from simeng.viz import plot_state_trajectories
-plot_state_trajectories(res)               # all channels on shared axes
-plot_state_trajectories(res, channels=(0,)) # just the first
+env.register(svc)
+env.register(qrec)            # records svc's queue
 ```
 
-### `plot_phase_portrait(result, x_idx=0, y_idx=1, ax=None)`
+### EdgeWeave consumption
 
-For 2-state systems (MSD, pendulum, RLC). Plots state[x] vs state[y]
-with an arrow showing time direction and a marker at the start state.
+Every figure round-trips through JSON cleanly:
 
-### `plot_queue_length(queue, env, ax=None)`
+```python
+import json
+blob = fig.to_json()                 # plotly's own serialiser
+parsed = json.loads(blob)
+assert "data" in parsed and "layout" in parsed
+```
 
-Reads a `Queue`'s time-sampled length history and plots it. Requires
-the queue was registered with a `SimEnvironment` (for the time axis).
-
-### `plot_service_utilisation(service, env, ax=None)`
-
-Bar + line combo — bar shows per-channel utilisation, line shows the
-aggregate running mean over time. Handy for multi-channel `Service`.
-
-### `plot_mc_fan(mc_result, percentiles=(5, 25, 50, 75, 95), ax=None)`
-
-Given an `MCResult` where each sample is a time series, draws shaded
-percentile bands around the median. The canonical "fan chart" used in
-stochastic finance and epidemiology.
-
-### `plot_warehouse_stock(warehouse, ax=None)`
-
-Multi-line plot of stock levels per SKU over time, with dashed
-horizontal lines at the reorder points.
-
-### `plot_agent_path(agent, graph=None, ax=None)`
-
-For grid-like graphs, renders the graph as a light grid + the agent's
-traversal as a coloured path with task-completion markers.
+`tests/test_viz.py` exercises this for all seven helpers.
 
 ---
 
-## What `simeng.viz` will **not** do
+## What `simweave.viz` does **not** do
 
-- **No live/streaming dashboards.** That belongs in a separate
-  `simeng-dashboard` package or a notebook pattern.
-- **No 3-D rendering.** Engineering users sometimes want 3-D trajectories;
-  keep that on the roadmap but not in first-cut.
-- **No non-matplotlib backends.** Intentional to keep scope small. If
-  and when plotly is needed, ship a parallel `simeng.viz.plotly`
-  subpackage and keep the function signatures identical so swapping is
-  trivial.
-- **No custom "simeng theme".** Use matplotlib defaults; users have
-  their own styles.
+- **No live/streaming dashboards.** Belongs in a separate
+  `simweave-dashboard` package or notebook pattern.
+- **No 3-D rendering.** On the roadmap but not in first-cut.
+- **No matplotlib backend.** First-cut Plotly-only, both for interactivity
+  and because EdgeWeave needs a single serialisation format.
+- **No automatic registration of recorders.** Users explicitly construct
+  and register recorders so simulations don't carry a cost they didn't ask
+  for.
 
 ---
 
-## Open questions for Stuart
+## Resolved open questions
 
-1. Do you want the first cut to target **journal-style static figures**
-   (good for reports / PDFs) or **notebook-interactive** (inline, with
-   the ability to zoom)? Matplotlib does both, but default sizing and
-   DPI differ.
-2. For `plot_mc_fan`, should it accept a **raw `(n_runs, n_time)`
-   ndarray** as well as an `MCResult`? (Likely yes — makes testing
-   easier and lets users bring their own Monte Carlo.)
-3. Any specific plot you want that I haven't listed? The current list
-   reflects the demos in `demos/`. EdgeWeave may have its own "must
-   show" plots worth codifying here.
+1. **Static vs interactive?** Interactive (Plotly), because EdgeWeave consumes
+   the JSON. Static export remains available via `fig.write_image(...)`
+   if `kaleido` is installed.
+2. **`plot_mc_fan` input flexibility?** Yes. Accepts an `MCResult`, a raw
+   2-D ndarray of shape `(n_runs, n_time)`, or a `(times, samples)` tuple.
+3. **Plot list completeness?** The seven helpers cover the demos in
+   `demos/` plus the agent path. Additional plot types (utilisation
+   heatmaps, multi-warehouse stock comparisons, MC scatter matrices) are
+   easy follow-ups but not in 0.3.
+4. **Theming?** Decided in favour of a small `Theme` registry over relying
+   on global Plotly templates, so brand colours can be wired in one call
+   without touching `plotly.io.templates`.
 
 ---
 
-## Rough schedule (best-endeavours, not a commitment)
+## Implementation notes
 
-Following the pattern we've been using:
+Source layout (all under `src/simweave/viz/`):
 
-- **0.2**: `simeng.currency` per `CURRENCY_DESIGN.md`.
-- **0.3**: `simeng.viz` first-cut (state trajectories, phase portrait,
-  queue length, utilisation, MC fan, warehouse stock, agent path).
-- **0.4+**: optional plotly backend, optional 3-D, revisit whether a
-  split-out package makes sense by then.
+- `_plotly.py` — lazy import of `plotly.graph_objects` with friendly
+  `ImportError` (`pip install simweave[viz]`). `have_plotly()` is a
+  boolean probe that never raises.
+- `themes.py` — `Theme` dataclass, registry, `apply_theme(fig, theme)`,
+  built-in themes, default-theme accessors.
+- `recorders.py` — `_Recorder` base + `QueueLengthRecorder`,
+  `ServiceUtilisationRecorder`, `WarehouseStockRecorder`. All
+  pure-numpy, no plotly dependency.
+- `plots.py` — the seven plot helpers. Each calls `require_go()` to
+  obtain the plotly module lazily, builds a `Figure`, applies the
+  selected theme, and returns it.
+- `__init__.py` — explicit re-exports.
+
+Top-level `simweave/__init__.py` re-exports every viz public name and adds
+them to `__all__`. Importing `simweave` does **not** import plotly; only
+the plot helpers do, and they raise a clear install hint if the extra
+isn't present.
+
+`pyproject.toml` carries `viz = ["plotly>=5.18"]`; `dev` includes plotly
+so `tests/test_viz.py` runs in CI. Tests gate plotly-dependent assertions
+behind `pytest.importorskip("plotly")` so the no-extras test path stays
+green.
+
+`demos/14_viz_tour.py` produces one HTML per helper plus an `index.html`
+under `demos/viz_out/`. It also confirms a JSON round-trip for the
+EdgeWeave consumption path.
+
+A reusable Claude skill describing the public surface lives under
+`claude_skill/SKILL.md` (installed locally to `~/.claude/skills/simweave/`).
+
+---
+
+## Schedule (delivered)
+
+- **0.2**: `simweave.currency` per `CURRENCY_DESIGN.md` — shipped.
+- **0.3**: `simweave.viz` first-cut — **shipped on `feature/viz`** (state
+  trajectories, phase portrait, queue length, service utilisation,
+  warehouse stock, Monte Carlo fan chart, agent path; theme registry; three
+  recorders; demo tour; tests; Claude skill).
+
+Possible 0.4 follow-ups (not committed): static-image export helper,
+utilisation heatmap, multi-warehouse comparison plot, optional matplotlib
+backend behind `simweave.viz.mpl`.

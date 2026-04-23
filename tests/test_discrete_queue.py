@@ -1,9 +1,9 @@
 import pytest
 
-from simeng.core.entity import Entity
-from simeng.core.environment import SimEnvironment
-from simeng.discrete.properties import EntityProperties, exponential
-from simeng.discrete.queues import Queue, PriorityQueue
+from simweave.core.entity import Entity
+from simweave.core.environment import SimEnvironment
+from simweave.discrete.properties import EntityProperties, exponential
+from simweave.discrete.queues import Queue, PriorityQueue
 
 
 def _item(name, balk=None, renege=None):
@@ -51,7 +51,7 @@ def test_forward_blocks_when_downstream_full():
     q1 = Queue(maxlen=2, next_q=q2, name="q1")
     q1.enqueue(_item("a"))
     q1.enqueue(_item("b"))
-    assert q1.forward() is True   # q2 now has 1
+    assert q1.forward() is True  # q2 now has 1
     assert q1.forward() is False  # blocked
     assert len(q1) == 1
     assert len(q2) == 1

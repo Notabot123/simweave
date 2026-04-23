@@ -15,10 +15,10 @@ import _bootstrap  # noqa: F401  (adds src/ to sys.path when not pip-installed)
 
 import numpy as np
 
-from simeng.core.entity import Entity
-from simeng.core.environment import SimEnvironment
-from simeng.supplychain.inventory import InventoryItems
-from simeng.supplychain.warehouse import Warehouse
+from simweave.core.entity import Entity
+from simweave.core.environment import SimEnvironment
+from simweave.supplychain.inventory import InventoryItems
+from simweave.supplychain.warehouse import Warehouse
 
 
 def _inv(stock, rop, batch, lt, unit_cost, n=5):

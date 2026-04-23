@@ -1,15 +1,16 @@
 import pytest
 
-from simeng.spatial.graph import Graph, grid_graph
-from simeng.agents.compass import Compass
-from simeng.agents.routing import a_star, dijkstra, manhattan, NoPathError
-from simeng.agents.agent import Agent
-from simeng.core.environment import SimEnvironment
+from simweave.spatial.graph import Graph, grid_graph
+from simweave.agents.compass import Compass
+from simweave.agents.routing import a_star, dijkstra, manhattan, NoPathError
+from simweave.agents.agent import Agent
+from simweave.core.environment import SimEnvironment
 
 
 # ---------------------------------------------------------------------------
 # Compass
 # ---------------------------------------------------------------------------
+
 
 def test_compass_quantises_to_allowed_angles():
     c = Compass(points=4)
@@ -36,6 +37,7 @@ def test_compass_clockwise_wraps():
 # ---------------------------------------------------------------------------
 # Routing
 # ---------------------------------------------------------------------------
+
 
 def test_astar_on_simple_graph():
     g = Graph(directed=False)
@@ -75,6 +77,7 @@ def test_no_path_raises():
 # Agent integration
 # ---------------------------------------------------------------------------
 
+
 def test_agent_traverses_grid_to_target():
     g = grid_graph(5, 5)
     agent = Agent(
@@ -112,10 +115,22 @@ def test_agent_handles_multiple_tasks_in_order():
 
 def test_agent_speed_scales_traversal_time():
     g = grid_graph(2, 2)
-    fast = Agent(graph=g, start_node=(0, 0), tasks=[(1, 1)], speed=2.0,
-                 heuristic=manhattan, name="fast")
-    slow = Agent(graph=g, start_node=(0, 0), tasks=[(1, 1)], speed=0.5,
-                 heuristic=manhattan, name="slow")
+    fast = Agent(
+        graph=g,
+        start_node=(0, 0),
+        tasks=[(1, 1)],
+        speed=2.0,
+        heuristic=manhattan,
+        name="fast",
+    )
+    slow = Agent(
+        graph=g,
+        start_node=(0, 0),
+        tasks=[(1, 1)],
+        speed=0.5,
+        heuristic=manhattan,
+        name="slow",
+    )
     env = SimEnvironment(dt=0.1, end=10.0)
     env.register(fast)
     env.register(slow)

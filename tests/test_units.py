@@ -1,6 +1,6 @@
 import pytest
 
-from simeng.units import (
+from simweave.units import (
     SIUnit,
     Distance,
     Velocity,
