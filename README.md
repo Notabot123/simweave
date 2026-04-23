@@ -1,4 +1,5 @@
 # SimWeave — a hybrid discrete/continuous simulation engine
+[![CI](https://github.com/Notabot123/simweave/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Notabot123/simweave/actions/workflows/ci.yml)
 
 `simweave` (PyPI: [`simweave`](https://pypi.org/project/simweave/)) is a
 lightweight Python simulation library built around an **atomic-clock
