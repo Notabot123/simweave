@@ -78,8 +78,29 @@ from simweave.currency import (
     get_decimals,
     list_codes,
 )
+# simweave.viz is import-cheap: plotly is only required when a plot helper
+# is actually called. The names below are always importable; calling one
+# without the `simweave[viz]` extra raises a clear ImportError.
+from simweave.viz import (
+    QueueLengthRecorder,
+    ServiceUtilisationRecorder,
+    WarehouseStockRecorder,
+    apply_theme,
+    available_themes,
+    get_default_theme,
+    have_plotly,
+    plot_agent_path,
+    plot_mc_fan,
+    plot_phase_portrait,
+    plot_queue_length,
+    plot_service_utilisation,
+    plot_state_trajectories,
+    plot_warehouse_stock,
+    register_theme,
+    set_default_theme,
+)
 
-__version__ = "0.2.0"
+__version__ = "0.3.0.dev0"
 
 __all__ = [
     # Core
@@ -155,6 +176,23 @@ __all__ = [
     "is_valid_currency",
     "get_decimals",
     "list_codes",
+    # Viz
+    "QueueLengthRecorder",
+    "ServiceUtilisationRecorder",
+    "WarehouseStockRecorder",
+    "apply_theme",
+    "available_themes",
+    "get_default_theme",
+    "have_plotly",
+    "plot_agent_path",
+    "plot_mc_fan",
+    "plot_phase_portrait",
+    "plot_queue_length",
+    "plot_service_utilisation",
+    "plot_state_trajectories",
+    "plot_warehouse_stock",
+    "register_theme",
+    "set_default_theme",
     # Meta
     "__version__",
 ]
