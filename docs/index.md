@@ -54,4 +54,5 @@ fig.write_html("msd.html", include_plotlyjs="cdn")
 SimWeave is currently 0.3.x. The public surface re-exported from
 `simweave` is considered stable; submodules may add features but are
 unlikely to break existing imports. See the
-[design notes](design/inde
+[design notes](design/index.md) for the rationale behind the major
+subsystems.

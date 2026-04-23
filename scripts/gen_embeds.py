@@ -165,4 +165,17 @@ def build_agents() -> None:
 
 # --------------------------------------------------------------------------- #
 # Run all                                                                     #
-# -------------------------------------------------------
+# --------------------------------------------------------------------------- #
+
+
+def main() -> None:
+    build_continuous()
+    build_discrete()
+    build_supplychain()
+    build_monte_carlo()
+    build_agents()
+
+
+# mkdocs-gen-files imports this module at build time and runs whatever
+# executes at top level, so we invoke main() unconditionally here.
+main()
