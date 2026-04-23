@@ -85,5 +85,5 @@ fig.write_html("mc.html", include_plotlyjs="cdn")
 - Browse [Modules](modules/index.md) for module-by-module walkthroughs.
 - See the worked examples under `demos/` in the repository for end-to-end
   scripts mirroring each subpackage, including
-  [`demos/14_viz_tour.py`](https://github.com/swhipp87/simweave/blob/main/demos/14_viz_tour.py)
+  [`demos/14_viz_tour.py`](https://github.com/Notabot123/simweave/blob/main/demos/14_viz_tour.py)
   which exercises every plot helper.

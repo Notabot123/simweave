@@ -41,7 +41,7 @@ pip install "simweave[viz,optim,graph]"
 For working on SimWeave itself:
 
 ```bash
-git clone https://github.com/swhipp87/simweave.git
+git clone https://github.com/Notabot123/simweave.git
 cd simweave
 pip install -e ".[dev]"
 pytest -q

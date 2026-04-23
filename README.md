@@ -78,8 +78,8 @@ three separate libraries to do it would be the wrong trade.
 ## Installation
 
 ```bash
-git clone <your-repo>
-cd sim_engine
+git clone https://github.com/Notabot123/simweave
+cd simweave
 python -m venv .venv && source .venv/bin/activate   # or .venv\Scripts\activate on Windows
 pip install -e .[dev]   # editable install with test deps
 pytest                  # should show green
