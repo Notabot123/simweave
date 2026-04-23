@@ -30,6 +30,18 @@ dev = [
     "babel>=2.14",
     "plotly>=5.18",
 ]
+docs = [
+    "mkdocs>=1.6",
+    "mkdocs-material>=9.5",
+    "mkdocstrings[python]>=0.25",
+    "mkdocs-include-markdown-plugin>=6.2",
+    # Match the runtime deps mkdocstrings needs to actually import simweave
+    # so the auto-generated API pages render the full surface.
+    "plotly>=5.18",
+    "networkx>=3.0",
+    "scipy>=1.10",
+    "babel>=2.14",
+]
 all = [
     "scipy>=1.10",
     "matplotlib>=3.7",

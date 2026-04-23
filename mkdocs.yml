@@ -1,0 +1,121 @@
+site_name: SimWeave
+site_description: A hybrid discrete/continuous simulation engine with currency, units, agents, supply chains, and Monte Carlo.
+site_author: Stuart
+repo_url: https://github.com/Notabot123/simweave
+repo_name: Notabot123/simweave
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.sections
+    - navigation.indexes
+    - navigation.top
+    - content.code.copy
+    - content.code.annotate
+    - search.suggest
+    - search.highlight
+    - toc.follow
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  icon:
+    repo: fontawesome/brands/github
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+
+plugins:
+  - search
+  - include-markdown
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          paths: [src]
+          options:
+            docstring_style: numpy
+            docstring_section_style: table
+            members_order: source
+            separate_signature: true
+            show_root_heading: true
+            show_root_full_path: false
+            show_signature_annotations: true
+            show_source: false
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+            signature_crossrefs: true
+            merge_init_into_class: true
+            heading_level: 2
+
+nav:
+  - Home: index.md
+  - Install: install.md
+  - Quickstart: quickstart.md
+  - Concepts: concepts.md
+  - Modules:
+      - modules/index.md
+      - Core: modules/core.md
+      - Continuous: modules/continuous.md
+      - Discrete: modules/discrete.md
+      - Agents and spatial: modules/agents.md
+      - Supply chain: modules/supplychain.md
+      - Monte Carlo: modules/mc.md
+      - Currency: modules/currency.md
+      - Units: modules/units.md
+      - Visualisation: modules/viz.md
+  - Design notes:
+      - design/index.md
+      - Currency: design/currency.md
+      - Visualisation: design/viz.md
+      - EdgeWeave integration: design/edgeweave.md
+      - Packaging: design/packaging.md
+      - API surface: design/api-surface.md
+  - API reference: api.md
+
+watch:
+  - src/simweave
+  - CURRENCY_DESIGN.md
+  - VIZ_DESIGN.md
+  - EdgeWeave.md
+  - PACKAGING.md
+  - SIMWEAVE_API.md
+  - README.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/swhipp87/simweave
