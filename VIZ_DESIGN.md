@@ -132,7 +132,7 @@ assert "data" in parsed and "layout" in parsed
 3. **Plot list completeness?** The seven helpers cover the demos in
    `demos/` plus the agent path. Additional plot types (utilisation
    heatmaps, multi-warehouse stock comparisons, MC scatter matrices) are
-   easy follow-ups but not in 0.3.
+   easy follow-ups but not in 0.4.
 4. **Theming?** Decided in favour of a small `Theme` registry over relying
    on global Plotly templates, so brand colours can be wired in one call
    without touching `plotly.io.templates`.

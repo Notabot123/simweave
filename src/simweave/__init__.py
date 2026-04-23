@@ -100,7 +100,7 @@ from simweave.viz import (
     set_default_theme,
 )
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
 __all__ = [
     # Core
