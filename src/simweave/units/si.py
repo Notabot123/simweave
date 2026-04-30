@@ -31,6 +31,12 @@ def _unit_string(exponents: tuple[int, ...]) -> str:
 def _known_unit(exponents: tuple[int, ...]):
     return _KNOWN_BY_EXP.get(exponents)
 
+def _retype(value: float, exponents: tuple[int, ...]) -> "SIUnit":
+    cls = _known_unit(exponents)
+    if cls is not None:
+        return cls(value)
+    return SIUnit(value, _unit_string(exponents), list(exponents))
+
 
 @dataclass(slots=True)
 class SIUnit:
@@ -93,12 +99,7 @@ class SIUnit:
             )
         if isinstance(other, SIUnit):
             new_exp = tuple(a + b for a, b in zip(self.exponents, other.exponents))
-            cls = _known_unit(new_exp)
-            if cls is None:
-                return SIUnit(
-                    self.value * other.value, _unit_string(new_exp), list(new_exp)
-                )
-            return cls(self.value * other.value)
+            return _retype(self.value * other.value, new_exp)
         raise TypeError(f"Unsupported multiplication with {type(other).__name__}.")
 
     def __rmul__(self, other: object) -> "SIUnit":
@@ -113,12 +114,7 @@ class SIUnit:
             )
         if isinstance(other, SIUnit):
             new_exp = tuple(a - b for a, b in zip(self.exponents, other.exponents))
-            cls = _known_unit(new_exp)
-            if cls is None:
-                return SIUnit(
-                    self.value / other.value, _unit_string(new_exp), list(new_exp)
-                )
-            return cls(self.value / other.value)
+            return _retype(self.value / other.value, new_exp)
         raise TypeError(f"Unsupported division with {type(other).__name__}.")
 
     def __eq__(self, other: object) -> bool:
@@ -139,15 +135,7 @@ class SIUnit:
             raise TypeError("Power must be an integer.")
 
         new_exp = tuple(e * power for e in self.exponents)
-        cls = _known_unit(new_exp)
-
-        if cls is None:
-            return SIUnit(
-                self.value ** power,
-                _unit_string(new_exp),
-                list(new_exp),
-            )
-        return cls(self.value ** power)
+        return _retype(self.value ** power, new_exp)
 
 
     # -- convenience methods -----------------------------------------------

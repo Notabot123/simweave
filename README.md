@@ -241,6 +241,13 @@ sim_engine/
 
 ## Next steps on the roadmap
 
+- **Numpy aware SIUnits.** Ensure our improved system works on arrays
+  not just scalars, with no regression. Add new classes such as
+  Voltage, Current, Resistance.
+- **PID Controllers.** To extend utility of dynamic simulations, allow
+  controllers which are easily exposed to EdgeWeave.
+- **Fault injection.** This should be suitable for ML datasets with use
+  cases such as predictive maintenance,
 - **True sim-based optimisation.** `cost_optimise_stock_sim` already
   wraps a user callback; a future step is an adaptive surrogate model
   (kriging / BO) so each evaluation doesn't need a full MC sweep.
@@ -252,4 +259,4 @@ sim_engine/
   Graph, dict-of-dict, and networkx; next is an osmnx adapter so
   `simweave[geo]` lets agents route on real road networks without
   baking osmnx into the core.
-- **Numba hot paths.** The A* inner loop and the warehouse vecto
+- **Numba hot paths.** The A* inner loop and the warehouse vectorisation

@@ -1,6 +1,7 @@
 # Units
 
-Lightweight SI quantity helpers with **dimensional analysis built in**.
+Simple helpers for working with physical quantities like distance, time, and force—with **dimensional analysis built in**.
+
 Every quantity carries a 7-tuple of SI exponents — `(m, kg, A, K, mol,
 cd, s)` — and arithmetic operations compose those exponents and re-type
 the result automatically.
@@ -17,40 +18,127 @@ a = v / sw.TimeUnit(10.0)            # -> Acceleration(0.1 m/s^2)
 f = m * a                            # -> Force(150.0 N)
 ```
 
-The current concrete classes:
+The base class:
 
 - `SIUnit` (base; carries the value, unit string, and exponents)
-- `Distance`, `Velocity`, `Acceleration`
-- `Mass`, `Force`
-- `Area`, `Volume`
+
+# Available Units
+
+## Basic
+- `Distance`
 - `TimeUnit`
+- `Mass`
+
+## Derived
+- `Velocity`
+- `Acceleration`
+- `Force`
+- `Energy`
+- `Power`
+- `Pressure`
+- `Area`
+- `Volume`
+- `Frequency`
+- `Temperature` (absolute, e.g. Kelvin or Celsius)
+- `TemperatureDelta` (differences)
+
+## Unit Conversion
+
+You can construct values using common units:
+
+```python
+d = sw.Distance(10, "ft")      # feet → stored internally as metres
+v = sw.Velocity(60, "mph")     # miles per hour
+e = sw.Energy(1, "kWh")        # kilowatt-hour                    # -> Force(150.0 N)
+```
+Convert explicitly:
+
+```python
+d.to("m")      # → 3.048
+d.to("ft")     # → 10.0
+```
+## Displaying Values
+
+```python
+d = sw.Distance(10, "ft")
+
+d.format()          # "3.048 [m]"
+d.format("ft")      # "10.0 [ft]"
+```
+
+For nicer output:
+
+```python
+e = sw.Energy(1500)
+
+e.auto_format()     # "1.5 [kJ]"
+```
+
+## Temperature (special case)
+
+Temperature supports both Kelvin and Celsius:
+
+```python
+t = sw.Temperature(0, "C")
+
+t.value        # 273.15 (stored in Kelvin)
+t.to("C")      # 0.0
+```
+
+Differences are handled explicitly:
+
+```python
+t1 = sw.Temperature(30, "C")
+t2 = sw.Temperature(20, "C")
+
+delta = t1 - t2    # TemperatureDelta
+t3 = t2 + delta    # Temperature
+```
+
+Adding two absolute temperatures is not allowed:
+
+```python
+t1 + t2   # ! raises TypeError
+```
+
+## Physical Constants
+
+Convenience constants are available, for all SIunits and several physical constants:
+
+```python
+from simweave.units.constants import kg, m, s, g, c
+
+force = 10 * kg * m / s**2
+weight = 80 * kg * g
+energy = sw.Mass(1) * c**2
+```
+
+Full set of physical constants at current release (v0.5.0):
+```python
+# Acceleration due to gravity
+g = 9.80665 * m / s**2
+
+# Speed of light
+c = 299_792_458 * m / s
+
+# Planck constant
+h = 6.62607015e-34 * J * s
+
+# Boltzmann constant
+k_B = 1.380649e-23 * J / K
+```
 
 ## What it does
+- Combines units correctly when multiplying/dividing
+- Prevents invalid operations (e.g. adding distance and time)
+- Converts units at construction time
+- Keeps everything internally in standard SI units
 
-- **Composes dimensions on `*` and `/`.** Multiplying or dividing two
-  quantities adds or subtracts their SI exponent tuples. If the result
-  matches a registered shape (e.g. `(1, 0, 0, 0, 0, 0, -1)` is metres
-  per second) the result is returned as the corresponding concrete class
-  — `Velocity` in that case — so isinstance checks Just Work.
-- **Enforces dimensional consistency on `+` and `-`.** Adding a
-  `Distance` to a `TimeUnit` raises `TypeError`. Adding two `Distance`
-  values returns a `Distance`.
-- **Time conversion at construction time.** `TimeUnit` accepts
-  `unit="s" | "ms" | "min" | "h" | "day"` and stores the value in
-  seconds canonically.
+## What it does *not* do (yet)
+- Full unit parsing (e.g. "kg*m/s^2" strings)
+- Complex unit systems beyond SI
+- NumPy array support (planned)
 
-## What it does *not* do
-
-- **Convert between unit *systems*.** Other than `TimeUnit`, the classes
-  do not parse imperial input or non-canonical SI prefixes — there is no
-  `Distance(1.0, "ft")` or `Mass(2.2, "lb")`. If you need
-  feet-to-metres or pounds-to-kg conversions, either pre-convert at the
-  boundary of your code or reach for [`pint`][pint], which solves a
-  superset of the problem at the cost of a heavier dependency.
-- **Format as imperial.** All `__str__` output is in the canonical SI
-  unit string (e.g. `"120.0 [m]"`, `"3600.0 [s]"`).
-
-[pint]: https://pint.readthedocs.io/
 
 For a runnable walkthrough see
 [`demos/15_units_dimensional.py`](https://github.com/Notabot123/simweave/blob/main/demos/15_units_dimensional.py).

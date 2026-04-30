@@ -187,3 +187,30 @@ def test_conversion_not_supported():
     a = Acceleration(9.81)
     with pytest.raises(ValueError):
         a.to("ft/s^2")
+
+# covering _retype we discovered as edge case
+def test_inline_energy_retyping():
+    m = Distance(1)
+    s = TimeUnit(1)
+
+    c = 299_792_458 * m / s
+    energy = Mass(1.0) * c**2
+
+    assert isinstance(energy, Energy)
+
+# control test, already works but helps as regression test
+def test_energy_from_constants():
+    from simweave.units.constants import c
+
+    energy = Mass(1.0) * c**2
+
+    assert isinstance(energy, Energy)
+
+def test_energy_exponents_consistency():
+    m = Distance(1)
+    s = TimeUnit(1)
+
+    c = 299_792_458 * m / s
+    energy = Mass(1.0) * c**2
+
+    assert tuple(energy.exponents) == (2, 1, 0, 0, 0, 0, -2)

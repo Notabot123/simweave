@@ -9,6 +9,7 @@ J = Energy(1)
 W = Power(1)
 Pa = Pressure(1)
 Hz = Frequency(1)
+K = Temperature(1)
 
 # Physical constants
 
@@ -22,4 +23,4 @@ c = 299_792_458 * m / s
 h = 6.62607015e-34 * J * s
 
 # Boltzmann constant
-k_B = 1.380649e-23 * Energy(1) / Temperature(1)
+k_B = 1.380649e-23 * J / K
