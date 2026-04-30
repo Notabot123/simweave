@@ -101,7 +101,8 @@ no dependency on each other.
 
 ## Status
 
-SimWeave is currently 0.4.x. The public surface re-exported from
+SimWeave is currently <v1.0.0
+The public surface re-exported from
 `simweave` is considered stable; submodules may add features but are
 unlikely to break existing imports. See the
 [design notes](design/index.md) for the rationale behind the major

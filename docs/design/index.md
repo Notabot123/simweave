@@ -11,7 +11,7 @@ repository so design intent travels with the code.
 | [EdgeWeave integration](edgeweave.md)         | Living document       |
 | [Packaging](packaging.md)                     | Reference             |
 | [API surface](api-surface.md)                 | Reference             |
-| [Parameter sweeps & sensitivity](sweeps.md)   | Proposal for v0.5     |
+| [Parameter sweeps & sensitivity](sweeps.md)   | Proposal for v0.7    |
 
 These notes were written alongside the implementation and are imported
 verbatim from the repository root (`VIZ_DESIGN.md`, `CURRENCY_DESIGN.md`,

@@ -18,12 +18,18 @@ from simweave.units.si import (
     Acceleration,
     Velocity,
     Distance,
+    Area,
     Force,
     Mass,
     TimeUnit,
     Power,
     Energy, 
-    Temperature
+    Temperature,
+    Voltage,
+    Current,
+    Resistance,
+    Capacitance,
+    Resistivity
 )
 from simweave.units.constants import g, kg, m, s, c
 
@@ -104,12 +110,71 @@ def main() -> None:
     _show("t2 + delta", t3)
 
     print()
+    print("--- Electrical quantities ------------------------------------")
+
+    I = Current(2.0)        # 2 A
+    R = Resistance(5.0)     # 5 Ω
+
+    _show("I = Current(2 A)", I)
+    _show("R = Resistance(5 Ω)", R)
+
+    print()
+    print("--- Ohm's Law: V = I * R ------------------------------------")
+
+    V = I * R
+    _show("I * R", V)
+
+    print()
+    print("--- Rearranging Ohm's Law ------------------------------------")
+
+    R2 = V / I
+    _show("V / I", R2)
+
+    I2 = V / R
+    _show("V / R", I2)
+
+    print()
+    print("--- Power from electrical quantities -------------------------")
+
+    P = V * I
+    _show("V * I", P)
+
+    print()
+    print("--- Resistivity example --------------------------------------")
+
+    rho = Resistivity(1.68e-8)  # copper approx
+    length = Distance(2.0)
+    area = Area(1e-6)
+
+    R_wire = rho * length / area
+    _show("ρ * L / A", R_wire)
+
+    print()
+    print("--- Capacitance example --------------------------------------")
+
+    Q = Current(2.0) * TimeUnit(3.0)  # charge = I * t
+    C = Q / V
+
+    _show("Q / V", C)
+
+    print()
     print("--- Physical constants ---------------------------------------")
     weight = 80 * kg * g
     _show("80 kg * g", weight)
 
     energy_rel = Mass(1.0) * c**2    
     _show("E = mc^2 (1 kg)", energy_rel)
+
+    print()
+    print("--- NumPy array support --------------------------------------")
+
+    import numpy as np
+
+    d = Distance(np.array([10.0, 20.0, 30.0]))
+    t = TimeUnit(2.0)
+
+    v = d / t
+    _show("d / t (array)", v)
 
 if __name__ == "__main__":
     main()

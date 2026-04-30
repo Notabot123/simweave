@@ -41,6 +41,11 @@ The base class:
 - `Frequency`
 - `Temperature` (absolute, e.g. Kelvin or Celsius)
 - `TemperatureDelta` (differences)
+- `Voltage`
+- `Current`
+- `Resistance`
+- `Capacitance`
+- `Resistivity`
 
 ## Unit Conversion
 
@@ -72,6 +77,47 @@ For nicer output:
 e = sw.Energy(1500)
 
 e.auto_format()     # "1.5 [kJ]"
+```
+
+## Working with arrays (NumPy)
+
+SimWeave supports NumPy arrays for vectorised calculations.
+
+```python
+import numpy as np
+import simweave as sw
+
+d = sw.Distance(np.array([1, 2, 3]))
+t = sw.TimeUnit(2)
+
+v = d / t
+
+print(v)
+# [0.5, 1.0, 1.5] [m/s]
+```
+
+We can also use fractional powers when they produce valid physical dimensions
+(e.g. √area → distance):
+
+```python
+import numpy as np
+import simweave as sw
+
+area = sw.Area(np.array([1, 4, 9]))
+
+length = area ** 0.5
+
+print(length)
+# Distance([1.0, 2.0, 3.0]) [m]
+```
+or indeed distances from volumes:
+```python
+volume = sw.Volume(np.array([1, 8, 27]))
+
+length = volume ** (1/3)
+
+print(length)
+# Distance([1.0, 2.0, 3.0]) [m]
 ```
 
 ## Temperature (special case)
@@ -113,7 +159,7 @@ weight = 80 * kg * g
 energy = sw.Mass(1) * c**2
 ```
 
-Full set of physical constants at current release (v0.5.0):
+Full set of physical constants at current release:
 ```python
 # Acceleration due to gravity
 g = 9.80665 * m / s**2
@@ -133,11 +179,12 @@ k_B = 1.380649e-23 * J / K
 - Prevents invalid operations (e.g. adding distance and time)
 - Converts units at construction time
 - Keeps everything internally in standard SI units
+- NumPy array support (__ufunc__ planned in future releases)
+- Ability to use non-integer powers e.g. sqrt as **0.5 for area, and cuberoot for volume
 
 ## What it does *not* do (yet)
 - Full unit parsing (e.g. "kg*m/s^2" strings)
 - Complex unit systems beyond SI
-- NumPy array support (planned)
 
 
 For a runnable walkthrough see
