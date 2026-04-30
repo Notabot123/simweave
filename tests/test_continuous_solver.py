@@ -7,6 +7,7 @@ from simweave.continuous.systems import (
     SimplePendulum,
     QuarterCarModel,
     HalfCarModel,
+    RollCarModel,
     SeriesRLC,
 )
 from simweave.core.environment import SimEnvironment
@@ -89,6 +90,27 @@ def test_half_car_runs():
     )
 
     assert r.state.shape[1] == 8
+
+def test_roll_response_direction():
+    m = RollCarModel(
+        1200, 2200, 60, 60,
+        20000, 20000,
+        1500, 1500,
+        150000, 150000,
+        1.6,
+    )
+
+    r = simulate(
+        m,
+        (0.0, 1.0),
+        dt=0.01,
+        inputs=lambda t: (0.01, 0.0),
+    )
+
+    phi = r.state[:, 2]
+
+    # expect some non-zero roll
+    assert abs(phi).max() > 0
 
 
 def test_series_rlc_underdamped():

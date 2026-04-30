@@ -5,7 +5,7 @@ front/rear suspension interaction.
 
 Run::
 
-    python demos/10b_half_car.py
+    python demos/17_half_car.py
 """
 
 from __future__ import annotations
