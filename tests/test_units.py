@@ -261,14 +261,14 @@ def test_invalid_fractional_power():
         _ = d ** 0.5
 
 # use of method .sqrt and .cdbrt
-def test_sqrt_area():
+def test_sqrt_area_method():
     a = Area(9.0)
     d = a.sqrt()
 
     assert isinstance(d, Distance)
     assert d.value == pytest.approx(3.0)
 
-def test_cbrt_volume():
+def test_cbrt_volume_method():
     v = Volume(8.0)
     d = v.cbrt()
 
@@ -301,18 +301,35 @@ def test_array_sqrt():
 
 # electricity
 def test_ohms_law():
-    I = Current(2.0)
-    R = Resistance(5.0)
+    current = Current(2.0)
+    resistance = Resistance(5.0)
 
-    V = I * R
+    voltage = current * resistance
 
-    assert isinstance(V, Voltage)
-    assert V.value == pytest.approx(10.0)
+    assert isinstance(voltage, Voltage)
+    assert voltage.value == pytest.approx(10.0)
 
 def test_resistance_from_voltage_current():
-    V = Voltage(10.0)
-    I = Current(2.0)
+    voltage = Voltage(10.0)
+    current = Current(2.0)
 
-    R = V / I
+    resistance = voltage / current
+
+    assert isinstance(resistance, Resistance)
+
+def test_capacitance_from_charge_voltage():
+    Q = Current(2.0) * TimeUnit(3.0)  # charge = I * t
+    V = Voltage(6.0)
+
+    C = Q / V
+
+    assert isinstance(C, Capacitance)
+
+def test_resistivity_relation():
+    rho = Resistivity(1.0)
+    L = Distance(2.0)
+    A = Area(1.0)
+
+    R = rho * L / A
 
     assert isinstance(R, Resistance)
