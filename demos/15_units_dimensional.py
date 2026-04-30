@@ -108,9 +108,6 @@ def main() -> None:
     weight = 80 * kg * g
     _show("80 kg * g", weight)
 
-    #c = 299_792_458 * m / s
-    print(type(c))
-    print(tuple(c.exponents))
     energy_rel = Mass(1.0) * c**2    
     _show("E = mc^2 (1 kg)", energy_rel)
 
