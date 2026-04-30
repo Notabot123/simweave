@@ -458,6 +458,72 @@ class Frequency(SIUnit):
         )
 
 
+class Temperature(SIUnit):
+    _SCALE_MAP: ClassVar[dict[str, float]] = {
+        "K": 1.0,
+        "C": 1.0,  # handled via offset
+    }
+
+    _OFFSET_MAP: ClassVar[dict[str, float]] = {
+        "K": 0.0,
+        "C": 273.15,
+    }
+
+    def __init__(self, value: float | SIUnit, unit: str = "K"):
+        if isinstance(value, SIUnit):
+            value = value.value
+
+        if unit not in self._SCALE_MAP:
+            raise ValueError(f"Unsupported temperature unit: {unit}")
+
+        # Convert to Kelvin
+        kelvin_value = float(value) * self._SCALE_MAP[unit] + self._OFFSET_MAP[unit]
+
+        super().__init__(
+            value=kelvin_value,
+            unit="K",
+            exponents=[0, 0, 0, 1, 0, 0, 0],
+        )
+
+    def to(self, unit: str) -> float:
+        """ Convert temperature units. For temperatures, note an offset as well as scaling """
+        if unit not in self._SCALE_MAP:
+            raise ValueError(f"Unsupported temperature unit: {unit}")
+
+        # Convert from Kelvin
+        return (self.value - self._OFFSET_MAP[unit]) / self._SCALE_MAP[unit]
+    
+    def __sub__(self, other: object) -> "TemperatureDelta":
+        if not isinstance(other, Temperature):
+            raise TypeError("Can only subtract Temperature from Temperature.")
+        return TemperatureDelta(self.value - other.value)
+    
+    def __add__(self, other: object) -> "Temperature":
+        if isinstance(other, TemperatureDelta):
+            return Temperature(self.value + other.value)
+        raise TypeError("Can only add TemperatureDelta to Temperature.")
+    
+    def __radd__(self, other: object) -> "Temperature":
+        return self.__add__(other)
+
+class TemperatureDelta(SIUnit):
+    """ Delta temperature to allow relative and absolute """
+    _SCALE_MAP: ClassVar[dict[str, float]] = {
+        "K": 1.0,
+        "C": 1.0,  # same scaling for differences
+    }
+
+    def __init__(self, value: float | SIUnit, unit: str = "K"):
+        if isinstance(value, SIUnit):
+            value = value.value
+        if unit not in self._SCALE_MAP:
+            raise ValueError(f"Unsupported temperature difference unit: {unit}")
+        super().__init__(
+            value=float(value) * self._SCALE_MAP[unit],
+            unit="K",
+            exponents=[0, 0, 0, 1, 0, 0, 0],
+        )
+
 _KNOWN_BY_EXP: dict[tuple[int, ...], type[SIUnit]] = {
     (1, 0, 0, 0, 0, 0, 0): Distance,
     (1, 0, 0, 0, 0, 0, -1): Velocity,
@@ -471,4 +537,5 @@ _KNOWN_BY_EXP: dict[tuple[int, ...], type[SIUnit]] = {
     (2, 1, 0, 0, 0, 0, -2): Energy,
     (2, 1, 0, 0, 0, 0, -3): Power,
     (0, 0, 0, 0, 0, 0, -1): Frequency,
+    (0, 0, 0, 1, 0, 0, 0): Temperature
 }

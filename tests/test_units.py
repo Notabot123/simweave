@@ -12,7 +12,9 @@ from simweave.units.si import (
     Energy,
     Pressure,
     Power,
-    Frequency
+    Frequency,
+    Temperature,
+    TemperatureDelta
 )
 
 
@@ -66,6 +68,39 @@ def test_generic_siunit_for_unknown_product():
     assert isinstance(result, SIUnit)
     assert tuple(result.exponents) == (1, 1, 0, 0, 0, 0, 0)
 
+# temp tests
+def test_temperature_conversion():
+    t = Temperature(0, "C")
+    assert t.value == pytest.approx(273.15)
+    assert t.to("C") == pytest.approx(0.0)
+
+
+def test_temperature_kelvin_roundtrip():
+    t = Temperature(300, "K")
+    assert t.to("K") == pytest.approx(300.0)
+
+def test_temperature_subtraction_returns_delta():
+    t1 = Temperature(30, "C")
+    t2 = Temperature(20, "C")
+
+    delta = t1 - t2
+
+    assert isinstance(delta, TemperatureDelta)
+    assert delta.value == pytest.approx(10.0)
+
+def test_temperature_add_delta():
+    t = Temperature(20, "C")
+    delta = TemperatureDelta(10, "C")
+
+    result = t + delta
+
+    assert isinstance(result, Temperature)
+    assert result.to("C") == pytest.approx(30.0)
+
+
+def test_temperature_add_temperature_raises():
+    with pytest.raises(TypeError):
+        Temperature(10, "C") + Temperature(10, "C")
 
 # conversion tests
 def test_distance_conversion():
