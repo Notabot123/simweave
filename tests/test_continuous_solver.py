@@ -6,6 +6,7 @@ from simweave.continuous.systems import (
     MassSpringDamper,
     SimplePendulum,
     QuarterCarModel,
+    HalfCarModel,
     SeriesRLC,
 )
 from simweave.core.environment import SimEnvironment
@@ -69,6 +70,25 @@ def test_quarter_car_runs():
     m = QuarterCarModel(250, 40, 15000, 1500, 200000)
     r = simulate(m, (0.0, 0.5), dt=0.001, inputs=lambda t: 0.01)
     assert r.state.shape[1] == 4
+
+
+def test_half_car_runs():
+    m = HalfCarModel(
+        1200, 2500, 60, 60,
+        20000, 20000,
+        1500, 1500,
+        150000, 150000,
+        1.2, 1.6
+    )
+
+    r = simulate(
+        m,
+        (0.0, 0.5),
+        dt=0.001,
+        inputs=lambda t: (0.01, 0.01),
+    )
+
+    assert r.state.shape[1] == 8
 
 
 def test_series_rlc_underdamped():
