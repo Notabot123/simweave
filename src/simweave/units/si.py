@@ -142,11 +142,20 @@ class SIUnit:
     
     
     # -- exponentiation ---------------------------------------------------
-    def __pow__(self, power: int) -> "SIUnit":
-        if not isinstance(power, int):
-            raise TypeError("Power must be an integer.")
+    def __pow__(self, power: float) -> "SIUnit":
+        if not isinstance(power, (int, float)):
+            raise TypeError("Power must be numeric.")
 
         new_exp = tuple(e * power for e in self.exponents)
+
+        # ensure resulting exponents are integers
+        if not all(abs(e - round(e)) < 1e-12 for e in new_exp):
+            raise TypeError(
+                f"Power {power} produces non-integer exponents: {new_exp}"
+            )
+
+        new_exp = tuple(int(round(e)) for e in new_exp)
+
         return _retype(self.value ** power, new_exp)
 
 
@@ -192,6 +201,12 @@ class SIUnit:
 
         unit = display_units[0]
         return f"{np.round(self.to(unit), precision)} [{unit}]"
+    
+    def sqrt(self):
+        return self ** 0.5
+    
+    def cbrt(self):
+        return self ** (1/3)
 
 
 # ---------------------------------------------------------------------------
@@ -338,7 +353,7 @@ class Area(SIUnit):
             value=value * self._SCALE_MAP[unit],
             unit="m^2",
             exponents=[2, 0, 0, 0, 0, 0, 0],
-        )
+        )   
 
 
 class Volume(SIUnit):
@@ -524,6 +539,44 @@ class TemperatureDelta(SIUnit):
             exponents=[0, 0, 0, 1, 0, 0, 0],
         )
 
+# electric relevant units
+class Current(SIUnit):
+    def __init__(self, value: float | SIUnit):
+        super().__init__(value=value, unit="A", exponents=[0, 0, 1, 0, 0, 0, 0])
+
+class Voltage(SIUnit):
+    def __init__(self, value: float | SIUnit):
+        super().__init__(
+            value=value,
+            unit="V",
+            exponents=[2, 1, -1, 0, 0, 0, -3],
+        )
+
+class Resistance(SIUnit):
+    def __init__(self, value: float | SIUnit):
+        super().__init__(
+            value=value,
+            unit="Ω",
+            exponents=[2, 1, -2, 0, 0, 0, -3],
+        )
+
+class Capacitance(SIUnit):
+    def __init__(self, value: float | SIUnit):
+        super().__init__(
+            value=value,
+            unit="F",
+            exponents=[-2, -1, 2, 0, 0, 0, 4],
+        )
+
+class Resistivity(SIUnit):
+    def __init__(self, value: float | SIUnit):
+        super().__init__(
+            value=value,
+            unit="Ω·m",
+            exponents=[3, 1, -2, 0, 0, 0, -3],
+        )
+
+
 _KNOWN_BY_EXP: dict[tuple[int, ...], type[SIUnit]] = {
     (1, 0, 0, 0, 0, 0, 0): Distance,
     (1, 0, 0, 0, 0, 0, -1): Velocity,
@@ -537,5 +590,10 @@ _KNOWN_BY_EXP: dict[tuple[int, ...], type[SIUnit]] = {
     (2, 1, 0, 0, 0, 0, -2): Energy,
     (2, 1, 0, 0, 0, 0, -3): Power,
     (0, 0, 0, 0, 0, 0, -1): Frequency,
-    (0, 0, 0, 1, 0, 0, 0): Temperature
+    (0, 0, 0, 1, 0, 0, 0): Temperature,
+    (0, 0, 1, 0, 0, 0, 0): Current,
+    (2, 1, -1, 0, 0, 0, -3): Voltage,
+    (2, 1, -2, 0, 0, 0, -3): Resistance,
+    (-2, -1, 2, 0, 0, 0, 4): Capacitance,
+    (3, 1, -2, 0, 0, 0, -3): Resistivity,
 }

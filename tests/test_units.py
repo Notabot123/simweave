@@ -8,6 +8,7 @@ from simweave.units.si import (
     Acceleration,
     Mass,
     Area,
+    Volume,
     Force,
     TimeUnit,
     Energy,
@@ -15,7 +16,12 @@ from simweave.units.si import (
     Power,
     Frequency,
     Temperature,
-    TemperatureDelta
+    TemperatureDelta,
+    Voltage,
+    Current,
+    Resistance,
+    Capacitance,
+    Resistivity
 )
 
 
@@ -234,3 +240,79 @@ def test_array_conversion():
 
     assert np.allclose(result, np.array([100.0, 200.0]))
 
+def test_sqrt_area():
+    a = Area(9.0)
+    d = a ** 0.5
+
+    assert isinstance(d, Distance)
+    assert d.value == pytest.approx(3.0)
+
+def test_cuberoot_volume():
+    v = Volume(8.0)
+    d = v ** (1/3)
+
+    assert isinstance(d, Distance)
+    assert d.value == pytest.approx(2.0)
+
+def test_invalid_fractional_power():
+    d = Distance(4.0)
+
+    with pytest.raises(TypeError):
+        _ = d ** 0.5
+
+# use of method .sqrt and .cdbrt
+def test_sqrt_area():
+    a = Area(9.0)
+    d = a.sqrt()
+
+    assert isinstance(d, Distance)
+    assert d.value == pytest.approx(3.0)
+
+def test_cbrt_volume():
+    v = Volume(8.0)
+    d = v.cbrt()
+
+    assert isinstance(d, Distance)
+    assert d.value == pytest.approx(2.0, rel=1e-9)
+
+def test_cbrt_volume_array():
+    import numpy as np
+
+    v = Volume(np.array([8.0]))
+    d = v.cbrt()
+
+    assert isinstance(d, Distance)
+    assert np.allclose(d.value, np.array([2.0]))
+
+def test_invalid_sqrt_distance():
+    d = Distance(4.0)
+
+    with pytest.raises(TypeError):
+        _ = d.sqrt()
+
+def test_array_sqrt():
+    import numpy as np
+
+    a = Area(np.array([1, 4, 9]))
+    d = a.sqrt()
+
+    assert isinstance(d, Distance)
+    assert np.allclose(d.value, np.array([1, 2, 3]))
+
+# electricity
+def test_ohms_law():
+    I = Current(2.0)
+    R = Resistance(5.0)
+
+    V = I * R
+
+    assert isinstance(V, Voltage)
+    assert V.value == pytest.approx(10.0)
+
+def test_resistance_from_voltage_current():
+    V = Voltage(10.0)
+    I = Current(2.0)
+
+    R = V / I
+
+    assert isinstance(R, Resistance)

@@ -41,6 +41,11 @@ The base class:
 - `Frequency`
 - `Temperature` (absolute, e.g. Kelvin or Celsius)
 - `TemperatureDelta` (differences)
+- `Voltage`
+- `Current`
+- `Resistance`
+- `Capacitance`
+- `Resistivity`
 
 ## Unit Conversion
 
@@ -89,6 +94,30 @@ v = d / t
 
 print(v)
 # [0.5, 1.0, 1.5] [m/s]
+```
+
+We can also use fractional powers when they produce valid physical dimensions
+(e.g. √area → distance):
+
+```python
+import numpy as np
+import simweave as sw
+
+area = sw.Area(np.array([1, 4, 9]))
+
+length = area ** 0.5
+
+print(length)
+# Distance([1.0, 2.0, 3.0]) [m]
+```
+or indeed distances from volumes:
+```python
+volume = sw.Volume(np.array([1, 8, 27]))
+
+length = volume ** (1/3)
+
+print(length)
+# Distance([1.0, 2.0, 3.0]) [m]
 ```
 
 ## Temperature (special case)
@@ -151,20 +180,11 @@ k_B = 1.380649e-23 * J / K
 - Converts units at construction time
 - Keeps everything internally in standard SI units
 - NumPy array support (__ufunc__ planned in future releases)
+- Ability to use non-integer powers e.g. sqrt as **0.5 for area, and cuberoot for volume
 
 ## What it does *not* do (yet)
 - Full unit parsing (e.g. "kg*m/s^2" strings)
 - Complex unit systems beyond SI
-- Ability to use non-integer powers e.g. sqrt as **0.5 (example below)
-
-The following is possible
-```python
-length = Distance(np.sqrt(area.value))
-```
-however at current release this would cause an error:
-```python
-area ** 0.5
-```
 
 
 For a runnable walkthrough see
