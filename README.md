@@ -34,7 +34,45 @@ fast-forwards to the next scheduled event when every process reports
 `has_work(env) == False`. That gives DEVS-like efficiency when demand is
 sparse without losing the atomic time grid when it's not.
 
-### 2. Minimal dependencies
+### 2. Support for Physics and SIUnits
+
+Simweave supports SIunits with dimensional analysis and conversion.
+Physical constants are included such as gravity and the speed of light.
+
+```python
+from simweave.units.constants import kg, m, s, g, c
+
+force = 10 * kg * m / s**2
+weight = 80 * kg * g
+energy = 1 * kg * c**2
+
+# show that E=mc²
+E = Mass(1.0) * c**2
+```
+
+Whilst values are stored in SIUnit they can be instantiated or converted with alternate units.
+
+```python
+d = Distance(10, "ft")
+print(d.to("m"))       # 3.048
+print(d.format("ft"))  # 10.0 [ft]
+```
+
+Temperature is supported with notion of absolute and relative (delta).
+
+```python
+t1 = Temperature(30, "C")
+t2 = Temperature(20, "C")
+
+delta = t1 - t2
+```
+✔ Prevents invalid operations (e.g. distance + time)
+
+✔ Automatically derives units (e.g. m/s → Velocity)
+
+✔ Supports common real-world units (ft, mph, kWh)
+
+### 3. Minimal dependencies
 
 Only `numpy` is a hard dependency. Everything else is optional:
 
@@ -54,7 +92,7 @@ Only `numpy` is a hard dependency. Everything else is optional:
 benefits dramatically from it. Queues still use `collections.deque` for
 O(1) push/pop at both ends.
 
-### 3. Modular, but not split into separate libraries
+### 4. Modular, but not split into separate libraries
 
 The submodules compose through the shared `Entity` base class:
 
@@ -241,6 +279,13 @@ sim_engine/
 
 ## Next steps on the roadmap
 
+- **Numpy aware SIUnits.** Ensure our improved system works on arrays
+  not just scalars, with no regression. Add new classes such as
+  Voltage, Current, Resistance.
+- **PID Controllers.** To extend utility of dynamic simulations, allow
+  controllers which are easily exposed to EdgeWeave.
+- **Fault injection.** This should be suitable for ML datasets with use
+  cases such as predictive maintenance,
 - **True sim-based optimisation.** `cost_optimise_stock_sim` already
   wraps a user callback; a future step is an adaptive surrogate model
   (kriging / BO) so each evaluation doesn't need a full MC sweep.
@@ -252,4 +297,4 @@ sim_engine/
   Graph, dict-of-dict, and networkx; next is an osmnx adapter so
   `simweave[geo]` lets agents route on real road networks without
   baking osmnx into the core.
-- **Numba hot paths.** The A* inner loop and the warehouse vecto
+- **Numba hot paths.** The A* inner loop and the warehouse vectorisation

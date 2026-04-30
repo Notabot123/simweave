@@ -1,6 +1,6 @@
 import pytest
 
-from simweave.units import (
+from simweave.units.si import (
     SIUnit,
     Distance,
     Velocity,
@@ -9,6 +9,12 @@ from simweave.units import (
     Area,
     Force,
     TimeUnit,
+    Energy,
+    Pressure,
+    Power,
+    Frequency,
+    Temperature,
+    TemperatureDelta
 )
 
 
@@ -17,7 +23,7 @@ def test_distance_velocity_acceleration():
     t = TimeUnit(2.0)
     v = d / t
     assert isinstance(v, Velocity)
-    assert v.value == pytest.approx(5.0)
+    assert v.value == pytest.approx(5.0, rel=1e-9)
 
     a = v / t
     assert isinstance(a, Acceleration)
@@ -61,3 +67,150 @@ def test_generic_siunit_for_unknown_product():
     result = Mass(1.0) * Distance(1.0)
     assert isinstance(result, SIUnit)
     assert tuple(result.exponents) == (1, 1, 0, 0, 0, 0, 0)
+
+# temp tests
+def test_temperature_conversion():
+    t = Temperature(0, "C")
+    assert t.value == pytest.approx(273.15)
+    assert t.to("C") == pytest.approx(0.0)
+
+
+def test_temperature_kelvin_roundtrip():
+    t = Temperature(300, "K")
+    assert t.to("K") == pytest.approx(300.0)
+
+def test_temperature_subtraction_returns_delta():
+    t1 = Temperature(30, "C")
+    t2 = Temperature(20, "C")
+
+    delta = t1 - t2
+
+    assert isinstance(delta, TemperatureDelta)
+    assert delta.value == pytest.approx(10.0)
+
+def test_temperature_add_delta():
+    t = Temperature(20, "C")
+    delta = TemperatureDelta(10, "C")
+
+    result = t + delta
+
+    assert isinstance(result, Temperature)
+    assert result.to("C") == pytest.approx(30.0)
+
+
+def test_temperature_add_temperature_raises():
+    with pytest.raises(TypeError):
+        Temperature(10, "C") + Temperature(10, "C")
+
+# conversion tests
+def test_distance_conversion():
+    d = Distance(10, "ft")
+    assert d.to("m") == pytest.approx(3.048)
+    assert d.to("ft") == pytest.approx(10.0)
+
+
+def test_velocity_conversion():
+    v = Velocity(60, "mph")
+    assert v.to("m/s") == pytest.approx(26.8224, rel=1e-4)
+
+# format methods
+def test_format_default_and_unit():
+    d = Distance(1.0)
+    assert d.format() == "1.0 [m]"
+    assert d.format("cm") == "100.0 [cm]"
+
+
+def test_auto_format_energy():
+    e = Energy(1500)
+    assert "kJ" in e.auto_format()
+
+# alias handling
+def test_distance_aliases():
+    d1 = Distance(1, "ft")
+    d2 = Distance(1, "foot")
+    d3 = Distance(1, "feet")
+
+    assert d1.value == pytest.approx(d2.value)
+    assert d1.value == pytest.approx(d3.value)
+
+# exponentiation
+def test_power_operator():
+    v = Velocity(3.0)
+    v2 = v ** 2
+
+    assert isinstance(v2, SIUnit) or isinstance(v2, Area)
+    assert v2.value == pytest.approx(9.0)
+    assert tuple(v2.exponents) == (2, 0, 0, 0, 0, 0, -2)
+
+# to unit
+def test_to_unit_returns_instance():
+    d = Distance(100, "cm")
+    d2 = d.to_unit("m")
+
+    assert isinstance(d2, Distance)
+    assert d2.value == pytest.approx(1.0)
+
+# newly added units
+def test_pressure_units():
+    p = Pressure(1, "bar")
+    assert p.value == pytest.approx(100000.0)
+
+
+def test_energy_units():
+    e = Energy(1, "kWh")
+    assert e.value == pytest.approx(3.6e6)
+
+
+def test_power_units():
+    p = Power(1, "hp")
+    assert p.value == pytest.approx(745.7)
+
+
+def test_frequency_units():
+    f = Frequency(60, "rpm")
+    assert f.value == pytest.approx(1.0)
+
+# derived units
+def test_energy_from_force_times_distance():
+    e = Force(10) * Distance(2)
+    assert isinstance(e, Energy)
+    assert e.value == pytest.approx(20.0)
+
+# error handling
+def test_invalid_conversion_unit():
+    d = Distance(1.0)
+    with pytest.raises(ValueError):
+        d.to("invalid_unit")
+
+
+def test_conversion_not_supported():
+    a = Acceleration(9.81)
+    with pytest.raises(ValueError):
+        a.to("ft/s^2")
+
+# covering _retype we discovered as edge case
+def test_inline_energy_retyping():
+    m = Distance(1)
+    s = TimeUnit(1)
+
+    c = 299_792_458 * m / s
+    energy = Mass(1.0) * c**2
+
+    assert isinstance(energy, Energy)
+
+# control test, already works but helps as regression test
+def test_energy_from_constants():
+    from simweave.units.constants import c
+
+    energy = Mass(1.0) * c**2
+
+    assert isinstance(energy, Energy)
+
+def test_energy_exponents_consistency():
+    m = Distance(1)
+    s = TimeUnit(1)
+
+    c = 299_792_458 * m / s
+    energy = Mass(1.0) * c**2
+
+    assert tuple(energy.exponents) == (2, 1, 0, 0, 0, 0, -2)
