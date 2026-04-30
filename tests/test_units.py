@@ -3,6 +3,7 @@ import numpy as np
 
 from simweave.units.si import (
     SIUnit,
+    Angle,
     Distance,
     Velocity,
     Acceleration,
@@ -333,3 +334,39 @@ def test_resistivity_relation():
     R = rho * L / A
 
     assert isinstance(R, Resistance)
+
+# angles
+def test_angle_conversion():
+    a = Angle(np.pi)
+
+    assert a.to("deg") == pytest.approx(180.0, rel=1e-9)
+
+def test_angle_from_degrees():
+    a = Angle(180.0, "deg")
+
+    assert a.value == pytest.approx(np.pi, rel=1e-9)
+
+def test_angle_round_trip():
+    a = Angle(45.0, "deg")
+
+    assert a.to("deg") == pytest.approx(45.0, rel=1e-9)
+
+def test_angle_array():
+    import numpy as np
+
+    a = Angle(np.array([0, np.pi / 2, np.pi]))
+
+    deg = a.to("deg")
+
+    assert np.allclose(deg, np.array([0, 90, 180]))
+
+def test_angle_invalid_unit():
+    with pytest.raises(ValueError):
+        Angle(1.0, "radians")
+
+def test_angle_format():
+    a = Angle(np.pi)
+
+    s = a.format("deg", precision=1)
+
+    assert "180.0 [deg]" in s
