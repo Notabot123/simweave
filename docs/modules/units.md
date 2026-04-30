@@ -159,7 +159,7 @@ weight = 80 * kg * g
 energy = sw.Mass(1) * c**2
 ```
 
-Full set of physical constants at current release (v0.5.0):
+Full set of physical constants at current release:
 ```python
 # Acceleration due to gravity
 g = 9.80665 * m / s**2

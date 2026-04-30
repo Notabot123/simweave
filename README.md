@@ -293,9 +293,6 @@ sim_engine/
 
 ## Next steps on the roadmap
 
-- **Numpy aware SIUnits.** Ensure our improved system works on arrays
-  not just scalars, with no regression. Add new classes such as
-  Voltage, Current, Resistance.
 - **PID Controllers.** To extend utility of dynamic simulations, allow
   controllers which are easily exposed to EdgeWeave.
 - **Fault injection.** This should be suitable for ML datasets with use
