@@ -6,6 +6,13 @@ Every quantity carries a 7-tuple of SI exponents — `(m, kg, A, K, mol,
 cd, s)` — and arithmetic operations compose those exponents and re-type
 the result automatically.
 
+Please note, for continuous models units are to be applied at the boundaries.
+Calculation is performed with floats for speed.
+All continuous models use SI units:
+- Displacement: metres (m)
+- Velocity: m/s
+- Angles: radians (rad)
+
 ```python
 import simweave as sw
 
@@ -46,6 +53,9 @@ The base class:
 - `Resistance`
 - `Capacitance`
 - `Resistivity`
+
+## Dimensionless
+- `Angle`
 
 ## Unit Conversion
 
@@ -145,6 +155,15 @@ Adding two absolute temperatures is not allowed:
 
 ```python
 t1 + t2   # ! raises TypeError
+```
+
+## Angles
+
+These are technically dimensionless however SimWeave allows conversion between Degrees and Radians
+
+```python
+phi = Angle(np.pi / 2)
+phi_deg = phi.to("deg")
 ```
 
 ## Physical Constants

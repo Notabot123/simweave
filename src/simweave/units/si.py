@@ -215,6 +215,26 @@ class SIUnit:
 # ---------------------------------------------------------------------------
 
 
+class Angle(SIUnit):
+    _SCALE_MAP: ClassVar[dict[str, float]] = {
+        "rad": 1.0,
+        "deg": np.pi / 180.0,
+    }
+
+    def __init__(self, value: float | SIUnit, unit: str = "rad"):
+        if isinstance(value, SIUnit):
+            value = value.value
+
+        if unit not in self._SCALE_MAP:
+            raise ValueError(f"Unsupported angle unit: {unit}")
+
+        super().__init__(
+            value=value * self._SCALE_MAP[unit],
+            unit="rad",
+            exponents=[0, 0, 0, 0, 0, 0, 0],  # dimensionless
+        )
+
+
 class Distance(SIUnit):
     _SCALE_MAP: ClassVar[dict[str, float]] = {
         "m": 1.0,
