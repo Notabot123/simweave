@@ -12,7 +12,7 @@ tight inner loops without allocating ndarrays.
 """
 
 from __future__ import annotations
-
+import numpy as np
 from dataclasses import dataclass, field
 from typing import ClassVar
 
@@ -49,7 +49,13 @@ class SIUnit:
     def __post_init__(self) -> None:
         if isinstance(self.value, SIUnit):
             self.value = self.value.value
-        self.value = float(self.value)
+        
+        if isinstance(self.value, np.ndarray):
+            pass  # keep as-is
+        elif isinstance(self.value, (int, float)):
+            self.value = float(self.value)
+        else:
+            raise TypeError("Value must be numeric or numpy array.")
         if len(self.exponents) != 7:
             raise ValueError("SI exponents must have length 7.")
 
@@ -120,21 +126,36 @@ class SIUnit:
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, SIUnit):
             return NotImplemented
-        return (
-            tuple(self.exponents) == tuple(other.exponents)
-            and self.value == other.value
-        )
+
+        if tuple(self.exponents) != tuple(other.exponents):
+            return False
+
+        if np is not None and isinstance(self.value, np.ndarray):
+            return np.array_equal(self.value, other.value)
+
+        return self.value == other.value
 
     def __hash__(self) -> int:
+        if np is not None and isinstance(self.value, np.ndarray):
+            raise TypeError("SIUnit with numpy array is not hashable")
         return hash((type(self), self.value, tuple(self.exponents)))   
     
     
     # -- exponentiation ---------------------------------------------------
-    def __pow__(self, power: int) -> "SIUnit":
-        if not isinstance(power, int):
-            raise TypeError("Power must be an integer.")
+    def __pow__(self, power: float) -> "SIUnit":
+        if not isinstance(power, (int, float)):
+            raise TypeError("Power must be numeric.")
 
         new_exp = tuple(e * power for e in self.exponents)
+
+        # ensure resulting exponents are integers
+        if not all(abs(e - round(e)) < 1e-12 for e in new_exp):
+            raise TypeError(
+                f"Power {power} produces non-integer exponents: {new_exp}"
+            )
+
+        new_exp = tuple(int(round(e)) for e in new_exp)
+
         return _retype(self.value ** power, new_exp)
 
 
@@ -161,7 +182,7 @@ class SIUnit:
             unit_str = unit
 
         if precision is not None:
-            val = round(val, precision)
+            np.round(val, precision)
 
         return f"{val} [{unit_str}]"
 
@@ -176,10 +197,16 @@ class SIUnit:
         for unit in reversed(display_units):
             val = self.to(unit)
             if abs(val) >= 1:
-                return f"{round(val, precision)} [{unit}]"
+                return f"{np.round(val, precision)} [{unit}]"
 
         unit = display_units[0]
-        return f"{round(self.to(unit), precision)} [{unit}]"
+        return f"{np.round(self.to(unit), precision)} [{unit}]"
+    
+    def sqrt(self):
+        return self ** 0.5
+    
+    def cbrt(self):
+        return self ** (1/3)
 
 
 # ---------------------------------------------------------------------------
@@ -211,7 +238,7 @@ class Distance(SIUnit):
         if unit not in self._SCALE_MAP:
             raise ValueError(f"Unsupported distance unit: {unit}")
         super().__init__(
-            value=float(value) * self._SCALE_MAP[unit],
+            value=value * self._SCALE_MAP[unit],
             unit="m",
             exponents=[1, 0, 0, 0, 0, 0, 0],
         )
@@ -235,7 +262,7 @@ class Velocity(SIUnit):
         if unit not in self._SCALE_MAP:
             raise ValueError(f"Unsupported velocity unit: {unit}")
         super().__init__(
-            value=float(value) * self._SCALE_MAP[unit],
+            value=value * self._SCALE_MAP[unit],
             unit="m/s",
             exponents=[1, 0, 0, 0, 0, 0, -1],
         )
@@ -253,7 +280,7 @@ class Acceleration(SIUnit):
         if unit not in self._SCALE_MAP:
             raise ValueError(f"Unsupported acceleration unit: {unit}")
         super().__init__(
-            value=float(value) * self._SCALE_MAP[unit],
+            value=value * self._SCALE_MAP[unit],
             unit="m/s^2",
             exponents=[1, 0, 0, 0, 0, 0, -2],
         )
@@ -281,7 +308,7 @@ class Mass(SIUnit):
         if unit not in self._SCALE_MAP:
             raise ValueError(f"Unsupported mass unit: {unit}")
         super().__init__(
-            value=float(value) * self._SCALE_MAP[unit],
+            value=value * self._SCALE_MAP[unit],
             unit="kg",
             exponents=[0, 1, 0, 0, 0, 0, 0],
         )
@@ -300,7 +327,7 @@ class Force(SIUnit):
         if unit not in self._SCALE_MAP:
             raise ValueError(f"Unsupported force unit: {unit}")
         super().__init__(
-            value=float(value) * self._SCALE_MAP[unit],
+            value=value * self._SCALE_MAP[unit],
             unit="N",
             exponents=[1, 1, 0, 0, 0, 0, -2],
         )
@@ -323,10 +350,10 @@ class Area(SIUnit):
         if unit not in self._SCALE_MAP:
             raise ValueError(f"Unsupported area unit: {unit}")
         super().__init__(
-            value=float(value) * self._SCALE_MAP[unit],
+            value=value * self._SCALE_MAP[unit],
             unit="m^2",
             exponents=[2, 0, 0, 0, 0, 0, 0],
-        )
+        )   
 
 
 class Volume(SIUnit):
@@ -355,7 +382,7 @@ class TimeUnit(SIUnit):
         if unit not in self._SCALE_MAP:
             raise ValueError(f"Unsupported time unit: {unit}")
         super().__init__(
-            value=float(value) * self._SCALE_MAP[unit],
+            value=value * self._SCALE_MAP[unit],
             unit="s",
             exponents=[0, 0, 0, 0, 0, 0, 1],
         )
@@ -378,7 +405,7 @@ class Pressure(SIUnit):
         if unit not in self._SCALE_MAP:
             raise ValueError(f"Unsupported pressure unit: {unit}")
         super().__init__(
-            value=float(value) * self._SCALE_MAP[unit],
+            value=value * self._SCALE_MAP[unit],
             unit="Pa",
             exponents=[-1, 1, 0, 0, 0, 0, -2],
         )
@@ -401,7 +428,7 @@ class Energy(SIUnit):
         if unit not in self._SCALE_MAP:
             raise ValueError(f"Unsupported energy unit: {unit}")
         super().__init__(
-            value=float(value) * self._SCALE_MAP[unit],
+            value=value * self._SCALE_MAP[unit],
             unit="J",
             exponents=[2, 1, 0, 0, 0, 0, -2],
         )
@@ -421,7 +448,7 @@ class Power(SIUnit):
         if unit not in self._SCALE_MAP:
             raise ValueError(f"Unsupported power unit: {unit}")
         super().__init__(
-            value=float(value) * self._SCALE_MAP[unit],
+            value=value * self._SCALE_MAP[unit],
             unit="W",
             exponents=[2, 1, 0, 0, 0, 0, -3],
         )
@@ -440,7 +467,7 @@ class Frequency(SIUnit):
         if unit not in self._SCALE_MAP:
             raise ValueError(f"Unsupported frequency unit: {unit}")
         super().__init__(
-            value=float(value) * self._SCALE_MAP[unit],
+            value=value * self._SCALE_MAP[unit],
             unit="Hz",
             exponents=[0, 0, 0, 0, 0, 0, -1],
         )
@@ -507,10 +534,48 @@ class TemperatureDelta(SIUnit):
         if unit not in self._SCALE_MAP:
             raise ValueError(f"Unsupported temperature difference unit: {unit}")
         super().__init__(
-            value=float(value) * self._SCALE_MAP[unit],
+            value=value * self._SCALE_MAP[unit],
             unit="K",
             exponents=[0, 0, 0, 1, 0, 0, 0],
         )
+
+# electric relevant units
+class Current(SIUnit):
+    def __init__(self, value: float | SIUnit):
+        super().__init__(value=value, unit="A", exponents=[0, 0, 1, 0, 0, 0, 0])
+
+class Voltage(SIUnit):
+    def __init__(self, value: float | SIUnit):
+        super().__init__(
+            value=value,
+            unit="V",
+            exponents=[2, 1, -1, 0, 0, 0, -3],
+        )
+
+class Resistance(SIUnit):
+    def __init__(self, value: float | SIUnit):
+        super().__init__(
+            value=value,
+            unit="Ω",
+            exponents=[2, 1, -2, 0, 0, 0, -3],
+        )
+
+class Capacitance(SIUnit):
+    def __init__(self, value: float | SIUnit):
+        super().__init__(
+            value=value,
+            unit="F",
+            exponents=[-2, -1, 2, 0, 0, 0, 4],
+        )
+
+class Resistivity(SIUnit):
+    def __init__(self, value: float | SIUnit):
+        super().__init__(
+            value=value,
+            unit="Ω·m",
+            exponents=[3, 1, -2, 0, 0, 0, -3],
+        )
+
 
 _KNOWN_BY_EXP: dict[tuple[int, ...], type[SIUnit]] = {
     (1, 0, 0, 0, 0, 0, 0): Distance,
@@ -525,5 +590,10 @@ _KNOWN_BY_EXP: dict[tuple[int, ...], type[SIUnit]] = {
     (2, 1, 0, 0, 0, 0, -2): Energy,
     (2, 1, 0, 0, 0, 0, -3): Power,
     (0, 0, 0, 0, 0, 0, -1): Frequency,
-    (0, 0, 0, 1, 0, 0, 0): Temperature
+    (0, 0, 0, 1, 0, 0, 0): Temperature,
+    (0, 0, 1, 0, 0, 0, 0): Current,
+    (2, 1, -1, 0, 0, 0, -3): Voltage,
+    (2, 1, -2, 0, 0, 0, -3): Resistance,
+    (-2, -1, 2, 0, 0, 0, 4): Capacitance,
+    (3, 1, -2, 0, 0, 0, -3): Resistivity,
 }

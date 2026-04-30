@@ -66,6 +66,20 @@ t2 = Temperature(20, "C")
 
 delta = t1 - t2
 ```
+Finally, we can also use fractional powers when they produce valid physical dimensions
+(e.g. √area → distance) using either:
+```python
+area = sw.Area(np.array([1, 4, 9]))
+length = area ** 0.5 # Distance([1.0, 2.0, 3.0]) [m]
+length = area.sqrt() # Distance([1.0, 2.0, 3.0]) [m]
+```
+or indeed:
+```python
+volume = sw.Volume(np.array([1, 8, 27]))
+length = volume ** (1/3) # Distance([1.0, 2.0, 3.0]) [m]
+length = volume.cbrt() # Distance([1.0, 2.0, 3.0]) [m]
+```
+
 ✔ Prevents invalid operations (e.g. distance + time)
 
 ✔ Automatically derives units (e.g. m/s → Velocity)
@@ -279,9 +293,6 @@ sim_engine/
 
 ## Next steps on the roadmap
 
-- **Numpy aware SIUnits.** Ensure our improved system works on arrays
-  not just scalars, with no regression. Add new classes such as
-  Voltage, Current, Resistance.
 - **PID Controllers.** To extend utility of dynamic simulations, allow
   controllers which are easily exposed to EdgeWeave.
 - **Fault injection.** This should be suitable for ML datasets with use

@@ -1,4 +1,5 @@
 import pytest
+import numpy as np
 
 from simweave.units.si import (
     SIUnit,
@@ -7,6 +8,7 @@ from simweave.units.si import (
     Acceleration,
     Mass,
     Area,
+    Volume,
     Force,
     TimeUnit,
     Energy,
@@ -14,7 +16,12 @@ from simweave.units.si import (
     Power,
     Frequency,
     Temperature,
-    TemperatureDelta
+    TemperatureDelta,
+    Voltage,
+    Current,
+    Resistance,
+    Capacitance,
+    Resistivity
 )
 
 
@@ -214,3 +221,115 @@ def test_energy_exponents_consistency():
     energy = Mass(1.0) * c**2
 
     assert tuple(energy.exponents) == (2, 1, 0, 0, 0, 0, -2)
+
+# numpy arrays with siunits
+def test_array_support():
+    d = Distance(np.array([1.0, 2.0, 3.0]))
+    t = TimeUnit(2.0)
+
+    v = d / t
+
+    assert isinstance(v, Velocity)
+    assert np.allclose(v.value, np.array([0.5, 1.0, 1.5]))
+
+def test_array_conversion():
+    import numpy as np
+
+    d = Distance(np.array([1.0, 2.0]), "m")
+    result = d.to("cm")
+
+    assert np.allclose(result, np.array([100.0, 200.0]))
+
+def test_sqrt_area():
+    a = Area(9.0)
+    d = a ** 0.5
+
+    assert isinstance(d, Distance)
+    assert d.value == pytest.approx(3.0)
+
+def test_cuberoot_volume():
+    v = Volume(8.0)
+    d = v ** (1/3)
+
+    assert isinstance(d, Distance)
+    assert d.value == pytest.approx(2.0)
+
+def test_invalid_fractional_power():
+    d = Distance(4.0)
+
+    with pytest.raises(TypeError):
+        _ = d ** 0.5
+
+# use of method .sqrt and .cdbrt
+def test_sqrt_area_method():
+    a = Area(9.0)
+    d = a.sqrt()
+
+    assert isinstance(d, Distance)
+    assert d.value == pytest.approx(3.0)
+
+def test_cbrt_volume_method():
+    v = Volume(8.0)
+    d = v.cbrt()
+
+    assert isinstance(d, Distance)
+    assert d.value == pytest.approx(2.0, rel=1e-9)
+
+def test_cbrt_volume_array():
+    import numpy as np
+
+    v = Volume(np.array([8.0]))
+    d = v.cbrt()
+
+    assert isinstance(d, Distance)
+    assert np.allclose(d.value, np.array([2.0]))
+
+def test_invalid_sqrt_distance():
+    d = Distance(4.0)
+
+    with pytest.raises(TypeError):
+        _ = d.sqrt()
+
+def test_array_sqrt():
+    import numpy as np
+
+    a = Area(np.array([1, 4, 9]))
+    d = a.sqrt()
+
+    assert isinstance(d, Distance)
+    assert np.allclose(d.value, np.array([1, 2, 3]))
+
+# electricity
+def test_ohms_law():
+    current = Current(2.0)
+    resistance = Resistance(5.0)
+
+    voltage = current * resistance
+
+    assert isinstance(voltage, Voltage)
+    assert voltage.value == pytest.approx(10.0)
+
+def test_resistance_from_voltage_current():
+    voltage = Voltage(10.0)
+    current = Current(2.0)
+
+    resistance = voltage / current
+
+    assert isinstance(resistance, Resistance)
+
+def test_capacitance_from_charge_voltage():
+    Q = Current(2.0) * TimeUnit(3.0)  # charge = I * t
+    V = Voltage(6.0)
+
+    C = Q / V
+
+    assert isinstance(C, Capacitance)
+
+def test_resistivity_relation():
+    rho = Resistivity(1.0)
+    L = Distance(2.0)
+    A = Area(1.0)
+
+    R = rho * L / A
+
+    assert isinstance(R, Resistance)

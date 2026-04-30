@@ -1,6 +1,6 @@
 # Parameter sweeps and sensitivity analysis
 
-**Status:** proposal for v0.5 (no code yet).
+**Status:** proposal for future release (no code yet).
 
 ## Motivation
 
@@ -40,7 +40,7 @@ Monte Carlo path.
   surrogate-modelling effort and probably belongs in a sister package.
 - Adaptive re-sampling on top of an initial grid.
 - Distributed sweeps across multiple machines (single-machine
-  multiprocessing is enough for v0.5).
+  multiprocessing is enough for now).
 
 ## Proposed surface
 
@@ -122,7 +122,7 @@ JSON serialisation path (and EdgeWeave consumption) works untouched.
 
 ## Open questions
 
-- **Sampling strategies.** Should the v0.5 helper take a `sampler=`
+- **Sampling strategies.** Should the v0.7 helper take a `sampler=`
   argument (full grid / Sobol / Latin hypercube / one-at-a-time) or
   ship a separate `sw.sample_sobol(...)` that *returns* a parameter
   grid for the helper to consume? Latter feels more composable.
