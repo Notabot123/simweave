@@ -1,4 +1,5 @@
 import pytest
+import numpy as np
 
 from simweave.units.si import (
     SIUnit,
@@ -214,3 +215,22 @@ def test_energy_exponents_consistency():
     energy = Mass(1.0) * c**2
 
     assert tuple(energy.exponents) == (2, 1, 0, 0, 0, 0, -2)
+
+# numpy arrays with siunits
+def test_array_support():
+    d = Distance(np.array([1.0, 2.0, 3.0]))
+    t = TimeUnit(2.0)
+
+    v = d / t
+
+    assert isinstance(v, Velocity)
+    assert np.allclose(v.value, np.array([0.5, 1.0, 1.5]))
+
+def test_array_conversion():
+    import numpy as np
+
+    d = Distance(np.array([1.0, 2.0]), "m")
+    result = d.to("cm")
+
+    assert np.allclose(result, np.array([100.0, 200.0]))
+

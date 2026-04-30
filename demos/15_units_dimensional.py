@@ -111,5 +111,16 @@ def main() -> None:
     energy_rel = Mass(1.0) * c**2    
     _show("E = mc^2 (1 kg)", energy_rel)
 
+    print()
+    print("--- NumPy array support --------------------------------------")
+
+    import numpy as np
+
+    d = Distance(np.array([10.0, 20.0, 30.0]))
+    t = TimeUnit(2.0)
+
+    v = d / t
+    _show("d / t (array)", v)
+
 if __name__ == "__main__":
     main()

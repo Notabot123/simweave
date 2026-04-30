@@ -74,6 +74,23 @@ e = sw.Energy(1500)
 e.auto_format()     # "1.5 [kJ]"
 ```
 
+## Working with arrays (NumPy)
+
+SimWeave supports NumPy arrays for vectorised calculations.
+
+```python
+import numpy as np
+import simweave as sw
+
+d = sw.Distance(np.array([1, 2, 3]))
+t = sw.TimeUnit(2)
+
+v = d / t
+
+print(v)
+# [0.5, 1.0, 1.5] [m/s]
+```
+
 ## Temperature (special case)
 
 Temperature supports both Kelvin and Celsius:
@@ -133,11 +150,21 @@ k_B = 1.380649e-23 * J / K
 - Prevents invalid operations (e.g. adding distance and time)
 - Converts units at construction time
 - Keeps everything internally in standard SI units
+- NumPy array support (__ufunc__ planned in future releases)
 
 ## What it does *not* do (yet)
 - Full unit parsing (e.g. "kg*m/s^2" strings)
 - Complex unit systems beyond SI
-- NumPy array support (planned)
+- Ability to use non-integer powers e.g. sqrt as **0.5 (example below)
+
+The following is possible
+```python
+length = Distance(np.sqrt(area.value))
+```
+however at current release this would cause an error:
+```python
+area ** 0.5
+```
 
 
 For a runnable walkthrough see
