@@ -484,8 +484,8 @@ def test_angular_acceleration_exponents():
 
 # inertia and torque
 def test_inertia_basic():
-    I = Inertia(10.0)
-    assert I.value == pytest.approx(10.0)
+    Inert = Inertia(10.0)
+    assert Inert.value == pytest.approx(10.0)
 
     with pytest.raises(ValueError):
         Inertia(1.0, "invalid")

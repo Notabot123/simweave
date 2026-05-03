@@ -1,12 +1,9 @@
 from __future__ import annotations
 
-from typing import Any, Iterable, Sequence
-
 import numpy as np
 
 from simweave.viz import _plotly
 from simweave.viz.themes import apply_theme
-from simweave.continuous.systems.full_car import FullCarModel
 
 from plotly.subplots import make_subplots
 
