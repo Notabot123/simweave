@@ -66,6 +66,19 @@ class SIUnit:
     def __repr__(self) -> str:  # pragma: no cover - cosmetic
         return f"{type(self).__name__}({self.value}, unit={self.unit!r})"
 
+    # -- simple stats methods ------------------------------------------------------
+    """
+    In future, we can utilise __array_ufunc__ if we want broadcasting and more NumPy behaviours
+    """
+    def max(self):
+        return type(self)(np.max(self.value))
+
+    def min(self):
+        return type(self)(np.min(self.value))
+
+    def mean(self):
+        return type(self)(np.mean(self.value))
+    
     # -- additive ------------------------------------------------------
     def _check_same_dim(self, other: "SIUnit") -> None:
         if tuple(self.exponents) != tuple(other.exponents):
@@ -235,6 +248,47 @@ class Angle(SIUnit):
         )
 
 
+class AngularVelocity(SIUnit):
+    _SCALE_MAP: ClassVar[dict[str, float]] = {
+        "rad/s": 1.0,
+        "deg/s": np.pi / 180.0,
+        "rpm": 2 * np.pi / 60.0,
+    }
+
+    def __init__(self, value: float | SIUnit, unit: str = "rad/s"):
+        if isinstance(value, SIUnit):
+            value = value.value
+
+        if unit not in self._SCALE_MAP:
+            raise ValueError(f"Unsupported angular velocity unit: {unit}")
+
+        super().__init__(
+            value=value * self._SCALE_MAP[unit],
+            unit="rad/s",
+            exponents=[0, 0, 0, 0, 0, 0, -1],  # same as Frequency
+        )
+
+
+class AngularAcceleration(SIUnit):
+    _SCALE_MAP: ClassVar[dict[str, float]] = {
+        "rad/s^2": 1.0,
+        "deg/s^2": np.pi / 180.0,
+    }
+
+    def __init__(self, value: float | SIUnit, unit: str = "rad/s^2"):
+        if isinstance(value, SIUnit):
+            value = value.value
+
+        if unit not in self._SCALE_MAP:
+            raise ValueError(f"Unsupported angular acceleration unit: {unit}")
+
+        super().__init__(
+            value=value * self._SCALE_MAP[unit],
+            unit="rad/s^2",
+            exponents=[0, 0, 0, 0, 0, 0, -2],
+        )
+
+
 class Distance(SIUnit):
     _SCALE_MAP: ClassVar[dict[str, float]] = {
         "m": 1.0,
@@ -334,6 +388,44 @@ class Mass(SIUnit):
         )
 
 
+class Inertia(SIUnit):
+    _SCALE_MAP: ClassVar[dict[str, float]] = {
+        "kg*m^2": 1.0,
+    }
+
+    def __init__(self, value: float | SIUnit, unit: str = "kg*m^2"):
+        if isinstance(value, SIUnit):
+            value = value.value
+
+        if unit not in self._SCALE_MAP:
+            raise ValueError(f"Unsupported inertia unit: {unit}")
+
+        super().__init__(
+            value=value * self._SCALE_MAP[unit],
+            unit="kg*m^2",
+            exponents=[2, 1, 0, 0, 0, 0, 0],
+        )
+
+class Torque(SIUnit):
+    _SCALE_MAP: ClassVar[dict[str, float]] = {
+        "N*m": 1.0,
+        "Nm": 1.0,
+    }
+
+    def __init__(self, value: float | SIUnit, unit: str = "N*m"):
+        if isinstance(value, SIUnit):
+            value = value.value
+
+        if unit not in self._SCALE_MAP:
+            raise ValueError(f"Unsupported torque unit: {unit}")
+
+        super().__init__(
+            value=value * self._SCALE_MAP[unit],
+            unit="N*m",
+            exponents=[2, 1, 0, 0, 0, 0, -2],
+        )
+
+
 class Force(SIUnit):
     _SCALE_MAP: ClassVar[dict[str, float]] = {
         "N": 1.0,
@@ -350,6 +442,45 @@ class Force(SIUnit):
             value=value * self._SCALE_MAP[unit],
             unit="N",
             exponents=[1, 1, 0, 0, 0, 0, -2],
+        )
+
+
+class SpringStiffness(SIUnit):
+    _SCALE_MAP: ClassVar[dict[str, float]] = {
+        "N/m": 1.0,
+        "kN/m": 1e3,
+    }
+
+    def __init__(self, value: float | SIUnit, unit: str = "N/m"):
+        if isinstance(value, SIUnit):
+            value = value.value
+
+        if unit not in self._SCALE_MAP:
+            raise ValueError(f"Unsupported stiffness unit: {unit}")
+
+        super().__init__(
+            value=value * self._SCALE_MAP[unit],
+            unit="N/m",
+            exponents=[0, 1, 0, 0, 0, 0, -2],
+        )
+
+
+class Damping(SIUnit):
+    _SCALE_MAP: ClassVar[dict[str, float]] = {
+        "N*s/m": 1.0,
+    }
+
+    def __init__(self, value: float | SIUnit, unit: str = "N*s/m"):
+        if isinstance(value, SIUnit):
+            value = value.value
+
+        if unit not in self._SCALE_MAP:
+            raise ValueError(f"Unsupported damping unit: {unit}")
+
+        super().__init__(
+            value=value * self._SCALE_MAP[unit],
+            unit="N*s/m",
+            exponents=[0, 1, 0, 0, 0, 0, -1],
         )
 
 
@@ -512,7 +643,7 @@ class Temperature(SIUnit):
             raise ValueError(f"Unsupported temperature unit: {unit}")
 
         # Convert to Kelvin
-        kelvin_value = float(value) * self._SCALE_MAP[unit] + self._OFFSET_MAP[unit]
+        kelvin_value = value * self._SCALE_MAP[unit] + self._OFFSET_MAP[unit]
 
         super().__init__(
             value=kelvin_value,
@@ -580,6 +711,26 @@ class Resistance(SIUnit):
             exponents=[2, 1, -2, 0, 0, 0, -3],
         )
 
+class Charge(SIUnit):
+    _SCALE_MAP: ClassVar[dict[str, float]] = {
+        "C": 1.0,
+        "mC": 1e-3,
+        "uC": 1e-6,
+    }
+
+    def __init__(self, value: float | SIUnit, unit: str = "C"):
+        if isinstance(value, SIUnit):
+            value = value.value
+
+        if unit not in self._SCALE_MAP:
+            raise ValueError(f"Unsupported charge unit: {unit}")
+
+        super().__init__(
+            value=float(value) * self._SCALE_MAP[unit],
+            unit="C",
+            exponents=[0, 0, 1, 0, 0, 0, 1],  # A·s
+        )
+
 class Capacitance(SIUnit):
     def __init__(self, value: float | SIUnit):
         super().__init__(
@@ -596,15 +747,75 @@ class Resistivity(SIUnit):
             exponents=[3, 1, -2, 0, 0, 0, -3],
         )
 
+class Inductance(SIUnit):
+    _SCALE_MAP: ClassVar[dict[str, float]] = {
+        "H": 1.0,
+        "mH": 1e-3,
+        "uH": 1e-6,
+    }
+
+    def __init__(self, value: float | SIUnit, unit: str = "H"):
+        if isinstance(value, SIUnit):
+            value = value.value
+
+        if unit not in self._SCALE_MAP:
+            raise ValueError(f"Unsupported inductance unit: {unit}")
+
+        super().__init__(
+            value=value * self._SCALE_MAP[unit],
+            unit="H",
+            exponents=[2, 1, -2, 0, 0, 0, -2],
+        )
+
+# thermal
+class ThermalResistance(SIUnit):
+    _SCALE_MAP: ClassVar[dict[str, float]] = {
+        "K/W": 1.0,
+    }
+
+    def __init__(self, value: float | SIUnit, unit: str = "K/W"):
+        if isinstance(value, SIUnit):
+            value = value.value
+
+        if unit not in self._SCALE_MAP:
+            raise ValueError(f"Unsupported thermal resistance unit: {unit}")
+
+        super().__init__(
+            value=value * self._SCALE_MAP[unit],
+            unit="K/W",
+            exponents=[-2, -1, 0, 1, 0, 0, 3],
+        )
+
+class ThermalCapacitance(SIUnit):
+    _SCALE_MAP: ClassVar[dict[str, float]] = {
+        "J/K": 1.0,
+        "kJ/K": 1e3,
+    }
+
+    def __init__(self, value: float | SIUnit, unit: str = "J/K"):
+        if isinstance(value, SIUnit):
+            value = value.value
+
+        if unit not in self._SCALE_MAP:
+            raise ValueError(f"Unsupported thermal capacitance unit: {unit}")
+
+        super().__init__(
+            value=value * self._SCALE_MAP[unit],
+            unit="J/K",
+            exponents=[2, 1, 0, -1, 0, 0, -2],
+        )
 
 _KNOWN_BY_EXP: dict[tuple[int, ...], type[SIUnit]] = {
     (1, 0, 0, 0, 0, 0, 0): Distance,
     (1, 0, 0, 0, 0, 0, -1): Velocity,
     (1, 0, 0, 0, 0, 0, -2): Acceleration,
     (0, 1, 0, 0, 0, 0, 0): Mass,
+    (2, 1, 0, 0, 0, 0, 0): Inertia,    
     (2, 0, 0, 0, 0, 0, 0): Area,
     (3, 0, 0, 0, 0, 0, 0): Volume,
     (1, 1, 0, 0, 0, 0, -2): Force,
+    (0, 1, 0, 0, 0, 0, -2): SpringStiffness,
+    (0, 1, 0, 0, 0, 0, -1): Damping,
     (0, 0, 0, 0, 0, 0, 1): TimeUnit,
     (-1, 1, 0, 0, 0, 0, -2): Pressure,
     (2, 1, 0, 0, 0, 0, -2): Energy,
@@ -613,7 +824,33 @@ _KNOWN_BY_EXP: dict[tuple[int, ...], type[SIUnit]] = {
     (0, 0, 0, 1, 0, 0, 0): Temperature,
     (0, 0, 1, 0, 0, 0, 0): Current,
     (2, 1, -1, 0, 0, 0, -3): Voltage,
-    (2, 1, -2, 0, 0, 0, -3): Resistance,
+    (2, 1, -2, 0, 0, 0, -3): Resistance,    
     (-2, -1, 2, 0, 0, 0, 4): Capacitance,
-    (3, 1, -2, 0, 0, 0, -3): Resistivity,
+    (3, 1, -2, 0, 0, 0, -3): Resistivity,   
+    
 }
+
+"""
+## Limitations of 'Known by exponential'
+
+Some units can't be derived unambiguosly and must be created explicitly.
+
+Frequency and Angular Velocity could be confused. Frequency is kept only.
+
+Torque may be confused with Energy
+(2, 1, 0, 0, 0, 0, -2): Torque,
+
+Charge could be misconstrued with Current x Time
+(0, 0, 1, 0, 0, 0, 1): Charge,
+
+Inductance shares exponents with:
+-Energy / Charge² relationships
+-other EM-derived quantities
+(2, 1, -2, 0, 0, 0, -2): Inductance,
+
+Thermal units overlap with:
+-inverse power
+-energy relationships
+(-2, -1, 0, 1, 0, 0, 3): ThermalResistance,
+(2, 1, 0, -1, 0, 0, -2): ThermalCapacitance,
+"""

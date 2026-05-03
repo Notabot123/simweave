@@ -14,6 +14,8 @@ import numpy as np
 
 from simweave.continuous.solver import simulate
 from simweave.continuous.systems import FullCarModel
+from simweave.viz.vehicle_dynamics import plot_vehicle_metrics
+from simweave.units.si import Acceleration, Angle
 
 
 def main():
@@ -41,6 +43,22 @@ def main():
     print("Max heave:", z_s.max())
     print("Max pitch:", theta.max())
     print("Max roll:", phi.max())
+
+    print("Wrap with dimensional units: /n")
+    results_with_units = model.wrap_states(result)
+    print("Max Heave:", results_with_units["z_s"].max())
+    print("Max Pitch:", results_with_units["theta"].max())
+    print("Max Roll:", results_with_units["phi"].max())
+
+    # Optionally pass model to include Tyre Forces else Deflection as default
+    fig = plot_vehicle_metrics(
+        result,
+        model=model
+    )
+
+    # Note plot function utilises simweave.analysis.vehicle import compute_full_car_metrics
+
+    fig.show()
 
 if __name__ == "__main__":
     main()

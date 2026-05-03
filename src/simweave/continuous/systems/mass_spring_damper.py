@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 
 from simweave.continuous.solver import DynamicSystem
-
+from simweave.units.si import Mass, SpringStiffness, Damping, Distance, Velocity
 
 class MassSpringDamper(DynamicSystem):
     """Single degree-of-freedom mass-spring-damper.
@@ -12,19 +12,24 @@ class MassSpringDamper(DynamicSystem):
     Equation: m x'' + c x' + k x = F(t)
     """
 
+    STATE_UNITS = {
+        "x": Distance,
+        "x_dot": Velocity,        
+    }
+
     def __init__(
         self,
-        mass: float,
-        damping: float,
-        stiffness: float,
+        mass: float | Mass,
+        damping: float | Damping,
+        stiffness: float | SpringStiffness,
         x0: tuple[float, float] = (0.0, 0.0),
     ):
         if mass <= 0:
             raise ValueError("mass must be positive")
-        self.mass = float(mass)
-        self.damping = float(damping)
-        self.stiffness = float(stiffness)
-        self._x0 = np.asarray(x0, dtype=float)
+        self.mass = self._val(mass)
+        self.damping = self._val(damping)
+        self.stiffness = self._val(stiffness)
+        self._x0 = np.asarray([self._val(v) for v in x0], dtype=float)
 
     def initial_state(self) -> np.ndarray:
         return self._x0.copy()

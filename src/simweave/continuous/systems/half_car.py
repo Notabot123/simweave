@@ -3,6 +3,7 @@ from __future__ import annotations
 import numpy as np
 
 from simweave.continuous.solver import DynamicSystem
+from simweave.units.si import Mass, Inertia, SpringStiffness, Damping, Distance, Velocity, Angle, AngularVelocity
 
 
 class HalfCarModel(DynamicSystem):
@@ -11,45 +12,55 @@ class HalfCarModel(DynamicSystem):
     State vector:
     x = [z_s, z_s_dot, theta, theta_dot, z_uf, z_uf_dot, z_ur, z_ur_dot]
     """
+    STATE_UNITS = {
+        "z_s": Distance,
+        "z_s_dot": Velocity,
+        "theta": Angle,
+        "theta_dot": AngularVelocity,
+        "z_uf": Distance,
+        "z_uf_dot": Velocity,
+        "z_ur": Distance,
+        "z_ur_dot": Velocity,
+    }
 
     def __init__(
         self,
-        sprung_mass: float,
-        pitch_inertia: float,
-        unsprung_mass_front: float,
-        unsprung_mass_rear: float,
-        k_sf: float,
-        k_sr: float,
-        c_sf: float,
-        c_sr: float,
-        k_tf: float,
-        k_tr: float,
-        a: float,  # CG → front axle
-        b: float,  # CG → rear axle
+        sprung_mass: float | Mass,
+        pitch_inertia: float | Inertia,
+        unsprung_mass_front: float | Mass,
+        unsprung_mass_rear: float | Mass,
+        k_sf: float | SpringStiffness,
+        k_sr: float | SpringStiffness,
+        c_sf: float | Damping,
+        c_sr: float | Damping,
+        k_tf: float | SpringStiffness,
+        k_tr: float | SpringStiffness,
+        a: float | Distance,  # CG → front axle
+        b: float | Distance,  # CG → rear axle
         x0: tuple[float, ...] = (0.0,) * 8,
     ):
-        if sprung_mass <= 0 or pitch_inertia <= 0:
+        if self._val(sprung_mass) <= 0 or self._val(pitch_inertia) <= 0:
             raise ValueError("Mass and inertia must be positive")
 
-        self.m_s = float(sprung_mass)
-        self.I_y = float(pitch_inertia)
+        self.m_s = self._val(sprung_mass)
+        self.I_y = self._val(pitch_inertia)
 
-        self.m_uf = float(unsprung_mass_front)
-        self.m_ur = float(unsprung_mass_rear)
+        self.m_uf = self._val(unsprung_mass_front)
+        self.m_ur = self._val(unsprung_mass_rear)
 
-        self.k_sf = float(k_sf)
-        self.k_sr = float(k_sr)
+        self.k_sf = self._val(k_sf)
+        self.k_sr = self._val(k_sr)
 
-        self.c_sf = float(c_sf)
-        self.c_sr = float(c_sr)
+        self.c_sf = self._val(c_sf)
+        self.c_sr = self._val(c_sr)
 
-        self.k_tf = float(k_tf)
-        self.k_tr = float(k_tr)
+        self.k_tf = self._val(k_tf)
+        self.k_tr = self._val(k_tr)
 
-        self.a = float(a)
-        self.b = float(b)
+        self.a = self._val(a)
+        self.b = self._val(b)
 
-        self._x0 = np.asarray(x0, dtype=float)
+        self._x0 = np.asarray([self._val(v) for v in x0], dtype=float)
 
     def initial_state(self) -> np.ndarray:
         return self._x0.copy()

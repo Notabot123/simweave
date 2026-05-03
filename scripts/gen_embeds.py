@@ -164,6 +164,41 @@ def build_agents() -> None:
 
 
 # --------------------------------------------------------------------------- #
+# Full Car Model: Show Acceleration, Suspension Travel & Tyre Forces          #
+# --------------------------------------------------------------------------- #
+
+
+def build_vehicle() -> None:
+    car = sw.FullCarModel(
+        sprung_mass=1200,
+        pitch_inertia=1500,
+        roll_inertia=800,
+        unsprung_mass=40,
+        k_s=20000,
+        c_s=1500,
+        k_t=200000,
+        a=1.2,
+        b=1.3,
+        track_width=1.6,
+    )
+
+    res = sw.simulate(
+        car,
+        t_span=(0.0, 5.0),
+        dt=0.005,
+        inputs=lambda t: np.array([0.01, 0.01, 0.0, 0.0]) if t > 1 else np.zeros(4),
+    )
+
+    fig = sw.plot_vehicle_metrics(
+        res,
+        title="Full car response (bump input)",
+        model=car
+    )
+
+    _emit(fig, "full_car_metrics")
+
+
+# --------------------------------------------------------------------------- #
 # Run all                                                                     #
 # --------------------------------------------------------------------------- #
 
@@ -174,6 +209,7 @@ def main() -> None:
     build_supplychain()
     build_monte_carlo()
     build_agents()
+    build_vehicle()
 
 
 # mkdocs-gen-files imports this module at build time and runs whatever

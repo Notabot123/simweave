@@ -3,39 +3,58 @@ from __future__ import annotations
 import numpy as np
 
 from simweave.continuous.solver import DynamicSystem
+from simweave.units.si import Mass, Inertia, SpringStiffness, Damping, Distance, Velocity, Angle, AngularVelocity
 
 class FullCarModel(DynamicSystem):
     """Full car model with pitch and roll dynamics."""
 
+    STATE_UNITS = {
+        "z_s": Distance,
+        "z_s_dot": Velocity,
+        "theta": Angle,
+        "theta_dot": AngularVelocity,
+        "phi": Angle,
+        "phi_dot": AngularVelocity,
+        "z_ufl": Distance,
+        "z_ufl_dot": Velocity,
+        "z_ufr": Distance,
+        "z_ufr_dot": Velocity,
+        "z_url": Distance,
+        "z_url_dot": Velocity,
+        "z_urr": Distance,
+        "z_urr_dot": Velocity,
+    }
+       
+
     def __init__(
         self,
-        sprung_mass: float,
-        pitch_inertia: float,
-        roll_inertia: float,
-        unsprung_mass: float,
-        k_s: float,
-        c_s: float,
-        k_t: float,
-        a: float,       # CG → front axle
-        b: float,       # CG → rear axle
-        track_width: float,
+        sprung_mass: float | Mass,
+        pitch_inertia: float | Inertia,
+        roll_inertia: float | Inertia,
+        unsprung_mass: float | Mass,
+        k_s: float | SpringStiffness,
+        c_s: float | Damping,
+        k_t: float | SpringStiffness,
+        a: float | Distance,       # CG → front axle
+        b: float | Distance,       # CG → rear axle
+        track_width: float | Distance,
         x0: tuple[float, ...] = (0.0,) * 14,
     ):
-        self.m_s = float(sprung_mass)
-        self.I_y = float(pitch_inertia)
-        self.I_phi = float(roll_inertia)
+        self.m_s = self._val(sprung_mass)
+        self.I_y = self._val(pitch_inertia)
+        self.I_phi = self._val(roll_inertia)
 
-        self.m_u = float(unsprung_mass)
+        self.m_u = self._val(unsprung_mass)
 
-        self.k_s = float(k_s)
-        self.c_s = float(c_s)
-        self.k_t = float(k_t)
+        self.k_s = self._val(k_s)
+        self.c_s = self._val(c_s)
+        self.k_t = self._val(k_t)
 
-        self.a = float(a)
-        self.b = float(b)
-        self.w = float(track_width)
+        self.a = self._val(a)
+        self.b = self._val(b)
+        self.w = self._val(track_width)
 
-        self._x0 = np.asarray(x0, dtype=float)
+        self._x0 = np.asarray([self._val(v) for v in x0], dtype=float)
 
     def initial_state(self):
         return self._x0.copy()
@@ -50,7 +69,7 @@ class FullCarModel(DynamicSystem):
             "z_url", "z_url_dot",
             "z_urr", "z_urr_dot",
         )
-
+    
     def derivatives(self, t, state, inputs=None):
         (
             z_s, z_s_dot,
@@ -63,9 +82,9 @@ class FullCarModel(DynamicSystem):
         ) = state
 
         if inputs is None:
-            z_rf = z_rr = z_rl = z_rrr = 0.0
+            z_rfl, z_rfr, z_rrl, z_rrr = 0.0
         else:
-            z_rf, z_rr, z_rl, z_rrr = inputs  # FL, FR, RL, RR
+            z_rfl, z_rfr, z_rrl, z_rrr = inputs  # FL, FR, RL, RR
 
         half_w = self.w / 2
 
@@ -111,9 +130,9 @@ class FullCarModel(DynamicSystem):
         ) / self.I_phi
 
         # --- WHEEL DYNAMICS ---
-        z_ufl_ddot = (-F_fl - self.k_t * (z_ufl - z_rf)) / self.m_u
-        z_ufr_ddot = (-F_fr - self.k_t * (z_ufr - z_rr)) / self.m_u
-        z_url_ddot = (-F_rl - self.k_t * (z_url - z_rl)) / self.m_u
+        z_ufl_ddot = (-F_fl - self.k_t * (z_ufl - z_rfl)) / self.m_u
+        z_ufr_ddot = (-F_fr - self.k_t * (z_ufr - z_rfr)) / self.m_u
+        z_url_ddot = (-F_rl - self.k_t * (z_url - z_rrl)) / self.m_u
         z_urr_ddot = (-F_rr - self.k_t * (z_urr - z_rrr)) / self.m_u
 
         return np.array([

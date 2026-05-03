@@ -19,7 +19,7 @@ from typing import Callable, Iterable, Optional, Protocol, runtime_checkable
 import numpy as np
 
 from simweave.core.entity import Entity
-
+from simweave.units.si import SIUnit
 
 ArrayLike = np.ndarray
 InputFunc = Callable[[float], np.ndarray | float | int | None]
@@ -32,6 +32,7 @@ class SimulationResult:
     state_labels: tuple[str, ...]
     system_name: str
     method: str
+    inputs: np.ndarray | None = None
 
     def final_state(self) -> np.ndarray:
         return self.state[-1].copy()
@@ -51,8 +52,28 @@ class SupportsDynamics(Protocol):
     ) -> np.ndarray: ...
 
 
+class WrappedResult:
+    def __init__(self, data):
+        self._data = data
+
+    def __getitem__(self, key):
+        return self._data[key]
+
+
 class DynamicSystem:
     """Base class for first-order state-space dynamic systems."""
+
+    STATE_UNITS: dict[str, type] = {}
+
+    @staticmethod
+    def _val(x):
+        """ Allow SIUnits to be supplied despite float for internal calcs """
+
+        if isinstance(x, SIUnit):
+            return x.value
+        if isinstance(x, (int, float, np.ndarray)):
+            return x
+        raise TypeError(f"Unsupported type for numeric value: {type(x)}")
 
     def initial_state(self) -> np.ndarray:
         raise NotImplementedError
@@ -75,6 +96,25 @@ class DynamicSystem:
     def validate_state(self, state: np.ndarray) -> None:
         if state.ndim != 1:
             raise ValueError("State must be a 1D array.")
+        
+    def get_state_unit(self, label: str):
+        return self.STATE_UNITS.get(label)
+    
+    def wrap_states(self, result):
+        wrapped = {}
+
+        labels = result.state_labels
+        state = result.state
+
+        for i, label in enumerate(labels):
+            unit_cls = self.STATE_UNITS.get(label)
+
+            if unit_cls is not None:
+                wrapped[label] = unit_cls(state[:, i])
+            else:
+                wrapped[label] = state[:, i]
+
+        return WrappedResult(wrapped)
 
     @property
     def name(self) -> str:
@@ -152,9 +192,32 @@ def simulate(
     state = np.zeros((time.size, x_init.size), dtype=float)
     state[0] = x_init
 
+    t0_input = _resolve_inputs(system, inputs, time[0])
+    inputs_log = [np.atleast_1d(t0_input).astype(float) if t0_input is not None else np.zeros(1)]
+
     stepper = _STEPPERS[method]
     for i in range(1, time.size):
+        t_prev = time[i - 1]
+
+        # --- resolve inputs ---
+        if inputs is not None:
+            u = inputs(t_prev)
+        else:
+            u = system.inputs(t_prev)
+
+        # normalise to array for storage
+        if u is None:
+            u_arr = np.zeros(1)
+        else:
+            u_arr = np.atleast_1d(u).astype(float)
+
+        inputs_log.append(u_arr)
+
+        # --- step ---
         state[i] = stepper(system, time[i - 1], state[i - 1], dt, inputs)
+
+    # gather inputs
+    inputs_array = np.vstack(inputs_log)
 
     labels = (
         tuple(system.state_labels())
@@ -167,6 +230,7 @@ def simulate(
         state_labels=labels,
         system_name=getattr(system, "name", system.__class__.__name__),
         method=method,
+        inputs=inputs_array,
     )
 
 

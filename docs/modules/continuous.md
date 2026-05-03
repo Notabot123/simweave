@@ -118,19 +118,37 @@ A 7 DOF (Degrees of Freedom) model is included, extending prior examples.
 - z_urr → rear-right
 
 ```python
-model = FullCarModel(
-        1200, 2500, 2200,
-        60,
-        20000, 1500,
-        150000,
-        1.2, 1.6,
-        1.6
-    )
+model = sw.FullCarModel(
+    sprung_mass=1200,
+    pitch_inertia=1500,
+    roll_inertia=800,
+    unsprung_mass=40,
+    k_s=20000,
+    c_s=1500,
+    k_t=200000,
+    a=1.2,
+    b=1.3,
+    track_width=1.6,
+)
 
-result = simulate(model, (0.0, 3.0), dt=0.001, 
-inputs=lambda t: (0.01, 0.0))
+result = simulate(
+    model, (0.0, 3.0),
+    dt=0.001, 
+    inputs=lambda t: np.array([0.01, 0.01, 0.0, 0.0]) if t > 1 else np.zeros(4),
+)
+
+fig = sw.plot_vehicle_metrics(
+    res,
+    title="Full car response (bump input)",
+    model=model,
+)
 ```
 See full demo: `demos/19_full_car_dynamics.py`
+
+<iframe src="../../embeds/full_car_metrics.html"
+        width="100%" height="900" frameborder="0"
+        loading="lazy">
+</iframe>
 
 
 ## API
