@@ -37,6 +37,9 @@ from simweave.continuous import (
     MassSpringDamper,
     SimplePendulum,
     QuarterCarModel,
+    HalfCarModel,
+    RollCarModel,
+    FullCarModel,
     SeriesRLC,
     ThermalRC,
     TwoMassThermal,
@@ -98,6 +101,7 @@ from simweave.viz import (
     plot_warehouse_stock,
     register_theme,
     set_default_theme,
+    plot_vehicle_metrics,
 )
 
 __version__ = "0.5.0"
@@ -133,6 +137,9 @@ __all__ = [
     "MassSpringDamper",
     "SimplePendulum",
     "QuarterCarModel",
+    "HalfCarModel",
+    "RollCarModel",
+    "FullCarModel",
     "SeriesRLC",
     "ThermalRC",
     "TwoMassThermal",
@@ -191,6 +198,7 @@ __all__ = [
     "plot_service_utilisation",
     "plot_state_trajectories",
     "plot_warehouse_stock",
+    "plot_vehicle_metrics",
     "register_theme",
     "set_default_theme",
     # Meta

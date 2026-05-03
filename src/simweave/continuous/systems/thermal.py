@@ -22,7 +22,7 @@ from __future__ import annotations
 import numpy as np
 
 from simweave.continuous.solver import DynamicSystem
-
+from simweave.units.si import ThermalCapacitance, ThermalResistance, Temperature
 
 class ThermalRC(DynamicSystem):
     """First-order lumped-capacitance thermal model.
@@ -41,19 +41,19 @@ class ThermalRC(DynamicSystem):
 
     def __init__(
         self,
-        thermal_resistance: float,
-        thermal_capacitance: float,
-        ambient_temperature: float = 293.15,
-        initial_temperature: float = 293.15,
+        thermal_resistance: float | ThermalResistance,
+        thermal_capacitance: float | ThermalCapacitance,
+        ambient_temperature: float | Temperature = 293.15,
+        initial_temperature: float | Temperature = 293.15,
     ) -> None:
-        if thermal_resistance <= 0 or thermal_capacitance <= 0:
+        if self._val(thermal_resistance) <= 0 or self._val(thermal_capacitance) <= 0:
             raise ValueError(
                 "thermal_resistance and thermal_capacitance must be positive."
             )
-        self.R_th = float(thermal_resistance)
-        self.C_th = float(thermal_capacitance)
-        self.T_inf = float(ambient_temperature)
-        self._x0 = np.array([float(initial_temperature)], dtype=float)
+        self.R_th = self._val(thermal_resistance)
+        self.C_th = self._val(thermal_capacitance)
+        self.T_inf = self._val(ambient_temperature)
+        self._x0 = np.asarray([self._val(v) for v in initial_temperature], dtype=float)
 
     def initial_state(self) -> np.ndarray:
         return self._x0.copy()

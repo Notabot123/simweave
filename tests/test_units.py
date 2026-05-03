@@ -4,13 +4,19 @@ import numpy as np
 from simweave.units.si import (
     SIUnit,
     Angle,
+    AngularVelocity,
+    AngularAcceleration,
     Distance,
     Velocity,
     Acceleration,
     Mass,
+    Inertia,
     Area,
     Volume,
     Force,
+    Torque,
+    SpringStiffness,
+    Damping,
     TimeUnit,
     Energy,
     Pressure,
@@ -21,8 +27,12 @@ from simweave.units.si import (
     Voltage,
     Current,
     Resistance,
+    Charge,
     Capacitance,
-    Resistivity
+    Resistivity,
+    Inductance,
+    ThermalResistance,
+    ThermalCapacitance
 )
 
 
@@ -318,6 +328,26 @@ def test_resistance_from_voltage_current():
 
     assert isinstance(resistance, Resistance)
 
+def test_charge_basic():
+    q = Charge(1.0)
+    assert q.value == pytest.approx(1.0)
+    assert q.unit == "C"
+
+def test_charge_scaling():
+    q = Charge(1000.0, "mC")
+    assert q.value == pytest.approx(1.0)
+
+    q = Charge(1_000_000.0, "uC")
+    assert q.value == pytest.approx(1.0)
+
+def test_charge_exponents():
+    q = Charge(1.0)
+    assert tuple(q.exponents) == (0, 0, 1, 0, 0, 0, 1)
+
+def test_charge_from_current_time():
+    q = Current(2.0) * TimeUnit(3.0)
+    assert tuple(q.exponents) == (0, 0, 1, 0, 0, 0, 1)
+
 def test_capacitance_from_charge_voltage():
     Q = Current(2.0) * TimeUnit(3.0)  # charge = I * t
     V = Voltage(6.0)
@@ -334,6 +364,36 @@ def test_resistivity_relation():
     R = rho * L / A
 
     assert isinstance(R, Resistance)
+
+def test_inductance_scaling():
+    L = Inductance(1.0, "mH")
+    assert L.value == pytest.approx(1e-3)
+
+    L = Inductance(1000.0, "uH")
+    assert L.value == pytest.approx(1e-3)
+
+    with pytest.raises(ValueError):
+        Inductance(1.0, "invalid")
+
+def test_inductance_exponents():
+    L = Inductance(1.0)
+    assert tuple(L.exponents) == (2, 1, -2, 0, 0, 0, -2)
+
+def test_inductance_array_support():
+    L = Inductance(np.array([1.0, 2.0]), "mH")
+    result = L.to("H")
+
+    assert np.allclose(result, np.array([1e-3, 2e-3]))
+
+def test_inductance_from_voltage_current():
+    # V = L di/dt → L = V / (di/dt)
+    V = Voltage(10.0)
+    di_dt = Current(2.0) / TimeUnit(1.0)
+
+    L = V / di_dt
+
+    assert isinstance(L, SIUnit)
+    assert tuple(L.exponents) == (2, 1, -2, 0, 0, 0, -2)
 
 # angles
 def test_angle_conversion():
@@ -370,3 +430,115 @@ def test_angle_format():
     s = a.format("deg", precision=1)
 
     assert "180.0 [deg]" in s
+
+# angular velocity
+def test_angular_velocity_scaling():
+    av = AngularVelocity(180.0, "deg/s")
+    assert av.value == pytest.approx(np.pi, rel=1e-9)
+
+    av = AngularVelocity(60.0, "rpm")
+    assert av.value == pytest.approx(2 * np.pi, rel=1e-9)
+
+    with pytest.raises(ValueError):
+        AngularVelocity(1.0, "invalid")
+
+def test_angular_velocity_conversion():
+    av = AngularVelocity(np.pi)
+
+    assert av.to("deg/s") == pytest.approx(180.0, rel=1e-9)
+    assert av.to("rpm") == pytest.approx(30.0, rel=1e-9)
+
+def test_angular_velocity_array_support():
+    av = AngularVelocity(np.array([0.0, np.pi]))
+    result = av.to("deg/s")
+
+    assert np.allclose(result, np.array([0.0, 180.0]))
+
+# angular acceleration
+def test_angular_acceleration_scaling():
+    aa = AngularAcceleration(180.0, "deg/s^2")
+    assert aa.value == pytest.approx(np.pi, rel=1e-9)
+
+    with pytest.raises(ValueError):
+        AngularAcceleration(1.0, "invalid")
+
+def test_angular_acceleration_conversion():
+    aa = AngularAcceleration(np.pi)
+
+    assert aa.to("deg/s^2") == pytest.approx(180.0, rel=1e-9)
+
+def test_angular_acceleration_array_support():
+    aa = AngularAcceleration(np.array([0.0, np.pi]))
+    result = aa.to("deg/s^2")
+
+    assert np.allclose(result, np.array([0.0, 180.0]))
+
+def test_angular_velocity_exponents():
+    av = AngularVelocity(1.0)
+    assert tuple(av.exponents) == (0, 0, 0, 0, 0, 0, -1)
+
+
+def test_angular_acceleration_exponents():
+    aa = AngularAcceleration(1.0)
+    assert tuple(aa.exponents) == (0, 0, 0, 0, 0, 0, -2)
+
+# inertia and torque
+def test_inertia_basic():
+    I = Inertia(10.0)
+    assert I.value == pytest.approx(10.0)
+
+    with pytest.raises(ValueError):
+        Inertia(1.0, "invalid")
+
+def test_torque_scaling():
+    t = Torque(10.0, "Nm")
+    assert t.value == pytest.approx(10.0)
+
+def test_torque_exponents():
+    t = Torque(1.0)
+    assert tuple(t.exponents) == (2, 1, 0, 0, 0, 0, -2)
+
+"""
+# will return Energy - we'd need vector quantities to know perpendicular to pivot etc
+def test_torque_from_force_distance():
+    t = Force(10.0) * Distance(2.0)
+    assert isinstance(t, Torque)
+"""
+
+# stiffness and damping
+def test_stiffness_scaling():
+    k = SpringStiffness(1.0, "kN/m")
+    assert k.value == pytest.approx(1000.0)
+
+def test_stiffness_exponents():
+    k = SpringStiffness(1.0)
+    assert tuple(k.exponents) == (0, 1, 0, 0, 0, 0, -2)
+
+def test_damping_basic():
+    c = Damping(10.0)
+    assert c.value == pytest.approx(10.0)
+
+def test_damping_exponents():
+    c = Damping(1.0)
+    assert tuple(c.exponents) == (0, 1, 0, 0, 0, 0, -1)
+
+# thermal
+def test_thermal_resistance_basic():
+    R = ThermalResistance(2.0)
+    assert R.value == pytest.approx(2.0)
+
+    with pytest.raises(ValueError):
+        ThermalResistance(1.0, "invalid")
+
+def test_thermal_resistance_exponents():
+    R = ThermalResistance(1.0)
+    assert tuple(R.exponents) == (-2, -1, 0, 1, 0, 0, 3)
+
+
+def test_thermal_capacitance_scaling():
+    C = ThermalCapacitance(1.0, "kJ/K")
+    assert C.value == pytest.approx(1000.0)
+
+def test_thermal_capacitance_exponents():
+    C = ThermalCapacitance(1.0)
+    assert tuple(C.exponents) == (2, 1, 0, -1, 0, 0, -2)

@@ -3,6 +3,7 @@ from __future__ import annotations
 import numpy as np
 
 from simweave.continuous.solver import DynamicSystem
+from simweave.units.si import Mass, SpringStiffness, Damping, Distance, Velocity
 
 
 class QuarterCarModel(DynamicSystem):
@@ -14,23 +15,30 @@ class QuarterCarModel(DynamicSystem):
         z_u: unsprung mass displacement
     """
 
+    STATE_UNITS = {
+        "z_s": Distance,
+        "z_s_dot": Velocity,
+        "z_u": Distance,
+        "z_u_dot": Velocity,        
+    }
+
     def __init__(
         self,
-        sprung_mass: float,
-        unsprung_mass: float,
-        suspension_stiffness: float,
-        damping: float,
-        tyre_stiffness: float,
+        sprung_mass: float | Mass,
+        unsprung_mass: float | Mass,
+        suspension_stiffness: float | SpringStiffness,
+        damping: float | Damping,
+        tyre_stiffness: float | SpringStiffness,
         x0: tuple[float, float, float, float] = (0.0, 0.0, 0.0, 0.0),
     ):
-        if sprung_mass <= 0 or unsprung_mass <= 0:
+        if self._val(sprung_mass) <= 0 or self._val(unsprung_mass) <= 0:
             raise ValueError("Masses must be positive")
-        self.m_s = float(sprung_mass)
-        self.m_u = float(unsprung_mass)
-        self.k_s = float(suspension_stiffness)
-        self.c_s = float(damping)
-        self.k_t = float(tyre_stiffness)
-        self._x0 = np.asarray(x0, dtype=float)
+        self.m_s = self._val(sprung_mass)
+        self.m_u = self._val(unsprung_mass)
+        self.k_s = self._val(suspension_stiffness)
+        self.c_s = self._val(damping)
+        self.k_t = self._val(tyre_stiffness)
+        self._x0 = np.asarray([self._val(v) for v in x0], dtype=float)
 
     def initial_state(self) -> np.ndarray:
         return self._x0.copy()
