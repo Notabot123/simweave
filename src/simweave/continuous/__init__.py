@@ -6,6 +6,7 @@ from simweave.continuous.solver import (
     SimulationResult,
     simulate,
     ContinuousProcess,
+    PIDController,
 )
 from simweave.continuous.systems import (
     MassSpringDamper,
@@ -25,6 +26,7 @@ __all__ = [
     "SimulationResult",
     "simulate",
     "ContinuousProcess",
+    "PIDController",
     "MassSpringDamper",
     "SimplePendulum",
     "QuarterCarModel",

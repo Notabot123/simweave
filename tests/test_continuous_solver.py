@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from simweave.continuous.solver import DynamicSystem, simulate, ContinuousProcess
+from simweave.continuous.solver import DynamicSystem, simulate, ContinuousProcess, PIDController
 from simweave.continuous.systems import (
     MassSpringDamper,
     SimplePendulum,
@@ -153,3 +153,10 @@ def test_continuous_process_integrates_with_env():
     r = proc.result()
     expected = np.exp(-2.0 * r.time[-1])
     assert np.isclose(r.state[-1, 0], expected, atol=1e-3)
+
+def test_pid_basic_response():
+    pid = PIDController(Kp=2.0)
+
+    u = pid(measurement=1.0, dt=0.1)
+
+    assert u == pytest.approx(-2.0)  # setpoint=0
