@@ -1,6 +1,113 @@
 import numpy as np
 from simweave.continuous.systems.full_car import FullCarModel
 
+def compute_quarter_car_metrics(result, model=None):
+    state = np.asarray(result.state)
+
+    z_s = state[:, 0]
+    z_s_dot = state[:, 1]
+    z_u = state[:, 2]
+
+    dt = np.mean(np.diff(result.time))
+    z_s_ddot = np.gradient(z_s_dot, dt)
+
+    rms = np.sqrt(np.mean(z_s_ddot**2))
+
+    travel = {
+        "single": z_s - z_u,
+    }
+
+    if model is not None:
+        k_t = model.k_t
+        z_r = result.inputs[:, 0] if result.inputs is not None else 0.0
+
+        tyre = {
+            "single": k_t * (z_u - z_r),
+        }
+        tyre_metric = {"name": "Tyre Load", "unit": "N"}
+    else:
+        tyre = {"single": z_u}
+        tyre_metric = {"name": "Tyre deflection", "unit": "m"}
+
+    return {
+        "body_accel": z_s_ddot,
+        "body_accel_RMS": rms,
+        "pitch": None,
+        "roll": None,
+        "suspension_travel": travel,
+        "tyre": tyre,
+        "tyre_metric": tyre_metric,
+    }
+
+def compute_half_car_pitch_metrics(result, model=None):
+    state = np.asarray(result.state)
+
+    z_s = state[:, 0]
+    z_s_dot = state[:, 1]
+    theta = state[:, 2]
+
+    z_uf = state[:, 4]
+    z_ur = state[:, 6]
+
+    dt = np.mean(np.diff(result.time))
+    z_s_ddot = np.gradient(z_s_dot, dt)
+    rms = np.sqrt(np.mean(z_s_ddot**2))
+
+    travel = {
+        "front": z_s - z_uf,
+        "rear": z_s - z_ur,
+    }
+
+    tyre = {
+        "front": z_uf,
+        "rear": z_ur,
+    }
+
+    return {
+        "body_accel": z_s_ddot,
+        "body_accel_RMS": rms,
+        "pitch": theta,
+        "roll": None,
+        "suspension_travel": travel,
+        "tyre": tyre,
+        "tyre_metric": {"name": "Tyre deflection", "unit": "m"},
+    }
+
+def compute_half_car_roll_metrics(result, model=None):
+    state = np.asarray(result.state)
+
+    z_s = state[:, 0]
+    z_s_dot = state[:, 1]
+    phi = state[:, 2]
+
+    z_ul = state[:, 4]
+    z_ur = state[:, 6]
+
+    dt = np.mean(np.diff(result.time))
+    z_s_ddot = np.gradient(z_s_dot, dt)
+    rms = np.sqrt(np.mean(z_s_ddot**2))
+
+    travel = {
+        "left": z_s - z_ul,
+        "right": z_s - z_ur,
+    }
+
+    tyre = {
+        "left": z_ul,
+        "right": z_ur,
+    }
+
+    return {
+        "body_accel": z_s_ddot,
+        "body_accel_RMS": rms,
+        "pitch": None,
+        "roll": phi,
+        "suspension_travel": travel,
+        "tyre": tyre,
+        "tyre_metric": {"name": "Tyre deflection", "unit": "m"},
+    }
+
+
 def compute_full_car_metrics(result, model: FullCarModel | None = None):
     """
     Compute relevant engineering metrics.
@@ -37,7 +144,7 @@ def compute_full_car_metrics(result, model: FullCarModel | None = None):
     }
 
     
-    if model is not None:
+    if model is not None and result.inputs is not None:
         # tyre stiffness
         k_t = model.k_t
 
@@ -85,3 +192,16 @@ def compute_full_car_metrics(result, model: FullCarModel | None = None):
         "tyre": tyre,
         "tyre_metric": tyre_metric
     }
+
+def compute_vehicle_metrics(result, model=None):
+    n = result.state.shape[1]
+
+    if n == 4:
+        return compute_quarter_car_metrics(result, model)
+    elif n == 8:
+        # ambiguous → assume pitch (or detect via labels)
+        return compute_half_car_pitch_metrics(result, model)
+    elif n == 14:
+        return compute_full_car_metrics(result, model)
+    else:
+        raise ValueError(f"Unsupported system with {n} states")
