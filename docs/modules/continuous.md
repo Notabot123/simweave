@@ -49,6 +49,14 @@ Wrap a system in `ContinuousProcess` to register it on a
 `SimEnvironment`. The integrator advances one tick per `env.tick()`
 call, so continuous physics share the clock with queues and agents.
 
+## PID Control
+Please see demo 20_PID_thermal_system.py to see a PID controller applied to a simple ThermalRC system.
+A temperature regulation system responding to workload changes could be helpful in real-world cases like:
+- CPUs
+- batteries
+- industrial heaters
+- HVAC systems
+
 # Vehicle dynamics examples
 ## Quarter car
 A 2 DOF (Degrees of Freedom) model with 4 variables (position + velocity).
