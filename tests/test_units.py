@@ -32,7 +32,8 @@ from simweave.units.si import (
     Resistivity,
     Inductance,
     ThermalResistance,
-    ThermalCapacitance
+    ThermalCapacitance,
+    ThermalConductance,
 )
 
 
@@ -542,3 +543,11 @@ def test_thermal_capacitance_scaling():
 def test_thermal_capacitance_exponents():
     C = ThermalCapacitance(1.0)
     assert tuple(C.exponents) == (2, 1, 0, -1, 0, 0, -2)
+
+def test_thermal_conductance():
+    g = ThermalConductance(10.0)
+    assert g.unit == "W/K"
+    assert g.value == 10.0
+
+    g_kw = ThermalConductance(1.0, "kW/K")
+    assert g_kw.value == 1000.0

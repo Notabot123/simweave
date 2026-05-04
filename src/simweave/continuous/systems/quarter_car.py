@@ -30,6 +30,7 @@ class QuarterCarModel(DynamicSystem):
         damping: float | Damping,
         tyre_stiffness: float | SpringStiffness,
         x0: tuple[float, float, float, float] = (0.0, 0.0, 0.0, 0.0),
+        controller = None
     ):
         if self._val(sprung_mass) <= 0 or self._val(unsprung_mass) <= 0:
             raise ValueError("Masses must be positive")
@@ -39,6 +40,7 @@ class QuarterCarModel(DynamicSystem):
         self.c_s = self._val(damping)
         self.k_t = self._val(tyre_stiffness)
         self._x0 = np.asarray([self._val(v) for v in x0], dtype=float)
+        self.controller = controller
 
     def initial_state(self) -> np.ndarray:
         return self._x0.copy()
@@ -55,12 +57,25 @@ class QuarterCarModel(DynamicSystem):
         suspension_deflection = z_s - z_u
         suspension_velocity = z_s_dot - z_u_dot
 
-        z_s_ddot = (
-            -self.k_s * suspension_deflection - self.c_s * suspension_velocity
-        ) / self.m_s
+        # calculate forces, whether passive or active
+        F_passive = (
+            -self.k_s * suspension_deflection
+            - self.c_s * suspension_velocity
+        )
+
+        F_control = 0.0
+        if self.controller is not None:
+            F_control = self.controller.force(
+                body_velocity=z_s_dot,
+                wheel_velocity=z_u_dot,
+            )
+
+        F_s = F_passive + F_control
+
+        z_s_ddot = F_s / self.m_s
+
         z_u_ddot = (
-            self.k_s * suspension_deflection
-            + self.c_s * suspension_velocity
+            -F_s
             - self.k_t * (z_u - z_r)
         ) / self.m_u
 

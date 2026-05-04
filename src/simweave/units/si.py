@@ -65,6 +65,10 @@ class SIUnit:
 
     def __repr__(self) -> str:  # pragma: no cover - cosmetic
         return f"{type(self).__name__}({self.value}, unit={self.unit!r})"
+    
+    # indexing
+    def __getitem__(self, idx):
+        return type(self)(self.value[idx])
 
     # -- simple stats methods ------------------------------------------------------
     """
@@ -803,6 +807,25 @@ class ThermalCapacitance(SIUnit):
             value=value * self._SCALE_MAP[unit],
             unit="J/K",
             exponents=[2, 1, 0, -1, 0, 0, -2],
+        )
+    
+class ThermalConductance(SIUnit):
+    """Thermal conductance (W/K)."""
+
+    _SCALE_MAP: ClassVar[dict[str, float]] = {
+        "W/K": 1.0,
+        "kW/K": 1e3,
+    }
+
+    def __init__(self, value: float | SIUnit, unit: str = "W/K"):
+        if isinstance(value, SIUnit):
+            value = value.value
+        if unit not in self._SCALE_MAP:
+            raise ValueError(f"Unsupported thermal conductance unit: {unit}")
+        super().__init__(
+            value=float(value) * self._SCALE_MAP[unit],
+            unit="W/K",
+            exponents=[2, 1, 0, -1, 0, 0, -3],  # W/K = J/s/K
         )
 
 _KNOWN_BY_EXP: dict[tuple[int, ...], type[SIUnit]] = {

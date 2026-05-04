@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 
 from simweave.continuous.solver import DynamicSystem
-from simweave.units.si import Resistance, Capacitance, Inductance
+from simweave.units.si import Resistance, Capacitance, Inductance, Current, Voltage
 
 class SeriesRLC(DynamicSystem):
     """Series RLC circuit in charge-current form.
@@ -12,6 +12,11 @@ class SeriesRLC(DynamicSystem):
     Equation:
         L q'' + R q' + (1/C) q = V(t)
     """
+
+    STATE_UNITS = {
+        "charge": Voltage,
+        "current": Current,      
+    }
 
     def __init__(
         self,

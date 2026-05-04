@@ -1,7 +1,8 @@
 import numpy as np
 import pytest
 
-from simweave.continuous.solver import DynamicSystem, simulate, ContinuousProcess, PIDController
+from simweave.continuous.solver import DynamicSystem, simulate, ContinuousProcess
+from simweave.continuous.control import PIDController
 from simweave.continuous.systems import (
     MassSpringDamper,
     SimplePendulum,
