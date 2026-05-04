@@ -163,8 +163,8 @@ def test_pid_basic_response():
     assert u == pytest.approx(-2.0)  # setpoint=0
 
 def test_skyhook_reduces_body_motion():
-    passive = QuarterCarModel(...)
-    controlled = QuarterCarModel(..., controller=SkyhookDamper(1500))
+    passive = QuarterCarModel(250, 40, 15000, 1500, 200000)
+    controlled = QuarterCarModel(250, 40, 15000, 1500, 200000, controller=SkyhookDamper(1500))
 
     r_passive = simulate(passive, (0, 2), dt=0.001, inputs=lambda t: 0.01)
     r_control = simulate(controlled, (0, 2), dt=0.001, inputs=lambda t: 0.01)

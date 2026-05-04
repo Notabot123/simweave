@@ -171,12 +171,12 @@ See:
 - simweave.continuous.control.suspension.HybridActiveDamper
 
 The former imagines one end of a damper 'connected to the sky' (an inertial reference point).
-The latter images on end affixed to the ground. This ensure dissipative force applies with respect to body movement, or wheel movement only as opposed to the releative velocities.
+The latter imagines one end affixed to the ground. This ensure dissipative force applies with respect to body movement, or wheel movement only as opposed to the releative velocities.
 
 Example controller usage:
 ```python
-passive = QuarterCarModel(...)
-controlled = QuarterCarModel(..., controller=SkyhookDamper(1500))
+passive = QuarterCarModel(250, 40, 15000, 1500, 200000)
+controlled = QuarterCarModel(250, 40, 15000, 1500, 200000, controller=SkyhookDamper(1500))
 
 r_passive = simulate(passive, (0, 2), dt=0.001, inputs=lambda t: 0.01)
 r_control = simulate(controlled, (0, 2), dt=0.001, inputs=lambda t: 0.01)
