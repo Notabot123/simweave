@@ -33,6 +33,7 @@ class RollCarModel(DynamicSystem):
         k_tr: float | SpringStiffness,
         track_width: float | Distance,
         x0: tuple[float, ...] = (0.0,) * 8,
+        controller = None,
     ):
         self.m_s = self._val(sprung_mass)
         self.I_phi = self._val(roll_inertia)
@@ -52,6 +53,7 @@ class RollCarModel(DynamicSystem):
         self.w = self._val(track_width)
 
         self._x0 = np.asarray([self._val(v) for v in x0], dtype=float)
+        self.controller = controller
 
     def initial_state(self):
         return self._x0.copy()
@@ -86,6 +88,11 @@ class RollCarModel(DynamicSystem):
         # forces
         F_sl = -self.k_sl * delta_l - self.c_sl * delta_l_dot
         F_sr = -self.k_sr * delta_r - self.c_sr * delta_r_dot
+
+        # optional controller forces e.g. skyhook
+        if self.controller is not None:
+            F_sl += self.controller.force(z_s_dot, z_ul_dot)
+            F_sr += self.controller.force(z_s_dot, z_ur_dot)
 
         # body
         z_s_ddot = (F_sl + F_sr) / self.m_s

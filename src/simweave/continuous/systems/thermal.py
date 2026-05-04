@@ -22,7 +22,8 @@ from __future__ import annotations
 import numpy as np
 
 from simweave.continuous.solver import DynamicSystem
-from simweave.units.si import ThermalCapacitance, ThermalResistance, Temperature
+from simweave.continuous.control import PIDController
+from simweave.units.si import ThermalCapacitance, ThermalResistance, ThermalConductance, Temperature
 
 class ThermalRC(DynamicSystem):
     """First-order lumped-capacitance thermal model.
@@ -39,12 +40,17 @@ class ThermalRC(DynamicSystem):
         Starting body temperature, same unit as ``ambient_temperature``.
     """
 
+    STATE_UNITS = {
+        "temperature": Temperature,
+    }
+
     def __init__(
         self,
         thermal_resistance: float | ThermalResistance,
         thermal_capacitance: float | ThermalCapacitance,
         ambient_temperature: float | Temperature = 293.15,
         initial_temperature: float | Temperature = 293.15,
+        controller: None | PIDController = None,
     ) -> None:
         if self._val(thermal_resistance) <= 0 or self._val(thermal_capacitance) <= 0:
             raise ValueError(
@@ -53,7 +59,8 @@ class ThermalRC(DynamicSystem):
         self.R_th = self._val(thermal_resistance)
         self.C_th = self._val(thermal_capacitance)
         self.T_inf = self._val(ambient_temperature)
-        self._x0 = np.asarray([self._val(v) for v in initial_temperature], dtype=float)
+        self._x0 = np.array([self._val(initial_temperature)], dtype=float)
+        self.controller = controller
 
     def initial_state(self) -> np.ndarray:
         return self._x0.copy()
@@ -66,6 +73,10 @@ class ThermalRC(DynamicSystem):
     ) -> np.ndarray:
         T = state[0]
         heat_in = 0.0 if inputs is None else float(inputs)
+
+        if self.controller is not None:
+            dt = 1e-3  # or pass properly later from solver
+            heat_in += self.controller(T, dt)
         dTdt = ((self.T_inf - T) / self.R_th + heat_in) / self.C_th
         return np.array([dTdt], dtype=float)
 
@@ -84,15 +95,20 @@ class TwoMassThermal(DynamicSystem):
     ``k_core_to_sink`` (W/K).
     """
 
+    STATE_UNITS = {
+        "core_temperature": Temperature,
+        "sink_temperature": Temperature,
+    }
+
     def __init__(
         self,
-        C_core: float,
-        C_sink: float,
-        k_core_to_sink: float,
-        R_sink_to_ambient: float,
-        ambient_temperature: float = 293.15,
-        initial_core: float = 293.15,
-        initial_sink: float = 293.15,
+        C_core: float | ThermalCapacitance,
+        C_sink: float | ThermalCapacitance,
+        k_core_to_sink: float | ThermalConductance,
+        R_sink_to_ambient: float | ThermalResistance,
+        ambient_temperature: float | Temperature = 293.15,
+        initial_core: float | Temperature = 293.15,
+        initial_sink: float | Temperature = 293.15,
     ) -> None:
         for name, val in (
             ("C_core", C_core),
@@ -100,14 +116,14 @@ class TwoMassThermal(DynamicSystem):
             ("k_core_to_sink", k_core_to_sink),
             ("R_sink_to_ambient", R_sink_to_ambient),
         ):
-            if val <= 0:
+            if self._val(val) <= 0:
                 raise ValueError(f"{name} must be positive.")
-        self.C_core = float(C_core)
-        self.C_sink = float(C_sink)
-        self.k_cs = float(k_core_to_sink)
-        self.R_sa = float(R_sink_to_ambient)
-        self.T_inf = float(ambient_temperature)
-        self._x0 = np.array([initial_core, initial_sink], dtype=float)
+        self.C_core = self._val(C_core)
+        self.C_sink = self._val(C_sink)
+        self.k_cs = self._val(k_core_to_sink)
+        self.R_sa = self._val(R_sink_to_ambient)
+        self.T_inf = self._val(ambient_temperature)
+        self._x0 = np.array([self._val(initial_core), self._val(initial_sink)], dtype=float)
 
     def initial_state(self) -> np.ndarray:
         return self._x0.copy()

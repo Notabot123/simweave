@@ -98,6 +98,10 @@ no dependency on each other.
 | `14_viz_tour.py`                           | Every plot helper, end-to-end           |
 | `15_units_dimensional.py`                  | SI-units algebra (e.g. m/s = velocity)  |
 | `16_inventory_optimisation.py`             | Optimisation from estimated demand      |
+| `17_half_car_pitch.py`                     | Extending suspension to front and rear  |
+| `18_half_car_roll.py`                      | Extending suspension to left and right  |
+| `19_full_car_dynamics.py`                  | Extending suspension to 7 DOF           |
+| `20_PID_thermal_system.py`                 | PID control in thermal RC example       |
 
 ## Status
 

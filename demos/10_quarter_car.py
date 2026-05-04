@@ -17,6 +17,8 @@ import numpy as np
 from simweave.continuous.solver import simulate
 from simweave.continuous.systems import QuarterCarModel
 
+from simweave.viz.vehicle_dynamics import plot_vehicle_metrics
+
 
 def road_input(t: float) -> float:
     """A 10 cm speed bump traversed between t=1 s and t=1.6 s."""
@@ -48,6 +50,21 @@ def describe(label: str, sprung=250.0, unsprung=40.0, ks=15_000.0,
     print(f"  peak sprung acceleration : {np.max(np.abs(z_s_ddot)):.2f} m/s^2")
     print(f"  RMS acceleration (ride)  : {np.sqrt(np.mean(z_s_ddot**2)):.2f} m/s^2")
     print()
+
+    print("Wrap with dimensional units:")
+    results_with_units = model.wrap_states(r)
+    print("Max sprung displacement:", results_with_units["z_s"].max())
+    print("Max sprung velocity:", results_with_units["z_s_dot"].max())
+
+    # Optionally pass model to include Tyre Forces else Deflection as default
+    fig = plot_vehicle_metrics(
+        r,
+        model=model
+    )
+
+    # Note plot function utilises simweave.analysis.vehicle import compute_vehicle_metrics
+    fig.show()
+
 
 
 def main() -> None:

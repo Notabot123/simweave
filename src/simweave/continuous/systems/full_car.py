@@ -39,6 +39,7 @@ class FullCarModel(DynamicSystem):
         b: float | Distance,       # CG → rear axle
         track_width: float | Distance,
         x0: tuple[float, ...] = (0.0,) * 14,
+        controller = None,
     ):
         self.m_s = self._val(sprung_mass)
         self.I_y = self._val(pitch_inertia)
@@ -55,6 +56,7 @@ class FullCarModel(DynamicSystem):
         self.w = self._val(track_width)
 
         self._x0 = np.asarray([self._val(v) for v in x0], dtype=float)
+        self.controller = controller
 
     def initial_state(self):
         return self._x0.copy()
@@ -116,6 +118,13 @@ class FullCarModel(DynamicSystem):
         F_fr = -self.k_s * d_fr - self.c_s * d_fr_dot
         F_rl = -self.k_s * d_rl - self.c_s * d_rl_dot
         F_rr = -self.k_s * d_rr - self.c_s * d_rr_dot
+
+        # optionally include controller force e.g. skyhook
+        if self.controller is not None:
+            F_fl += self.controller.force(z_s_dot, z_ufl_dot)
+            F_fr += self.controller.force(z_s_dot, z_ufr_dot)
+            F_rl += self.controller.force(z_s_dot, z_url_dot)
+            F_rr += self.controller.force(z_s_dot, z_urr_dot)
 
         # --- BODY DYNAMICS ---
         z_s_ddot = (F_fl + F_fr + F_rl + F_rr) / self.m_s

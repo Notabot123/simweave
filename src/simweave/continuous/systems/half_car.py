@@ -38,6 +38,7 @@ class HalfCarModel(DynamicSystem):
         a: float | Distance,  # CG → front axle
         b: float | Distance,  # CG → rear axle
         x0: tuple[float, ...] = (0.0,) * 8,
+        controller = None
     ):
         if self._val(sprung_mass) <= 0 or self._val(pitch_inertia) <= 0:
             raise ValueError("Mass and inertia must be positive")
@@ -61,6 +62,7 @@ class HalfCarModel(DynamicSystem):
         self.b = self._val(b)
 
         self._x0 = np.asarray([self._val(v) for v in x0], dtype=float)
+        self.controller = controller
 
     def initial_state(self) -> np.ndarray:
         return self._x0.copy()
@@ -104,21 +106,26 @@ class HalfCarModel(DynamicSystem):
         delta_f_dot = z_s_dot + self.a * theta_dot - z_uf_dot
         delta_r_dot = z_s_dot - self.b * theta_dot - z_ur_dot
 
-        # suspension forces
-        F_sf = -self.k_sf * delta_f - self.c_sf * delta_f_dot
-        F_sr = -self.k_sr * delta_r - self.c_sr * delta_r_dot
+        # suspension forces (passive  only)
+        F_front = -self.k_sf * delta_f - self.c_sf * delta_f_dot
+        F_rear = -self.k_sr * delta_r - self.c_sr * delta_r_dot
+
+        # optionally supplement with controller forces e.g. skyhook
+        if self.controller is not None:
+            F_front += self.controller.force(z_s_dot, z_uf_dot)
+            F_rear += self.controller.force(z_s_dot, z_ur_dot)
 
         # body dynamics
-        z_s_ddot = (F_sf + F_sr) / self.m_s
-        theta_ddot = (self.a * F_sf - self.b * F_sr) / self.I_y
+        z_s_ddot = (F_front + F_rear) / self.m_s
+        theta_ddot = (self.a * F_front - self.b * F_rear) / self.I_y
 
         # wheel dynamics
         z_uf_ddot = (
-            -F_sf - self.k_tf * (z_uf - z_rf)
+            -F_front - self.k_tf * (z_uf - z_rf)
         ) / self.m_uf
 
         z_ur_ddot = (
-            -F_sr - self.k_tr * (z_ur - z_rr)
+            -F_rear - self.k_tr * (z_ur - z_rr)
         ) / self.m_ur
 
         return np.array(

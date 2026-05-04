@@ -5,7 +5,7 @@ front/rear suspension interaction.
 
 Run::
 
-    python demos/17_half_car.py
+    python demos/17_half_car_pitch.py
 """
 
 from __future__ import annotations
@@ -17,6 +17,7 @@ import numpy as np
 from simweave.continuous.solver import simulate
 from simweave.continuous.systems import HalfCarModel
 
+from simweave.viz.vehicle_dynamics import plot_vehicle_metrics
 
 def _show(label: str, value) -> None:
     print(f"{label:<30} {value}")
@@ -70,10 +71,25 @@ def main() -> None:
     _show("Max pitch angle", np.max(theta))
 
     print()
+    print("Wrap with dimensional units:")
+    results_with_units = model.wrap_states(result)
+    print("Max sprung displacement:", results_with_units["z_s"].max())
+    print("Max sprung velocity:", results_with_units["theta"].max())
+
+    print()
     print("--- Interpretation -------------------------------------------")
     print("• Front bump induces initial pitch")
     print("• Rear bump excites opposite rotation")
     print("• System settles via damping")
+
+    # Optionally pass model to include Tyre Forces else Deflection as default
+    fig = plot_vehicle_metrics(
+        result,
+        model=model
+    )
+
+    # Note plot function utilises simweave.analysis.vehicle import compute_vehicle_metrics
+    fig.show()
 
 
 if __name__ == "__main__":

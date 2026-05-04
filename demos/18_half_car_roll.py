@@ -4,7 +4,7 @@ Demonstrates left-right dynamics and roll response to asymmetric road input.
 
 Run::
 
-    python demos/18_roll_car.py
+    python demos/18_half_car_roll.py
 """
 
 from __future__ import annotations
@@ -16,6 +16,7 @@ import numpy as np
 from simweave.continuous.solver import simulate
 from simweave.continuous.systems import RollCarModel
 
+from simweave.viz.vehicle_dynamics import plot_vehicle_metrics
 
 def _show(label: str, value) -> None:
     print(f"{label:<30} {value}")
@@ -68,10 +69,25 @@ def main() -> None:
     _show("Max roll angle", np.max(phi))
 
     print()
+    print("Wrap with dimensional units:")
+    results_with_units = model.wrap_states(result)
+    print("Max sprung displacement:", results_with_units["z_s"].max())
+    print("Max sprung velocity:", results_with_units["phi"].max())
+
+    print()
     print("--- Interpretation -------------------------------------------")
     print("• Left bump induces roll to the right")
     print("• Suspension resists roll via stiffness/damping")
     print("• System settles to equilibrium")
+
+    # Optionally pass model to include Tyre Forces else Deflection as default
+    fig = plot_vehicle_metrics(
+        result,
+        model=model
+    )
+
+    # Note plot function utilises simweave.analysis.vehicle import compute_vehicle_metrics
+    fig.show()
 
 
 if __name__ == "__main__":

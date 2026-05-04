@@ -4,6 +4,14 @@ import numpy as np
 
 from simweave.viz import _plotly
 from simweave.viz.themes import apply_theme
+from simweave.analysis.vehicle import compute_vehicle_metrics
+
+from simweave.units.si import (
+        Acceleration,
+        Angle,
+        Distance,
+        Force,
+    )
 
 from plotly.subplots import make_subplots
 
@@ -15,67 +23,80 @@ def plot_vehicle_metrics(
     theme: str | None = None,
     title: str | None = None,
 ):
-    """Plot vehicle metrics with automatic unit handling."""
+    """Plot vehicle metrics with adaptive layout and automatic units."""
 
     go = _plotly.require_go()
-    from simweave.analysis.vehicle import compute_full_car_metrics
-    from simweave.units.si import (
-        Acceleration,
-        Angle,
-        Distance,
-        Force,
-    )
 
-    metrics = compute_full_car_metrics(result, model)
+    metrics = compute_vehicle_metrics(result, model)
     t = np.asarray(result.time)
 
-    # --- auto unit conversion helpers ---
+    # --- unit helpers ---
     def accel(x): return Acceleration(x).to("m/s^2")
     def angle(x): return Angle(x).to("deg")
     def dist(x): return Distance(x).to("m")
     def force(x): return Force(x).to("N")
 
-    # --- create subplots ---
+    # --- detect signals ---
+    has_pitch = metrics["pitch"] is not None
+    has_roll = metrics["roll"] is not None
+
+    # --- build subplot structure ---
+    subplot_titles = ["Body acceleration (comfort)"]
+
+    if has_pitch or has_roll:
+        subplot_titles.append("Pitch / Roll")
+
+    subplot_titles.append("Suspension travel")
+    subplot_titles.append(metrics["tyre_metric"]["name"])
+
+    n_rows = len(subplot_titles)
+
     fig = make_subplots(
-        rows=4,
+        rows=n_rows,
         cols=1,
         shared_xaxes=True,
         vertical_spacing=0.08,
-        subplot_titles=(
-            "Body acceleration (comfort)",
-            "Pitch / Roll",
-            "Suspension travel",
-            metrics["tyre_metric"]["name"],
-        ),
+        subplot_titles=tuple(subplot_titles),
     )
 
+    row = 1
+
     # --- 1. BODY ACCEL ---
-    y = accel(metrics["body_accel"])
     fig.add_trace(
-        go.Scatter(x=t, y=y, mode="lines", name="body accel [m/s²]"),
-        row=1, col=1,
+        go.Scatter(x=t, y=accel(metrics["body_accel"]), mode="lines",
+                   name="body accel [m/s²]"),
+        row=row, col=1,
     )
 
     rms = accel(metrics["body_accel_RMS"])
     fig.add_annotation(
         text=f"RMS: {rms:.3f} m/s²",
-        xref="paper",
-        yref="paper",
-        x=0.01,
-        y=0.98,
+        xref="paper", yref="paper",
+        x=0.01, y=0.98,
         showarrow=False,
     )
 
-    # --- 2. PITCH / ROLL ---
-    fig.add_trace(
-        go.Scatter(x=t, y=angle(metrics["pitch"]), mode="lines", name="pitch [deg]"),
-        row=2, col=1,
-    )
+    fig.update_yaxes(title_text="m/s²", row=row)
+    row += 1
 
-    fig.add_trace(
-        go.Scatter(x=t, y=angle(metrics["roll"]), mode="lines", name="roll [deg]"),
-        row=2, col=1,
-    )
+    # --- 2. PITCH / ROLL (optional) ---
+    if has_pitch or has_roll:
+        if has_pitch:
+            fig.add_trace(
+                go.Scatter(x=t, y=angle(metrics["pitch"]),
+                           mode="lines", name="pitch [deg]"),
+                row=row, col=1,
+            )
+
+        if has_roll:
+            fig.add_trace(
+                go.Scatter(x=t, y=angle(metrics["roll"]),
+                           mode="lines", name="roll [deg]"),
+                row=row, col=1,
+            )
+
+        fig.update_yaxes(title_text="deg", row=row)
+        row += 1
 
     # --- 3. SUSPENSION TRAVEL ---
     for key, data in metrics["suspension_travel"].items():
@@ -86,8 +107,11 @@ def plot_vehicle_metrics(
                 mode="lines",
                 name=f"{key.upper()} travel [m]",
             ),
-            row=3, col=1,
+            row=row, col=1,
         )
+
+    fig.update_yaxes(title_text="m", row=row)
+    row += 1
 
     # --- 4. TYRE ---
     tyre_metric = metrics["tyre_metric"]
@@ -108,20 +132,17 @@ def plot_vehicle_metrics(
                 line={"dash": "dot"},
                 name=f"{key.upper()} tyre [{unit_label}]",
             ),
-            row=4, col=1,
+            row=row, col=1,
         )
+
+    fig.update_yaxes(title_text=unit_label, row=row)
 
     # --- layout ---
     fig.update_layout(
         title=title or "Vehicle metrics",
         xaxis_title="time",
         legend_title_text="signals",
-        height=900,
+        height=300 * n_rows,  # dynamic height
     )
-
-    fig.update_yaxes(title_text="m/s²", row=1)
-    fig.update_yaxes(title_text="deg", row=2)
-    fig.update_yaxes(title_text="m", row=3)
-    fig.update_yaxes(title_text=unit_label, row=4)
 
     return apply_theme(fig, theme)

@@ -31,7 +31,8 @@ from simweave.units.si import (
     Resistivity,
     Inductance,
     ThermalResistance,
-    ThermalCapacitance
+    ThermalCapacitance,
+    ThermalConductance,
 )
 
 __all__ = [
@@ -65,5 +66,6 @@ __all__ = [
     "Resistivity",
     "Inductance",
     "ThermalResistance",
-    "ThermalCapacitance"
+    "ThermalCapacitance",
+    "ThermalConductance",
 ]

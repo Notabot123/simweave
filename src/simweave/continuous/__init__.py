@@ -7,6 +7,13 @@ from simweave.continuous.solver import (
     simulate,
     ContinuousProcess,
 )
+from simweave.continuous.control import (
+    PIDController,
+    SkyhookDamper,
+    GroundhookDamper,
+    HybridActiveDamper,
+    SemiActiveWrapper,
+)
 from simweave.continuous.systems import (
     MassSpringDamper,
     SimplePendulum,
@@ -25,6 +32,11 @@ __all__ = [
     "SimulationResult",
     "simulate",
     "ContinuousProcess",
+    "PIDController",
+    "SkyhookDamper",
+    "GroundhookDamper",
+    "HybridActiveDamper",
+    "SemiActiveWrapper",
     "MassSpringDamper",
     "SimplePendulum",
     "QuarterCarModel",
