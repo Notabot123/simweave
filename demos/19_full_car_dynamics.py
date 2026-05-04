@@ -43,7 +43,7 @@ def main():
     print("Max pitch:", theta.max())
     print("Max roll:", phi.max())
 
-    print("Wrap with dimensional units: /n")
+    print("Wrap with dimensional units:")
     results_with_units = model.wrap_states(result)
     print("Max Heave:", results_with_units["z_s"].max())
     print("Max Pitch:", results_with_units["theta"].max())

@@ -82,7 +82,7 @@ model = sw.HalfCarModel(
 r = sw.simulate(model, (0.0, 2.0), dt=0.001,
                 inputs=lambda t: (0.01, 0.01))
 ```
-See full demo: `demos/17_half_car.py`
+See full demo: `demos/17_half_car_pitch.py`
 
 ## Roll model (left/right)
 A 4 DOF (Degrees of Freedom) model for simulating roll movement between left and right.
@@ -104,7 +104,7 @@ model = sw.RollCarModel(
 r = sw.simulate(model, (0.0, 2.0), dt=0.001,
                 inputs=lambda t: (0.01, 0.0))
 ```
-See full demo: `demos/18_roll_car_model.py`
+See full demo: `demos/18_half_car_roll_model.py`
 
 ## Full Car Model
 A 7 DOF (Degrees of Freedom) model is included, extending prior examples.
@@ -150,6 +150,53 @@ See full demo: `demos/19_full_car_dynamics.py`
         loading="lazy">
 </iframe>
 
+## Suspension Controllers
+From v0.6.0, SimWeave includes controllers to help optimise dynamics according to prefered performance criteria:
+- Comfort (Acceleration of Vertical Vibrations)
+- Grip (Dynamic Tyre Loading)
+- Hybrid
+
+These are realised by Skyhook and Groundhook control.
+See:
+- simweave.continuous.control.suspension.SkyhookDamper
+- simweave.continuous.control.suspension.GroundhookDamper
+- simweave.continuous.control.suspension.HybridActiveDamper
+
+The former imagines one end of a damper 'connected to the sky' (an inertial reference point).
+The latter images on end affixed to the ground. This ensure dissipative force applies with respect to body movement, or wheel movement only as opposed to the releative velocities.
+
+Example controller usage:
+```python
+passive = QuarterCarModel(...)
+controlled = QuarterCarModel(..., controller=SkyhookDamper(1500))
+
+r_passive = simulate(passive, (0, 2), dt=0.001, inputs=lambda t: 0.01)
+r_control = simulate(controlled, (0, 2), dt=0.001, inputs=lambda t: 0.01)
+
+z_passive = r_passive.state[:, 0]
+z_control = r_control.state[:, 0]
+
+print(f"Standard deviation controlled system: {z_control.std()}")
+print(f"Standard deviation passive system: {z_passive.std()}")
+```
+
+A difference between an idealised behaviour, and the passive suspension can be used as a control signal.
+This could be used by an actuator in place of a damper, capable of adding energy into the system as a 'Fully Active' system.
+Alternatively, it could be a variable damping coefficient e.g. magnetorheological (MR) dampers.
+
+To ensure fidelity with a real-world suspension that is only dissipative in nature, a wrapper allows for controller force to only apply when Force * relative velocity is negative.
+
+See: simweave.continuous.control.suspension.SemiActiveWrapper
+
+```python
+# enforce dissipative constraint
+if F * v_rel > 0:
+    return 0.0
+```
+Example wrapper usage:
+```python
+controller = SemiActiveWrapper(SkyhookDamper(1500))
+```
 
 ## API
 

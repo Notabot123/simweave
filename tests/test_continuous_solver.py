@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from simweave.continuous.solver import DynamicSystem, simulate, ContinuousProcess
-from simweave.continuous.control import PIDController
+from simweave.continuous.control import PIDController, SkyhookDamper
 from simweave.continuous.systems import (
     MassSpringDamper,
     SimplePendulum,
@@ -161,3 +161,15 @@ def test_pid_basic_response():
     u = pid(measurement=1.0, dt=0.1)
 
     assert u == pytest.approx(-2.0)  # setpoint=0
+
+def test_skyhook_reduces_body_motion():
+    passive = QuarterCarModel(...)
+    controlled = QuarterCarModel(..., controller=SkyhookDamper(1500))
+
+    r_passive = simulate(passive, (0, 2), dt=0.001, inputs=lambda t: 0.01)
+    r_control = simulate(controlled, (0, 2), dt=0.001, inputs=lambda t: 0.01)
+
+    z_passive = r_passive.state[:, 0]
+    z_control = r_control.state[:, 0]
+
+    assert z_control.std() < z_passive.std()

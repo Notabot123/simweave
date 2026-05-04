@@ -51,7 +51,7 @@ def describe(label: str, sprung=250.0, unsprung=40.0, ks=15_000.0,
     print(f"  RMS acceleration (ride)  : {np.sqrt(np.mean(z_s_ddot**2)):.2f} m/s^2")
     print()
 
-    print("Wrap with dimensional units: /n")
+    print("Wrap with dimensional units:")
     results_with_units = model.wrap_states(r)
     print("Max sprung displacement:", results_with_units["z_s"].max())
     print("Max sprung velocity:", results_with_units["z_s_dot"].max())
