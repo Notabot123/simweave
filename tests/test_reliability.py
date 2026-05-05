@@ -23,7 +23,7 @@ from simweave.discrete.resources import Resource, ResourcePool
 from simweave.reliability.entity import ReliableEntity
 from simweave.reliability.fleet import Fleet, FleetAvailabilityRecorder
 from simweave.reliability.repair import RepairCentre, RepairJob
-from simweave.reliability.sensitivity import SweepResult, sensitivity_sweep
+from simweave.reliability.sensitivity import sensitivity_sweep
 from simweave.reliability.subsystem import SubsystemSpec, SubsystemState, SubsystemStatus
 from simweave.supplychain.inventory import InventoryItems
 from simweave.supplychain.warehouse import Warehouse
@@ -765,8 +765,6 @@ class TestSensitivitySweep:
 
 def test_top_level_exports():
     """All reliability names must be importable from the top-level package."""
-    import simweave as sw
-
     assert hasattr(sw, "SubsystemSpec")
     assert hasattr(sw, "SubsystemState")
     assert hasattr(sw, "SubsystemStatus")
