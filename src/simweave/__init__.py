@@ -56,6 +56,18 @@ from simweave.agents import (
     chebyshev,
 )
 from simweave.supplychain import InventoryItems, Warehouse
+from simweave.reliability import (
+    SubsystemSpec,
+    SubsystemState,
+    SubsystemStatus,
+    RepairJob,
+    RepairCentre,
+    ReliableEntity,
+    Fleet,
+    FleetAvailabilityRecorder,
+    SweepResult,
+    sensitivity_sweep,
+)
 from simweave.mc import MCResult, run_monte_carlo, run_batched_mc
 from simweave.units import (
     SIUnit,
@@ -99,6 +111,8 @@ from simweave.viz import (
     plot_service_utilisation,
     plot_state_trajectories,
     plot_warehouse_stock,
+    plot_fleet_availability,
+    plot_sensitivity_surface,
     register_theme,
     set_default_theme,
     plot_vehicle_metrics,
@@ -157,6 +171,17 @@ __all__ = [
     # Supply chain
     "InventoryItems",
     "Warehouse",
+    # Reliability
+    "SubsystemSpec",
+    "SubsystemState",
+    "SubsystemStatus",
+    "RepairJob",
+    "RepairCentre",
+    "ReliableEntity",
+    "Fleet",
+    "FleetAvailabilityRecorder",
+    "SweepResult",
+    "sensitivity_sweep",
     # Monte Carlo
     "MCResult",
     "run_monte_carlo",
@@ -198,6 +223,8 @@ __all__ = [
     "plot_service_utilisation",
     "plot_state_trajectories",
     "plot_warehouse_stock",
+    "plot_fleet_availability",
+    "plot_sensitivity_surface",
     "plot_vehicle_metrics",
     "register_theme",
     "set_default_theme",

@@ -96,6 +96,7 @@ nav:
       - Discrete: modules/discrete.md
       - Agents and spatial: modules/agents.md
       - Supply chain: modules/supplychain.md
+      - Reliability: modules/reliability.md
       - Monte Carlo: modules/mc.md
       - Currency: modules/currency.md
       - Units: modules/units.md
