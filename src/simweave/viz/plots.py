@@ -607,6 +607,227 @@ def plot_agent_path(
     return apply_theme(fig, theme)
 
 
+# --------------------------------------------------------------------------- #
+# Reliability: fleet availability stacked area                                #
+# --------------------------------------------------------------------------- #
+
+
+def plot_fleet_availability(
+    recorder: Any,
+    *,
+    normalize: bool = False,
+    theme: str | None = None,
+    title: str | None = None,
+) -> Any:
+    """Stacked area chart of fleet operational availability over time.
+
+    The three stacked layers are (bottom to top):
+
+    * **awaiting part** -- entities grounded waiting for spare stock (red).
+    * **in repair** -- parts obtained, repair in progress (amber).
+    * **operational** -- fully mission-capable (green).
+
+    Parameters
+    ----------
+    recorder:
+        A :class:`~simweave.reliability.fleet.FleetAvailabilityRecorder`
+        (or any object exposing ``.times``, ``.operational``,
+        ``.in_repair``, ``.awaiting_part``, and ``.fleet``).
+    normalize:
+        If ``True``, express each band as a fraction of fleet size (0–1)
+        rather than an absolute vehicle count.
+    theme:
+        Theme name.
+    title:
+        Optional figure title.
+    """
+    go = _plotly.require_go()
+    times = np.asarray(recorder.times)
+    op = np.asarray(recorder.operational, dtype=float)
+    ir = np.asarray(recorder.in_repair, dtype=float)
+    ap = np.asarray(recorder.awaiting_part, dtype=float)
+
+    fleet_name = getattr(getattr(recorder, "fleet", None), "name", "fleet")
+    fleet_size = getattr(getattr(recorder, "fleet", None), "size", 1) or 1
+
+    if normalize:
+        op = op / fleet_size
+        ir = ir / fleet_size
+        ap = ap / fleet_size
+        ylabel = "fraction of fleet"
+    else:
+        ylabel = "vehicles"
+
+    fig = go.Figure()
+    # Stack order: awaiting_part at bottom, then in_repair, then operational.
+    fig.add_trace(
+        go.Scatter(
+            x=times,
+            y=ap,
+            mode="lines",
+            stackgroup="one",
+            name="awaiting part",
+            line={"color": "rgba(180,30,30,0.9)", "width": 0.5},
+            fillcolor="rgba(214,39,40,0.65)",
+        )
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=times,
+            y=ir,
+            mode="lines",
+            stackgroup="one",
+            name="in repair",
+            line={"color": "rgba(200,100,0,0.9)", "width": 0.5},
+            fillcolor="rgba(255,127,14,0.65)",
+        )
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=times,
+            y=op,
+            mode="lines",
+            stackgroup="one",
+            name="operational",
+            line={"color": "rgba(30,140,30,0.9)", "width": 0.5},
+            fillcolor="rgba(44,160,44,0.65)",
+        )
+    )
+    fig.update_layout(
+        title=title or f"fleet availability: {fleet_name}",
+        xaxis_title="time",
+        yaxis_title=ylabel,
+        legend={"orientation": "h", "y": -0.2},
+    )
+    return apply_theme(fig, theme)
+
+
+# --------------------------------------------------------------------------- #
+# Reliability: sensitivity analysis surface / heatmap                         #
+# --------------------------------------------------------------------------- #
+
+
+def plot_sensitivity_surface(
+    result: Any,
+    *,
+    chart_type: str = "surface",
+    show_std: bool = False,
+    theme: str | None = None,
+    title: str | None = None,
+) -> Any:
+    """3-D surface or grouped bar chart for a 2-D sensitivity sweep result.
+
+    Parameters
+    ----------
+    result:
+        A :class:`~simweave.reliability.sensitivity.SweepResult` from a 2-D
+        sweep (``result.is_2d`` must be ``True``).
+    chart_type:
+        ``"surface"`` (default) -- smooth 3-D surface using ``go.Surface``.
+        ``"bar"`` -- grouped 2-D bar chart (p1 values as groups, p2 as
+        series), useful when parameter values are discrete labels.
+        ``"heatmap"`` -- 2-D colour map, ideal for dense grids.
+    show_std:
+        If ``True`` and ``chart_type="bar"``, draws error bars representing
+        ±1 standard deviation across Monte Carlo replicates.
+    theme:
+        Theme name.
+    title:
+        Optional figure title.
+    """
+    go = _plotly.require_go()
+
+    p1 = np.asarray(result.param1_values)
+    metric = np.asarray(result.metric_mean)
+    std = np.asarray(result.metric_std)
+    p1_name = result.param1_name
+    metric_name = result.metric_name
+
+    # 1-D fallback: line plot with optional error band.
+    if not result.is_2d:
+        fig = go.Figure()
+        fig.add_trace(
+            go.Scatter(
+                x=p1,
+                y=metric,
+                mode="lines+markers",
+                name=metric_name,
+                error_y=(
+                    {"type": "data", "array": std.tolist(), "visible": True}
+                    if show_std
+                    else None
+                ),
+            )
+        )
+        fig.update_layout(
+            title=title or f"sensitivity: {metric_name} vs {p1_name}",
+            xaxis_title=p1_name,
+            yaxis_title=metric_name,
+        )
+        return apply_theme(fig, theme)
+
+    # 2-D
+    p2 = np.asarray(result.param2_values)
+    p2_name = result.param2_name
+
+    if chart_type == "surface":
+        fig = go.Figure(
+            go.Surface(
+                x=p2,
+                y=p1,
+                z=metric,
+                colorscale="Viridis",
+                colorbar={"title": metric_name},
+            )
+        )
+        fig.update_layout(
+            title=title or f"sensitivity surface: {metric_name}",
+            scene={
+                "xaxis_title": p2_name,
+                "yaxis_title": p1_name,
+                "zaxis_title": metric_name,
+            },
+        )
+
+    elif chart_type == "heatmap":
+        fig = go.Figure(
+            go.Heatmap(
+                x=[str(v) for v in p2],
+                y=[str(v) for v in p1],
+                z=metric,
+                colorscale="Viridis",
+                colorbar={"title": metric_name},
+                hoverongaps=False,
+            )
+        )
+        fig.update_layout(
+            title=title or f"sensitivity heatmap: {metric_name}",
+            xaxis_title=p2_name,
+            yaxis_title=p1_name,
+        )
+
+    else:  # "bar"
+        fig = go.Figure()
+        for j, v2 in enumerate(p2):
+            ey = {"type": "data", "array": std[:, j].tolist(), "visible": True} if show_std else None
+            fig.add_trace(
+                go.Bar(
+                    name=f"{p2_name}={v2:g}",
+                    x=[f"{v:g}" for v in p1],
+                    y=metric[:, j],
+                    error_y=ey,
+                )
+            )
+        fig.update_layout(
+            title=title or f"sensitivity: {metric_name}",
+            xaxis_title=p1_name,
+            yaxis_title=metric_name,
+            barmode="group",
+        )
+
+    return apply_theme(fig, theme)
+
+
 __all__ = [
     "plot_state_trajectories",
     "plot_phase_portrait",
@@ -615,4 +836,6 @@ __all__ = [
     "plot_warehouse_stock",
     "plot_mc_fan",
     "plot_agent_path",
+    "plot_fleet_availability",
+    "plot_sensitivity_surface",
 ]
