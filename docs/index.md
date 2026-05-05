@@ -54,6 +54,23 @@ fig.write_html("msd.html", include_plotlyjs="cdn")
         loading="lazy"
         title="Damped MSD trajectories"></iframe>
 
+## Fleet operational availability
+
+SimWeave's reliability module lets you model fleets of assets — taxis,
+military vehicles, industrial machines — where each vehicle has subsystems
+that can fail, consume parts from a warehouse, and pass through a repair
+centre.  The stacked area chart below shows a simulated year for an 8-vehicle
+taxi fleet with real calendar dates on the x-axis, produced by a single line:
+
+```python
+fig = sw.plot_fleet_availability(recorder, time_axis=sw.SimTimeAxis("2027-01-01", "days"))
+```
+
+<iframe src="embeds/fleet_availability.html"
+        width="100%" height="440" frameborder="0"
+        loading="lazy"
+        title="Taxi fleet availability 2027"></iframe>
+
 ## Where to start
 
 - New to the library? Read [Concepts](concepts.md) and then work
@@ -102,6 +119,9 @@ no dependency on each other.
 | `18_half_car_roll.py`                      | Extending suspension to left and right  |
 | `19_full_car_dynamics.py`                  | Extending suspension to 7 DOF           |
 | `20_PID_thermal_system.py`                 | PID control in thermal RC example       |
+| `21_reliable_fleet.py`                     | Taxi fleet MC + stacked availability    |
+| `22_sensitivity_analysis.py`               | 2-D parameter sweep + 3-D surface       |
+| `23_time_axis_calendar.py`                 | Calendar dates on plot axes             |
 
 ## Status
 

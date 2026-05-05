@@ -5,6 +5,7 @@ from simweave.core.scheduler import EventQueue, ScheduledEvent
 from simweave.core.entity import Entity
 from simweave.core.environment import SimEnvironment, Process
 from simweave.core.logging import configure, get_logger
+from simweave.core.time_axis import SimTimeAxis
 
 __all__ = [
     "Clock",
@@ -15,4 +16,5 @@ __all__ = [
     "Process",
     "configure",
     "get_logger",
+    "SimTimeAxis",
 ]

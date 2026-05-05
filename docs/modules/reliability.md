@@ -11,6 +11,16 @@ of a fleet of assets -- taxis, military vehicles, aircraft, industrial machines
 * repair-bay capacity and technician resources, and
 * the financial cost of new buys vs. repairs.
 
+The stacked area chart below shows a simulated year for an 8-vehicle taxi
+fleet.  Green = operational, amber = in repair, red = awaiting parts.
+Calendar months are displayed by pairing the recorder with a
+[`SimTimeAxis`](discrete.md#calendar-time-axis).
+
+<iframe src="../../embeds/fleet_availability.html"
+        width="100%" height="440" frameborder="0"
+        loading="lazy"
+        title="Taxi fleet availability 2027"></iframe>
+
 ---
 
 ## Concepts
