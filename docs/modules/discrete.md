@@ -41,6 +41,37 @@ full snippet. The recorded outputs render as:
         loading="lazy"
         title="Service utilisation (2 channels)"></iframe>
 
+## Calendar time axis
+
+Simulation clocks are dimensionless floats.  :class:`~simweave.core.time_axis.SimTimeAxis`
+maps any simulation time to a real-world calendar date so that plot axes
+show months and years rather than raw tick numbers.
+
+```python
+import simweave as sw
+
+# 1 tick = 1 day, simulation starts 1 January 2027
+tax = sw.SimTimeAxis(start="2027-01-01", tick_unit="days")
+
+tax.label(90.0)                    # "2027-04-01"
+tax.tick_for_date("2027-07-01")    # 181.0  (schedule events by date)
+
+# Pass to any time-series plot helper
+fig = sw.plot_queue_length(recorder, time_axis=tax)
+
+# Or apply after the fact
+fig = sw.plot_warehouse_stock(recorder)
+tax.apply_to_figure(fig)
+```
+
+Supported `tick_unit` values: `"seconds"`, `"minutes"`, `"hours"`,
+`"days"`, `"weeks"`, `"months"` (≈ 30.44 days), `"years"` (≈ 365.25 days).
+
+Use `tick_size` to express coarser steps — e.g. `tick_unit="hours",
+tick_size=4` makes each simulation unit equal to 4 real hours.
+
+::: simweave.core.time_axis.SimTimeAxis
+
 ## API
 
 ::: simweave.discrete

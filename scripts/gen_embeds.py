@@ -199,6 +199,87 @@ def build_vehicle() -> None:
 
 
 # --------------------------------------------------------------------------- #
+# Reliability: fleet availability stacked area                                #
+# --------------------------------------------------------------------------- #
+
+
+def build_fleet_availability() -> None:
+    from simweave.reliability import (
+        Fleet,
+        FleetAvailabilityRecorder,
+        RepairCentre,
+        ReliableEntity,
+        SubsystemSpec,
+    )
+
+    rng = np.random.default_rng(42)
+
+    specs = [
+        SubsystemSpec(
+            "engine", 1 / 120, 0,
+            consumable=False, beyond_economic_repair_prc=0.10,
+            repair_time=5.0, unit_cost=8_000.0, repair_cost=2_500.0,
+        ),
+        SubsystemSpec(
+            "transmission", 1 / 90, 1,
+            consumable=False, beyond_economic_repair_prc=0.05,
+            repair_time=3.0, unit_cost=5_000.0, repair_cost=1_200.0,
+        ),
+        SubsystemSpec(
+            "tyres", 1 / 45, 2,
+            consumable=True, repair_time=0.5, unit_cost=400.0,
+        ),
+    ]
+
+    inv = sw.InventoryItems(
+        part_names=["engine", "transmission", "tyres"],
+        unit_cost=[8_000.0, 5_000.0, 400.0],
+        stock_level=[3.0, 4.0, 10.0],
+        batchsize=[2.0, 2.0, 4.0],
+        reorder_points=[1.0, 1.0, 2.0],
+        repairable_prc=[0.90, 0.95, 0.0],
+        repair_times=[5.0, 3.0, 0.0],
+        newbuy_leadtimes=[14.0, 10.0, 3.0],
+    )
+    wh = sw.Warehouse(inventory=inv, name="parts_depot")
+
+    pool = sw.ResourcePool(maxlen=3, name="technicians")
+    for i in range(3):
+        pool.deposit(sw.Resource(name=f"tech_{i}"))
+    rc = RepairCentre(capacity=2, resources=pool)
+
+    vehicles = [
+        ReliableEntity(
+            specs, wh, rc, name=f"taxi_{i:02d}",
+            rng=np.random.default_rng(rng.integers(0, 2**32)),
+        )
+        for i in range(8)
+    ]
+    fleet = Fleet(vehicles, name="taxi_fleet")
+    recorder = FleetAvailabilityRecorder(fleet)
+
+    env = sw.SimEnvironment(dt=1.0, end=365.0)
+    env.register(wh)
+    env.register(rc)
+    for v in vehicles:
+        env.register(v)
+    env.register(recorder)
+    env.run(until=365.0)
+
+    # With calendar time axis (1 tick = 1 day from 1 Jan 2027)
+    tax = sw.SimTimeAxis(start="2027-01-01", tick_unit="days")
+
+    _emit(
+        sw.plot_fleet_availability(
+            recorder,
+            time_axis=tax,
+            title="Taxi Fleet Availability -- 2027",
+        ),
+        "fleet_availability",
+    )
+
+
+# --------------------------------------------------------------------------- #
 # Run all                                                                     #
 # --------------------------------------------------------------------------- #
 
@@ -210,6 +291,7 @@ def main() -> None:
     build_monte_carlo()
     build_agents()
     build_vehicle()
+    build_fleet_availability()
 
 
 # mkdocs-gen-files imports this module at build time and runs whatever

@@ -13,6 +13,7 @@ from simweave.core import (
     SimEnvironment,
     configure as configure_logging,
     get_logger,
+    SimTimeAxis,
 )
 from simweave.discrete import (
     EntityProperties,
@@ -127,6 +128,7 @@ __all__ = [
     "ScheduledEvent",
     "Entity",
     "SimEnvironment",
+    "SimTimeAxis",
     "configure_logging",
     "get_logger",
     # Discrete

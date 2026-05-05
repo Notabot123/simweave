@@ -11,6 +11,12 @@ All time / value arrays are accepted as plain numpy or Python lists; the
 helpers do not require a specific simweave object as long as the inputs
 have the documented shape.
 
+Time-axis helpers (``plot_queue_length``, ``plot_service_utilisation``,
+``plot_warehouse_stock``, ``plot_fleet_availability``, ``plot_mc_fan``)
+accept an optional ``time_axis`` keyword argument.  Pass a
+:class:`~simweave.core.time_axis.SimTimeAxis` instance to replace the
+numeric x-axis with real-world calendar dates.
+
 Public API
 ----------
 * :func:`plot_state_trajectories` -- continuous SimulationResult.
@@ -22,16 +28,29 @@ Public API
 * :func:`plot_mc_fan` -- percentile fan chart for a Monte Carlo trajectory
   ensemble (accepts ``MCResult``, raw 2D array, or ``(times, samples)``).
 * :func:`plot_agent_path` -- agent traversal over a 2-D graph.
+* :func:`plot_fleet_availability` -- stacked area chart of fleet availability.
+* :func:`plot_sensitivity_surface` -- 3-D surface / heatmap / grouped bar
+  for a sensitivity sweep result.
 """
 
 from __future__ import annotations
 
-from typing import Any, Iterable, Sequence
+from typing import TYPE_CHECKING, Any, Iterable, Sequence
 
 import numpy as np
 
 from simweave.viz import _plotly
 from simweave.viz.themes import apply_theme
+
+if TYPE_CHECKING:
+    from simweave.core.time_axis import SimTimeAxis
+
+
+def _apply_time_axis(fig: Any, time_axis: "SimTimeAxis | None") -> Any:
+    """Apply a SimTimeAxis to a figure if provided; otherwise no-op."""
+    if time_axis is not None:
+        time_axis.apply_to_figure(fig, axis="x", title="date")
+    return fig
 
 
 # --------------------------------------------------------------------------- #
@@ -156,6 +175,7 @@ def plot_phase_portrait(
 def plot_queue_length(
     recorder: Any,
     *,
+    time_axis: "SimTimeAxis | None" = None,
     theme: str | None = None,
     title: str | None = None,
 ) -> Any:
@@ -166,6 +186,9 @@ def plot_queue_length(
     recorder:
         A :class:`~simweave.viz.recorders.QueueLengthRecorder` (or anything
         exposing ``.times`` and ``.lengths``).
+    time_axis:
+        Optional :class:`~simweave.core.time_axis.SimTimeAxis`.  When
+        supplied, the x-axis shows calendar dates instead of numeric ticks.
     """
     go = _plotly.require_go()
     times = np.asarray(recorder.times)
@@ -187,12 +210,13 @@ def plot_queue_length(
         xaxis_title="time",
         yaxis_title="length",
     )
-    return apply_theme(fig, theme)
+    return apply_theme(_apply_time_axis(fig, time_axis), theme)
 
 
 def plot_service_utilisation(
     recorder: Any,
     *,
+    time_axis: "SimTimeAxis | None" = None,
     theme: str | None = None,
     title: str | None = None,
 ) -> Any:
@@ -202,6 +226,9 @@ def plot_service_utilisation(
     ----------
     recorder:
         A :class:`~simweave.viz.recorders.ServiceUtilisationRecorder`.
+    time_axis:
+        Optional :class:`~simweave.core.time_axis.SimTimeAxis` for calendar
+        date x-axis labels.
     """
     go = _plotly.require_go()
     times = np.asarray(recorder.times)
@@ -246,7 +273,7 @@ def plot_service_utilisation(
         },
         legend={"orientation": "h", "y": -0.2},
     )
-    return apply_theme(fig, theme)
+    return apply_theme(_apply_time_axis(fig, time_axis), theme)
 
 
 # --------------------------------------------------------------------------- #
@@ -258,6 +285,7 @@ def plot_warehouse_stock(
     recorder: Any,
     sku_indices: Sequence[int] | None = None,
     *,
+    time_axis: "SimTimeAxis | None" = None,
     theme: str | None = None,
     title: str | None = None,
     show_reorder_points: bool = True,
@@ -270,6 +298,9 @@ def plot_warehouse_stock(
         A :class:`~simweave.viz.recorders.WarehouseStockRecorder`.
     sku_indices:
         Optional iterable of SKU indices to include. Default: all.
+    time_axis:
+        Optional :class:`~simweave.core.time_axis.SimTimeAxis` for calendar
+        date x-axis labels.
     show_reorder_points:
         If True, draws a horizontal dashed line at each SKU's reorder
         point in the same colour family as its stock trace.
@@ -316,7 +347,7 @@ def plot_warehouse_stock(
         yaxis_title="stock level",
         legend_title_text="SKU",
     )
-    return apply_theme(fig, theme)
+    return apply_theme(_apply_time_axis(fig, time_axis), theme)
 
 
 # --------------------------------------------------------------------------- #
@@ -363,6 +394,7 @@ def plot_mc_fan(
     times: Sequence[float] | np.ndarray | None = None,
     percentiles: Sequence[float] = (5, 25, 50, 75, 95),
     *,
+    time_axis: "SimTimeAxis | None" = None,
     theme: str | None = None,
     title: str | None = None,
     show_mean: bool = True,
@@ -462,7 +494,7 @@ def plot_mc_fan(
         xaxis_title="time",
         yaxis_title="value",
     )
-    return apply_theme(fig, theme)
+    return apply_theme(_apply_time_axis(fig, time_axis), theme)
 
 
 # --------------------------------------------------------------------------- #
@@ -616,6 +648,7 @@ def plot_fleet_availability(
     recorder: Any,
     *,
     normalize: bool = False,
+    time_axis: "SimTimeAxis | None" = None,
     theme: str | None = None,
     title: str | None = None,
 ) -> Any:
@@ -699,7 +732,7 @@ def plot_fleet_availability(
         yaxis_title=ylabel,
         legend={"orientation": "h", "y": -0.2},
     )
-    return apply_theme(fig, theme)
+    return apply_theme(_apply_time_axis(fig, time_axis), theme)
 
 
 # --------------------------------------------------------------------------- #
