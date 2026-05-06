@@ -1,6 +1,6 @@
 ---
 name: simweave
-description: "Use this skill whenever the user asks for help building, running, debugging, or visualising simulations with the SimWeave Python library (`pip install simweave`). Triggers include any mention of: simweave, SimWeave, the EdgeWeave companion app, hybrid discrete/continuous simulation, Monte Carlo with `MCResult`/`run_monte_carlo`/`run_batched_mc`, queueing/Service/Queue/PriorityQueue/ArrivalGenerator, Resource/ResourcePool, supply-chain Warehouse/InventoryItems, agent routing on a Graph with A*/dijkstra, continuous dynamic systems (mass-spring-damper, pendulum, RLC, thermal, quarter-car) using `simulate(...)`, `Money` and FX conversion via `simweave.currency`, plotly figures via `simweave.viz`, time-sampled recorders (`QueueLengthRecorder`, `ServiceUtilisationRecorder`, `WarehouseStockRecorder`), or producing plotly JSON for an EdgeWeave frontend. Also use when generating example simulations for documentation or when the user is integrating SimWeave outputs into another tool. Do NOT use this skill for unrelated python work, generic plotting questions, or when the user is working with a different sim library."
+description: "Use this skill whenever the user asks for help building, running, debugging, or visualising simulations with the SimWeave Python library (`pip install simweave`). Triggers include any mention of: simweave, SimWeave, the EdgeWeave companion app, hybrid discrete/continuous simulation, Monte Carlo with `MCResult`/`run_monte_carlo`/`run_batched_mc`, queueing/Service/Queue/PriorityQueue/ArrivalGenerator, Resource/ResourcePool, supply-chain Warehouse/InventoryItems, agent routing on a Graph with A*/dijkstra, continuous dynamic systems (mass-spring-damper, pendulum, RLC, thermal, quarter-car, half-car, full-car) using `simulate(...)`, PID control via `PIDController`, `Money` and FX conversion via `simweave.currency`, plotly figures via `simweave.viz`, time-sampled recorders (`QueueLengthRecorder`, `ServiceUtilisationRecorder`, `WarehouseStockRecorder`, `RoadOccupancyRecorder`, `IntersectionQueueRecorder`, `FleetAvailabilityRecorder`), calendar date axes via `SimTimeAxis`, fleet operational availability via `simweave.reliability` (ReliableEntity/Fleet/RepairCentre/sensitivity_sweep), road networks via `simweave.roads` (Road/Intersection/Roundabout/TrafficSignal/RoadNetwork), or producing plotly JSON for an EdgeWeave frontend. Also use when generating example simulations for documentation or when the user is integrating SimWeave outputs into another tool. Do NOT use this skill for unrelated python work, generic plotting questions, or when the user is working with a different sim library."
 ---
 
 # SimWeave: hybrid discrete/continuous simulation engine
@@ -9,24 +9,26 @@ description: "Use this skill whenever the user asks for help building, running, 
 
 SimWeave (`pip install simweave`) is an atomic-clock simulation engine
 that treats discrete events and continuous dynamics as first-class
-citizens on the same timeline. Notable subsystems:
+citizens on the same timeline. Current version: **0.7.2**.
 
-| module | purpose |
+| Module | Purpose |
 |---|---|
-| `simweave.core` | `Clock`, `EventQueue`, `Entity`, `SimEnvironment` |
+| `simweave.core` | `Clock`, `EventQueue`, `Entity`, `SimEnvironment`, `SimTimeAxis` (calendar date axes) |
 | `simweave.discrete` | `Queue`, `PriorityQueue`, `Service`, `ArrivalGenerator`, `Resource`, `ResourcePool`, `EntityProperties`, distributions (`exponential`, `uniform`, `normal`, `deterministic`) |
-| `simweave.continuous` | `simulate(...)`, `SimulationResult`, `ContinuousProcess`, ready-made systems (`MassSpringDamper`, `SimplePendulum`, `QuarterCarModel`, `SeriesRLC`, `ThermalRC`, `TwoMassThermal`) |
+| `simweave.continuous` | `simulate(...)`, `SimulationResult`, `ContinuousProcess`, ready-made systems (`MassSpringDamper`, `SimplePendulum`, `QuarterCarModel`, `HalfCarModel`, `RollCarModel`, `FullCarModel`, `SeriesRLC`, `ThermalRC`, `TwoMassThermal`), PID control (`PIDController`) |
 | `simweave.agents` | `Agent`, `Compass`, `a_star`, `dijkstra`, heuristics (`manhattan`, `euclidean`, `chebyshev`) |
 | `simweave.spatial` | `Graph`, `grid_graph` |
 | `simweave.supplychain` | `InventoryItems`, `Warehouse` (multi-echelon, `(R, Q)` policy) |
+| `simweave.reliability` | `SubsystemSpec`, `ReliableEntity`, `Fleet`, `FleetAvailabilityRecorder`, `RepairCentre`, `RepairJob`, `sensitivity_sweep`, `SweepResult` |
+| `simweave.roads` | `Road`, `DualCarriageway`, `Vehicle`, `VehicleArrivalProcess`, `TrafficSignal`, `SignalPhase`, `Intersection`, `Roundabout`, `Handedness`, `RoadNetwork`, `RoadOccupancyRecorder`, `IntersectionQueueRecorder` |
 | `simweave.mc` | `MCResult`, `run_monte_carlo`, `run_batched_mc` |
-| `simweave.units` | `SIUnit`, `Distance`, `Velocity`, `Acceleration`, `Mass`, `Force`, `Area`, `Volume`, `TimeUnit` |
+| `simweave.units` | `SIUnit`, `Distance`, `Velocity`, `Acceleration`, `Mass`, `Force`, `Area`, `Volume`, `TimeUnit` — supports numpy array operands and physical constants |
 | `simweave.currency` | `Money`, FX converters, ISO/custom currency registry, `format_money` |
 | `simweave.viz` | plotly figure helpers, theme registry, time-sampling recorders |
 
 Every public name is re-exported from the top-level: write
 `import simweave as sw` and reach for `sw.Service`, `sw.simulate`,
-`sw.plot_state_trajectories`, etc.
+`sw.Road`, `sw.Fleet`, `sw.plot_state_trajectories`, etc.
 
 ## Optional extras
 
@@ -55,7 +57,7 @@ The core has only one runtime dependency: `numpy>=1.23`.
   `on_register`. The age counter advances automatically — always
   `super().tick(dt, env)` first.
 * **`SimulationResult`** is the canonical output of `simweave.continuous.simulate`:
-  `result.time` (1-D), `result.state` (T x n), `result.state_labels`,
+  `result.time` (1-D), `result.state` (T × n), `result.state_labels`,
   `result.system_name`, `result.method`.
 * **`MCResult`** is the canonical Monte Carlo output:
   `mc.samples` (numpy array or list), `mc.mean()`, `mc.std()`,
@@ -102,6 +104,15 @@ res = sw.simulate(msd, t_span=(0.0, 12.0), dt=0.01, x0=np.array([1.0, 0.0]))
 res.time, res.state, res.state_labels  # ready for plotting
 ```
 
+### Continuous: PID control
+
+```python
+from simweave.continuous.control.pid import PIDController
+
+pid = PIDController(kp=2.0, ki=0.5, kd=0.1, setpoint=1.0)
+# pid.update(measurement, dt) returns the control output each step
+```
+
 ### Hybrid: continuous process driven by the SimEnvironment clock
 
 ```python
@@ -141,16 +152,152 @@ inv = sw.InventoryItems(
 wh = sw.Warehouse(inventory=inv, name="store")
 ```
 
-### Monte Carlo
+### Reliability: fleet operational availability
 
-Two flavours: scenario-builder (one replicate per call) and batched
-(vectorised over all replicates in one numpy op).
+```python
+import numpy as np
+import simweave as sw
+from simweave.reliability import SubsystemSpec, ReliableEntity, Fleet, \
+    FleetAvailabilityRecorder, RepairCentre
+
+specs = [
+    SubsystemSpec("engine", failure_rate=1/120, sku_index=0,
+                  consumable=False, beyond_economic_repair_prc=0.10,
+                  repair_time=5.0, unit_cost=8_000.0, repair_cost=2_500.0),
+    SubsystemSpec("tyres",  failure_rate=1/45,  sku_index=1,
+                  consumable=True, repair_time=0.5, unit_cost=400.0),
+]
+
+# ResourcePool must be pre-populated with Resource objects
+pool = sw.ResourcePool(maxlen=3, name="technicians")
+for i in range(3):
+    pool.deposit(sw.Resource(name=f"tech_{i}"))
+rc = RepairCentre(capacity=2, resources=pool)
+
+rng = np.random.default_rng(42)
+vehicles = [
+    ReliableEntity(specs, warehouse=wh, repair_centre=rc,
+                   name=f"taxi_{i:02d}",
+                   rng=np.random.default_rng(rng.integers(0, 2**32)))
+    for i in range(10)
+]
+fleet = Fleet(vehicles, name="taxi_fleet")
+recorder = FleetAvailabilityRecorder(fleet)
+
+env = sw.SimEnvironment(dt=1.0, end=365.0)
+env.register(wh)
+env.register(rc)
+for v in vehicles:
+    env.register(v)
+env.register(recorder)
+env.run()
+
+print(f"Ao = {recorder.mean_operational_availability:.3f}")
+print(f"Cost = £{fleet.total_cost:,.0f}")
+fig = sw.plot_fleet_availability(recorder, title="Fleet availability")
+```
+
+**Sensitivity sweep** — vary one or two parameters, collect a scalar metric:
+
+```python
+from simweave.reliability import sensitivity_sweep
+
+def build(n_bays, stock_mult, seed):
+    # ... build and run scenario, return scalar metric ...
+    return operational_availability
+
+result = sensitivity_sweep(build,
+    param1_name="repair_bays", param1_values=[1, 2, 3, 4],
+    param2_name="stock_multiplier", param2_values=[0.5, 1.0, 1.5, 2.0],
+    metric_name="Ao", n_runs=20)
+fig = sw.plot_sensitivity_surface(result, chart_type="heatmap")
+```
+
+### Roads: signalised intersection
 
 ```python
 import numpy as np
 import simweave as sw
 
-# Scenario-builder MC -- portable, per-seed determinism.
+road_ns = sw.Road(200.0, 13.9, lanes=2, name="NS_approach")
+road_ew = sw.Road(200.0, 13.9, lanes=2, name="EW_approach")
+exit_ns = sw.Road(200.0, 13.9, name="NS_exit")
+exit_ew = sw.Road(200.0, 13.9, name="EW_exit")
+
+signal = sw.TrafficSignal([
+    sw.SignalPhase(green_roads=[road_ns], duration=45.0, name="NS_green"),
+    sw.SignalPhase(green_roads=[road_ew], duration=30.0, name="EW_green"),
+])
+junction = sw.Intersection(signal=signal, name="junction")
+for road in (road_ns, road_ew):
+    junction.add_approach(road)
+    road.outlet = junction
+junction.add_exit(exit_ns, weight=1.0)
+junction.add_exit(exit_ew, weight=1.0)
+
+arrivals = sw.VehicleArrivalProcess(
+    interarrival=lambda r: r.exponential(5.0),
+    road=road_ns, rng=np.random.default_rng(0),
+)
+occ_rec = sw.RoadOccupancyRecorder([road_ns, road_ew])
+q_rec   = sw.IntersectionQueueRecorder(junction)
+
+net = sw.RoadNetwork()
+net.add_signal(signal)          # signals MUST be added before intersections
+net.add_intersection(junction)
+for r in (road_ns, road_ew, exit_ns, exit_ew):
+    net.add_road(r)
+net.add_arrival_process(arrivals)
+net.add_recorder(occ_rec)
+net.add_recorder(q_rec)
+
+env = sw.SimEnvironment(dt=1.0, end=3600.0)
+net.register_all(env)           # handles registration order automatically
+env.run()
+
+fig = sw.plot_intersection_queues(q_rec, title="Queue lengths")
+```
+
+### Roads: roundabout
+
+```python
+rb = sw.Roundabout(
+    max_circulating=6,
+    transit_time=6.0,
+    handedness=sw.Handedness.LEFT,   # LEFT=UK/AU/JP, RIGHT=EU/US
+    name="roundabout",
+)
+rb.add_entry(road_north)
+rb.add_exit(exit_south, weight=1.0)
+road_north.outlet = rb
+```
+
+### Calendar date axes with SimTimeAxis
+
+```python
+tax = sw.SimTimeAxis(start="2027-01-01", tick_unit="days")
+# tick_unit: "seconds","minutes","hours","days","weeks","months","years"
+# tick_size: coarser steps, e.g. tick_unit="hours", tick_size=4
+
+tax.label(90.0)                   # "2027-04-01"
+tax.tick_for_date("2027-07-01")   # 181.0 — schedule events by named date
+
+# Pass to any time-series plot helper
+fig = sw.plot_fleet_availability(recorder, time_axis=tax)
+fig = sw.plot_warehouse_stock(wrec, time_axis=tax)
+fig = sw.plot_road_occupancy(occ_rec, time_axis=tax)
+
+# Or apply post-hoc to an existing figure
+tax.apply_to_figure(fig)
+```
+
+### Monte Carlo
+
+```python
+import numpy as np
+import simweave as sw
+
+# Scenario-builder MC — portable, per-seed determinism.
 def replicate(seed):
     rng = np.random.default_rng(seed)
     return float(rng.normal(0, 1))
@@ -158,7 +305,7 @@ def replicate(seed):
 mc = sw.run_monte_carlo(replicate, n_runs=500, executor="serial")
 mc.mean(), mc.quantile([0.05, 0.5, 0.95])
 
-# Batched MC -- one numpy op for all replicates at once.
+# Batched MC — one numpy op for all replicates at once.
 def batched(rng, n):
     return rng.normal(0, 1, size=(n, 100))   # (n_runs, n_time)
 
@@ -182,7 +329,7 @@ a.to("GBP", fx)                 # Money(78.74, GBP) (banker's rounding)
 format_money(a)                 # "$100.00"
 ```
 
-`Money` is a frozen dataclass; never mutate `.amount` -- build a new
+`Money` is a frozen dataclass; never mutate `.amount` — build a new
 instance. Currency codes are validated against ISO 4217 plus any
 codes registered via `register_custom("XBTC", decimals=8)`.
 
@@ -202,36 +349,42 @@ sw.set_default_theme("brand")
 # Continuous
 fig = sw.plot_state_trajectories(res)
 fig = sw.plot_phase_portrait(res, x_idx=0, y_idx=1)
+fig = sw.plot_vehicle_metrics(res, model=car)
 
 # Monte Carlo
-fig = sw.plot_mc_fan(mc, times=t_axis,
-                     percentiles=(5, 25, 50, 75, 95))
+fig = sw.plot_mc_fan(mc, times=t_axis, percentiles=(5, 25, 50, 75, 95))
+
+# Reliability
+fig = sw.plot_fleet_availability(recorder, normalize=False, time_axis=tax)
+fig = sw.plot_sensitivity_surface(result, chart_type="surface")  # or "heatmap" / "bar"
+
+# Roads
+fig = sw.plot_road_occupancy(occ_rec, time_axis=tax)
+fig = sw.plot_intersection_queues(q_rec, time_axis=tax)
 ```
 
-### Recorders for discrete/supplychain primitives
+All time-series helpers accept an optional `time_axis=` kwarg taking a
+`SimTimeAxis` instance to show calendar dates instead of raw tick numbers.
 
-`Queue`, `Service` and `Warehouse` track aggregate scalars but **not**
-per-tick time series. Wire a recorder to capture history without
-touching the core. Register the recorder *after* the entity it
-records from — registration order = tick order.
+### Recorders
+
+Register the recorder *after* the entity it records from — registration
+order = tick order.
 
 ```python
-qrec = sw.QueueLengthRecorder(svc)
-urec = sw.ServiceUtilisationRecorder(svc)
-wrec = sw.WarehouseStockRecorder(wh)
-env.register_all([gen, svc, sink, qrec, urec, wrec])
-env.run()
+qrec  = sw.QueueLengthRecorder(svc)
+urec  = sw.ServiceUtilisationRecorder(svc)
+wrec  = sw.WarehouseStockRecorder(wh)
+frec  = sw.FleetAvailabilityRecorder(fleet)        # reliability
+rrec  = sw.RoadOccupancyRecorder([road_a, road_b]) # roads
+iqrec = sw.IntersectionQueueRecorder(junction)     # roads
 
 sw.plot_queue_length(qrec)
-sw.plot_service_utilisation(urec)        # aggregate util + per-channel busy
-sw.plot_warehouse_stock(wrec)            # per-SKU lines + reorder dashes
-```
-
-### Agents
-
-```python
-sw.plot_agent_path(agent, graph=g)       # works for grid graphs (r, c) tuples
-                                          # and networkx graphs with .nodes[n]['pos']
+sw.plot_service_utilisation(urec)   # aggregate util + per-channel busy
+sw.plot_warehouse_stock(wrec)       # per-SKU lines + reorder dashes
+sw.plot_fleet_availability(frec)    # stacked area: green/amber/red
+sw.plot_road_occupancy(rrec)        # in-transit counts per road
+sw.plot_intersection_queues(iqrec)  # total + per-approach queue lengths
 ```
 
 ### EdgeWeave consumption
@@ -239,10 +392,19 @@ sw.plot_agent_path(agent, graph=g)       # works for grid graphs (r, c) tuples
 Every figure is JSON-serialisable. Use `fig.to_json()` for transport,
 and on the JS side `Plotly.newPlot(div, data, layout)` (parsed from
 the JSON) renders identically. Themes are encoded in the JSON, so
-re-themeing on the JS side just requires merging a layout patch.
+re-theming on the JS side just requires merging a layout patch.
 
 ## Common pitfalls
 
+* **`ResourcePool` must be pre-populated** — create with `ResourcePool(maxlen=N)`
+  then call `pool.deposit(Resource(name=f"tech_{i}"))` for each slot.
+  Do not use `ResourcePool(n=N)` — that argument does not exist.
+* **`TrafficSignal` must be registered before its `Intersection`** — the
+  signal must update its phase state before the intersection dispatches
+  queued vehicles each tick. Use `RoadNetwork.register_all(env)` to
+  handle this automatically.
+* **`road.outlet` must be set before `env.run()`** — a `None` outlet
+  silently drops vehicles from the system.
 * **Don't mutate `Money.amount`** — it's frozen. Use arithmetic
   (`a + b`, `a * 2`) or `Money(...)` constructors.
 * **Currency arithmetic raises `CurrencyMismatchError`** unless both
@@ -255,31 +417,39 @@ re-themeing on the JS side just requires merging a layout patch.
 * **Recorder history needs registration before run** — recorders
   capture nothing if you build them after `env.run()`.
 * **Plotly is optional** — `import simweave.viz` is cheap, but calling
-  any `plot_*` helper without `simweave[viz]` installed raises a
-  clear `ImportError`. Probe with `sw.have_plotly()`.
+  any `plot_*` helper without `simweave[viz]` installed raises a clear
+  `ImportError`. Probe with `sw.have_plotly()`.
 * **For batched MC fan charts**, ensure your `batched_step` returns
   `(n_runs, n_time)`. The first axis is the replicate axis.
-* **`Service` extends `Queue`**, so a Service has a buffer
-  (`enqueue` / `len()` / `cumulative_length_time`) plus channels.
-  When passing to a recorder, decide whether you want the buffer
-  length (`QueueLengthRecorder(svc)`) or the channel utilisation
-  (`ServiceUtilisationRecorder(svc)`).
+* **`Service` extends `Queue`** — a Service has a buffer
+  (`enqueue` / `len()`) plus channels. Choose `QueueLengthRecorder(svc)`
+  for buffer depth or `ServiceUtilisationRecorder(svc)` for channel busy time.
+* **Reliability failure rates are per simulation time unit** —
+  `failure_rate=1/120` means MTBF of 120 time units. Both time-based
+  and cycle-based rates can be active simultaneously on the same subsystem.
 
 ## Reference docs in the repo
 
-* `SIMWEAVE_API.md` — exhaustive API reference, kept in sync with the
-  source.
+* `SIMWEAVE_API.md` — exhaustive API reference, kept in sync with the source.
 * `CURRENCY_DESIGN.md` — design rationale for the money/FX module.
 * `VIZ_DESIGN.md` — design rationale for the viz module.
 * `EdgeWeave.md` — companion JS frontend integration notes.
 * `PACKAGING.md` — pip install / extras / build notes.
 * `demos/14_viz_tour.py` — every plot helper exercised end-to-end.
+* `demos/21_reliable_fleet.py` — fleet availability Monte Carlo.
+* `demos/22_sensitivity_analysis.py` — 2-D parameter sweep.
+* `demos/23_time_axis_calendar.py` — calendar date axes.
+* `demos/24_signalised_intersection.py` — signalised 4-way crossroads.
+* `demos/25_roundabout.py` — roundabout vs signal comparison.
 
 ## When suggesting code
 
 1. Always import the top-level: `import simweave as sw`.
 2. For visualisation, prefer the `sw.plot_*` helpers over raw plotly
-   calls so themes apply consistently and EdgeWeave gets predictable
-   structure.
+   calls so themes apply consistently and EdgeWeave gets predictable structure.
 3. Wire recorders before `env.run()` and place them after the entities
-   th
+   they record from in the registration order.
+4. For road networks, always use `RoadNetwork.register_all(env)` rather
+   than registering components manually — it guarantees correct tick order.
+5. For reliability scenarios, pre-populate `ResourcePool` with
+   `Resource` objects before passing it to `RepairCentre`.
