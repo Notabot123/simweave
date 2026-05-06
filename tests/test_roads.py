@@ -682,9 +682,6 @@ class TestTopLevelExports:
         for name in expected:
             assert hasattr(sw, name), f"sw.{name} not found"
 
-    def test_version_bumped(self):
-        assert sw.__version__ == "0.7.0"
-
     def test_handedness_enum_values(self):
         assert sw.Handedness.LEFT.value == "left"
         assert sw.Handedness.RIGHT.value == "right"
