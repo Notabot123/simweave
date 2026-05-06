@@ -861,6 +861,118 @@ def plot_sensitivity_surface(
     return apply_theme(fig, theme)
 
 
+# --------------------------------------------------------------------------- #
+# Roads: occupancy and queue charts                                            #
+# --------------------------------------------------------------------------- #
+
+
+def plot_road_occupancy(
+    recorder: Any,
+    *,
+    time_axis: "SimTimeAxis | None" = None,
+    theme: str | None = None,
+    title: str | None = None,
+) -> Any:
+    """Line chart of in-transit vehicle counts for a set of roads over time.
+
+    Parameters
+    ----------
+    recorder:
+        A :class:`~simweave.roads.recorder.RoadOccupancyRecorder` (or any
+        object exposing ``.times``, ``.occupancy``, and ``.road_names``).
+    time_axis:
+        Optional :class:`~simweave.core.time_axis.SimTimeAxis` for calendar
+        date x-axis labels.
+    theme, title:
+        Standard theme/title overrides.
+    """
+    go = _plotly.require_go()
+    times = np.asarray(recorder.times)
+    occ = np.asarray(recorder.occupancy)   # (n_samples, n_roads)
+    road_names: Sequence[str] = recorder.road_names
+
+    fig = go.Figure()
+    for i, name in enumerate(road_names):
+        col = occ[:, i] if occ.ndim == 2 else occ
+        fig.add_trace(
+            go.Scatter(
+                x=times,
+                y=col,
+                mode="lines",
+                name=name,
+            )
+        )
+    fig.update_layout(
+        title=title or "Road occupancy (vehicles in transit)",
+        xaxis_title="time",
+        yaxis_title="vehicles in transit",
+        legend={"orientation": "h", "y": -0.2},
+    )
+    return apply_theme(_apply_time_axis(fig, time_axis), theme)
+
+
+def plot_intersection_queues(
+    recorder: Any,
+    *,
+    time_axis: "SimTimeAxis | None" = None,
+    theme: str | None = None,
+    title: str | None = None,
+) -> Any:
+    """Line chart of approach-queue lengths at one intersection over time.
+
+    The total queue (solid line) and each per-approach breakdown (dashed
+    lines) are plotted.
+
+    Parameters
+    ----------
+    recorder:
+        An :class:`~simweave.roads.recorder.IntersectionQueueRecorder` (or
+        any object exposing ``.times``, ``.total_queued``, and
+        ``.per_approach``).
+    time_axis, theme, title:
+        Standard overrides.
+    """
+    go = _plotly.require_go()
+    times = np.asarray(recorder.times)
+    total = np.asarray(recorder.total_queued, dtype=float)
+
+    fig = go.Figure()
+    fig.add_trace(
+        go.Scatter(
+            x=times,
+            y=total,
+            mode="lines",
+            name="total queued",
+            line={"width": 2},
+        )
+    )
+
+    # Per-approach breakdown
+    if recorder.per_approach:
+        approach_names = list(recorder.per_approach[0].keys())
+        for road_name in approach_names:
+            vals = np.asarray(
+                [d.get(road_name, 0) for d in recorder.per_approach], dtype=float
+            )
+            fig.add_trace(
+                go.Scatter(
+                    x=times,
+                    y=vals,
+                    mode="lines",
+                    name=road_name,
+                    line={"dash": "dot", "width": 1},
+                )
+            )
+
+    fig.update_layout(
+        title=title or "Intersection queue lengths",
+        xaxis_title="time",
+        yaxis_title="vehicles queued",
+        legend={"orientation": "h", "y": -0.2},
+    )
+    return apply_theme(_apply_time_axis(fig, time_axis), theme)
+
+
 __all__ = [
     "plot_state_trajectories",
     "plot_phase_portrait",
@@ -871,4 +983,6 @@ __all__ = [
     "plot_agent_path",
     "plot_fleet_availability",
     "plot_sensitivity_surface",
+    "plot_road_occupancy",
+    "plot_intersection_queues",
 ]

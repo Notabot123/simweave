@@ -122,6 +122,8 @@ no dependency on each other.
 | `21_reliable_fleet.py`                     | Taxi fleet MC + stacked availability    |
 | `22_sensitivity_analysis.py`               | 2-D parameter sweep + 3-D surface       |
 | `23_time_axis_calendar.py`                 | Calendar dates on plot axes             |
+| `24_signalised_intersection.py`            | 4-way crossroads with traffic signal    |
+| `25_roundabout.py`                         | UK roundabout vs signalised comparison  |
 
 ## Status
 

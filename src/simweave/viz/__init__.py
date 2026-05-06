@@ -50,6 +50,8 @@ from simweave.viz.plots import (
     plot_warehouse_stock,
     plot_fleet_availability,
     plot_sensitivity_surface,
+    plot_road_occupancy,
+    plot_intersection_queues,
 )
 from simweave.viz.vehicle_dynamics import(
     plot_vehicle_metrics,
@@ -79,6 +81,8 @@ __all__ = [
     "plot_warehouse_stock",
     "plot_fleet_availability",
     "plot_sensitivity_surface",
+    "plot_road_occupancy",
+    "plot_intersection_queues",
     "plot_vehicle_metrics",
     # Probe
     "have_plotly",
