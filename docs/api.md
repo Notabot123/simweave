@@ -1,87 +1,26 @@
 # API reference
 
-This page is auto-generated from the live source tree by
-[mkdocstrings](https://mkdocstrings.github.io/). Each subpackage is
-also covered with a narrative introduction in the
-[modules](modules/index.md) section — start there if you're learning
-the API for the first time.
+Full API documentation lives in each module guide page, generated from
+the live source tree by [mkdocstrings](https://mkdocstrings.github.io/).
+Use the table below to jump directly to the reference section for the
+subpackage you need.
 
-## Top-level package
+If you are new to the library, start with the
+[module guide](modules/index.md) — each page opens with a narrative
+introduction before the class/function listings.
 
-::: simweave
-    options:
-      show_root_heading: true
-      show_root_full_path: false
-      show_submodules: false
-      members_order: source
-      show_source: false
+---
 
-## simweave.core
-
-::: simweave.core
-    options:
-      show_root_heading: true
-      show_source: false
-
-## simweave.continuous
-
-::: simweave.continuous
-    options:
-      show_root_heading: true
-      show_source: false
-
-## simweave.discrete
-
-::: simweave.discrete
-    options:
-      show_root_heading: true
-      show_source: false
-
-## simweave.spatial
-
-::: simweave.spatial
-    options:
-      show_root_heading: true
-      show_source: false
-
-## simweave.agents
-
-::: simweave.agents
-    options:
-      show_root_heading: true
-      show_source: false
-
-## simweave.supplychain
-
-::: simweave.supplychain
-    options:
-      show_root_heading: true
-      show_source: false
-
-## simweave.mc
-
-::: simweave.mc
-    options:
-      show_root_heading: true
-      show_source: false
-
-## simweave.currency
-
-::: simweave.currency
-    options:
-      show_root_heading: true
-      show_source: false
-
-## simweave.units
-
-::: simweave.units
-    options:
-      show_root_heading: true
-      show_source: false
-
-## simweave.viz
-
-::: simweave.viz
-    options:
-      show_root_heading: true
-      show_source: false
+| Subpackage | API reference | Key classes / functions |
+|---|---|---|
+| `simweave.core` | [Core](modules/core.md) | `SimEnvironment`, `Entity`, `Clock`, `SimTimeAxis` |
+| `simweave.continuous` | [Continuous](modules/continuous.md) | `simulate`, `MassSpringDamper`, `QuarterCarModel`, `FullCarModel` |
+| `simweave.discrete` | [Discrete](modules/discrete.md) | `Queue`, `Service`, `ArrivalGenerator`, `ResourcePool` |
+| `simweave.spatial` + `.agents` | [Agents and spatial](modules/agents.md) | `Agent`, `a_star`, `dijkstra`, `grid_graph` |
+| `simweave.supplychain` | [Supply chain](modules/supplychain.md) | `Warehouse`, `InventoryItems` |
+| `simweave.reliability` | [Reliability](modules/reliability.md) | `ReliableEntity`, `Fleet`, `RepairCentre`, `sensitivity_sweep` |
+| `simweave.roads` | [Roads](modules/roads.md) | `Road`, `Intersection`, `Roundabout`, `TrafficSignal`, `RoadNetwork` |
+| `simweave.mc` | [Monte Carlo](modules/mc.md) | `run_monte_carlo`, `run_batched_mc`, `MCResult` |
+| `simweave.currency` | [Currency](modules/currency.md) | `Money`, `FXConverter`, `format_money` |
+| `simweave.units` | [Units](modules/units.md) | `SIUnit`, `Distance`, `Velocity`, `Mass` |
+| `simweave.viz` | [Visualisation](modules/viz.md) | `plot_*` helpers, recorders, themes |
