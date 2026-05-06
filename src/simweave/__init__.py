@@ -69,6 +69,20 @@ from simweave.reliability import (
     SweepResult,
     sensitivity_sweep,
 )
+from simweave.roads import (
+    Vehicle,
+    VehicleArrivalProcess,
+    Road,
+    DualCarriageway,
+    SignalPhase,
+    TrafficSignal,
+    Intersection,
+    Handedness,
+    Roundabout,
+    RoadNetwork,
+    RoadOccupancyRecorder,
+    IntersectionQueueRecorder,
+)
 from simweave.mc import MCResult, run_monte_carlo, run_batched_mc
 from simweave.units import (
     SIUnit,
@@ -114,12 +128,14 @@ from simweave.viz import (
     plot_warehouse_stock,
     plot_fleet_availability,
     plot_sensitivity_surface,
+    plot_road_occupancy,
+    plot_intersection_queues,
     register_theme,
     set_default_theme,
     plot_vehicle_metrics,
 )
 
-__version__ = "0.6.0"
+__version__ = "0.7.0"
 
 __all__ = [
     # Core
@@ -173,6 +189,19 @@ __all__ = [
     # Supply chain
     "InventoryItems",
     "Warehouse",
+    # Roads
+    "Vehicle",
+    "VehicleArrivalProcess",
+    "Road",
+    "DualCarriageway",
+    "SignalPhase",
+    "TrafficSignal",
+    "Intersection",
+    "Handedness",
+    "Roundabout",
+    "RoadNetwork",
+    "RoadOccupancyRecorder",
+    "IntersectionQueueRecorder",
     # Reliability
     "SubsystemSpec",
     "SubsystemState",
@@ -227,6 +256,8 @@ __all__ = [
     "plot_warehouse_stock",
     "plot_fleet_availability",
     "plot_sensitivity_surface",
+    "plot_road_occupancy",
+    "plot_intersection_queues",
     "plot_vehicle_metrics",
     "register_theme",
     "set_default_theme",

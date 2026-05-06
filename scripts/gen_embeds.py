@@ -280,6 +280,183 @@ def build_fleet_availability() -> None:
 
 
 # --------------------------------------------------------------------------- #
+# Roads: signalised intersection + roundabout occupancy                       #
+# --------------------------------------------------------------------------- #
+
+
+def build_roads() -> None:
+    from simweave.roads import (
+        Handedness,
+        Intersection,
+        IntersectionQueueRecorder,
+        Road,
+        RoadNetwork,
+        RoadOccupancyRecorder,
+        Roundabout,
+        SignalPhase,
+        TrafficSignal,
+        VehicleArrivalProcess,
+    )
+
+    rng = np.random.default_rng(7)
+
+    # --- Signalised intersection occupancy --------------------------------- #
+    road_ns = Road(200.0, 13.9, lanes=2, name="NS_approach")
+    road_ew = Road(200.0, 13.9, lanes=2, name="EW_approach")
+    exit_ns = Road(200.0, 13.9, name="NS_exit")
+    exit_ew = Road(200.0, 13.9, name="EW_exit")
+
+    signal = TrafficSignal([
+        SignalPhase(green_roads=[road_ns], duration=45.0, name="NS_green"),
+        SignalPhase(green_roads=[road_ew], duration=30.0, name="EW_green"),
+    ])
+    junction = Intersection(
+        signal=signal,
+        rng=np.random.default_rng(rng.integers(0, 2**32)),
+        name="junction",
+    )
+    for road in (road_ns, road_ew):
+        junction.add_approach(road)
+        road.outlet = junction
+    junction.add_exit(exit_ns, weight=1.0)
+    junction.add_exit(exit_ew, weight=1.0)
+
+    arrivals_ns = VehicleArrivalProcess(
+        interarrival=lambda r: r.exponential(5.0),
+        road=road_ns,
+        rng=np.random.default_rng(rng.integers(0, 2**32)),
+    )
+    arrivals_ew = VehicleArrivalProcess(
+        interarrival=lambda r: r.exponential(4.0),
+        road=road_ew,
+        rng=np.random.default_rng(rng.integers(0, 2**32)),
+    )
+    occ_rec = RoadOccupancyRecorder([road_ns, road_ew], name="ix_occ")
+    q_rec   = IntersectionQueueRecorder(junction)
+
+    net = RoadNetwork(name="intersection")
+    net.add_signal(signal)
+    net.add_intersection(junction)
+    for r in (road_ns, road_ew, exit_ns, exit_ew):
+        net.add_road(r)
+    net.add_arrival_process(arrivals_ns)
+    net.add_arrival_process(arrivals_ew)
+    net.add_recorder(occ_rec)
+    net.add_recorder(q_rec)
+
+    env = sw.SimEnvironment(dt=1.0, end=3600.0)
+    net.register_all(env)
+    env.run()
+
+    _emit(
+        sw.plot_road_occupancy(
+            occ_rec,
+            title="Signalised Crossroads — Approach Road Occupancy",
+        ),
+        "intersection_occupancy",
+    )
+    _emit(
+        sw.plot_intersection_queues(
+            q_rec,
+            title="Signalised Crossroads — Queue Lengths",
+        ),
+        "intersection_queues",
+    )
+
+    # --- Roundabout occupancy ---------------------------------------------- #
+    rb_rng = np.random.default_rng(13)
+
+    roads_rb = {
+        arm: Road(200.0, 13.9, lanes=2, name=f"{arm}_approach")
+        for arm in ("north", "south", "east", "west")
+    }
+    exits_rb = {
+        arm: Road(200.0, 13.9, name=f"{arm}_exit")
+        for arm in ("north", "south", "east", "west")
+    }
+    rb = Roundabout(
+        max_circulating=6,
+        transit_time=6.0,
+        handedness=Handedness.LEFT,
+        rng=np.random.default_rng(rb_rng.integers(0, 2**32)),
+        name="roundabout",
+    )
+    RATES = {"north": 0.20, "south": 0.15, "east": 0.25, "west": 0.18}
+    for arm, road in roads_rb.items():
+        rb.add_entry(road)
+        road.outlet = rb
+    for exit_road in exits_rb.values():
+        rb.add_exit(exit_road, weight=1.0)
+
+    arrivals_rb = {
+        arm: VehicleArrivalProcess(
+            interarrival=lambda r, rate=rate: r.exponential(1.0 / rate),
+            road=roads_rb[arm],
+            rng=np.random.default_rng(rb_rng.integers(0, 2**32)),
+        )
+        for arm, rate in RATES.items()
+    }
+
+    occ_rb = RoadOccupancyRecorder(list(roads_rb.values()), name="rb_occ")
+
+    class _RbRec(sw.Entity):
+        def __init__(self, roundabout):
+            super().__init__(name="rb_rec")
+            self._rb = roundabout
+            self.times: list = []
+            self.circulating: list = []
+            self.queued: list = []
+
+        def on_register(self, env):
+            super().on_register(env)
+            self._snap(env.clock.t)
+
+        def tick(self, dt, env):
+            super().tick(dt, env)
+            self._snap(env.clock.t + dt)
+
+        def _snap(self, t):
+            self.times.append(t)
+            self.circulating.append(self._rb.circulating)
+            self.queued.append(self._rb.total_queued)
+
+    rb_rec = _RbRec(rb)
+
+    net_rb = RoadNetwork(name="roundabout_net")
+    net_rb.add_roundabout(rb)
+    for r in list(roads_rb.values()) + list(exits_rb.values()):
+        net_rb.add_road(r)
+    for ap in arrivals_rb.values():
+        net_rb.add_arrival_process(ap)
+    net_rb.add_recorder(occ_rb)
+    net_rb.add_recorder(rb_rec)
+
+    env_rb = sw.SimEnvironment(dt=1.0, end=3600.0)
+    net_rb.register_all(env_rb)
+    env_rb.run()
+
+    import plotly.graph_objects as go
+    times_rb = np.asarray(rb_rec.times)
+    fig_rb = go.Figure()
+    fig_rb.add_trace(go.Scatter(
+        x=times_rb, y=rb_rec.circulating,
+        mode="lines", name="circulating", line={"color": "steelblue"},
+    ))
+    fig_rb.add_trace(go.Scatter(
+        x=times_rb, y=rb_rec.queued,
+        mode="lines", name="queued at arms",
+        line={"color": "tomato", "dash": "dot"},
+    ))
+    fig_rb.update_layout(
+        title="Roundabout — Circulating and Queued Vehicles",
+        xaxis_title="time (s)",
+        yaxis_title="vehicles",
+        legend={"orientation": "h", "y": -0.2},
+    )
+    _emit(fig_rb, "roundabout_occupancy")
+
+
+# --------------------------------------------------------------------------- #
 # Run all                                                                     #
 # --------------------------------------------------------------------------- #
 
@@ -292,6 +469,7 @@ def main() -> None:
     build_agents()
     build_vehicle()
     build_fleet_availability()
+    build_roads()
 
 
 # mkdocs-gen-files imports this module at build time and runs whatever
