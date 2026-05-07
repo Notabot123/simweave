@@ -30,10 +30,10 @@ class HybridActiveDamper:
         self.ground = GroundhookDamper(c_ground)
         self.alpha = float(alpha)
 
-    def force(self, body_v: float, wheel_v: float) -> float:
+    def force(self, body_velocity: float, wheel_velocity: float) -> float:
         return (
-            self.alpha * self.sky.force(body_v)
-            + (1 - self.alpha) * self.ground.force(wheel_v)
+            self.alpha * self.sky.force(body_velocity)
+            + (1 - self.alpha) * self.ground.force(wheel_velocity)
         )
     
 class SemiActiveWrapper:
