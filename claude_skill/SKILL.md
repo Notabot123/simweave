@@ -1,6 +1,6 @@
 ---
 name: simweave
-description: "Use this skill whenever the user asks for help building, running, debugging, or visualising simulations with the SimWeave Python library (`pip install simweave`). Triggers include any mention of: simweave, SimWeave, the EdgeWeave companion app, hybrid discrete/continuous simulation, Monte Carlo with `MCResult`/`run_monte_carlo`/`run_batched_mc`, queueing/Service/Queue/PriorityQueue/ArrivalGenerator, Resource/ResourcePool, supply-chain Warehouse/InventoryItems, agent routing on a Graph with A*/dijkstra, continuous dynamic systems (mass-spring-damper, pendulum, RLC, thermal, quarter-car, half-car, full-car) using `simulate(...)`, PID control via `PIDController`, `Money` and FX conversion via `simweave.currency`, plotly figures via `simweave.viz`, time-sampled recorders (`QueueLengthRecorder`, `ServiceUtilisationRecorder`, `WarehouseStockRecorder`, `RoadOccupancyRecorder`, `IntersectionQueueRecorder`, `FleetAvailabilityRecorder`), calendar date axes via `SimTimeAxis`, fleet operational availability via `simweave.reliability` (ReliableEntity/Fleet/RepairCentre/sensitivity_sweep), road networks via `simweave.roads` (Road/Intersection/Roundabout/TrafficSignal/RoadNetwork), or producing plotly JSON for an EdgeWeave frontend. Also use when generating example simulations for documentation or when the user is integrating SimWeave outputs into another tool. Do NOT use this skill for unrelated python work, generic plotting questions, or when the user is working with a different sim library."
+description: "Use this skill whenever the user asks for help building, running, debugging, or visualising simulations with the SimWeave Python library (`pip install simweave`). Triggers include any mention of: simweave, SimWeave, the EdgeWeave companion app, hybrid discrete/continuous simulation, Monte Carlo with `MCResult`/`run_monte_carlo`/`run_batched_mc`, queueing/Service/Queue/PriorityQueue/ArrivalGenerator, Resource/ResourcePool, supply-chain Warehouse/InventoryItems, agent routing on a Graph with A*/dijkstra, continuous dynamic systems (mass-spring-damper, pendulum, RLC, thermal, quarter-car, half-car, full-car) using `simulate(...)`, PID control via `PIDController`, fault injection / predictive maintenance datasets via `FaultInjector`/`FaultProfile`/`ParameterFault`/`FaultDataset`/`FaultRecorder`, `Money` and FX conversion via `simweave.currency`, plotly figures via `simweave.viz`, time-sampled recorders (`QueueLengthRecorder`, `ServiceUtilisationRecorder`, `WarehouseStockRecorder`, `RoadOccupancyRecorder`, `IntersectionQueueRecorder`, `FleetAvailabilityRecorder`, `FaultRecorder`), calendar date axes via `SimTimeAxis`, fleet operational availability via `simweave.reliability` (ReliableEntity/Fleet/RepairCentre/sensitivity_sweep), road networks via `simweave.roads` (Road/Intersection/Roundabout/TrafficSignal/RoadNetwork), or producing plotly JSON for an EdgeWeave frontend. Also use when generating example simulations for documentation or when the user is integrating SimWeave outputs into another tool. Do NOT use this skill for unrelated python work, generic plotting questions, or when the user is working with a different sim library."
 ---
 
 # SimWeave: hybrid discrete/continuous simulation engine
@@ -9,13 +9,14 @@ description: "Use this skill whenever the user asks for help building, running, 
 
 SimWeave (`pip install simweave`) is an atomic-clock simulation engine
 that treats discrete events and continuous dynamics as first-class
-citizens on the same timeline. Current version: **0.7.2**.
+citizens on the same timeline. Current version: **0.8.0**.
 
 | Module | Purpose |
 |---|---|
 | `simweave.core` | `Clock`, `EventQueue`, `Entity`, `SimEnvironment`, `SimTimeAxis` (calendar date axes) |
 | `simweave.discrete` | `Queue`, `PriorityQueue`, `Service`, `ArrivalGenerator`, `Resource`, `ResourcePool`, `EntityProperties`, distributions (`exponential`, `uniform`, `normal`, `deterministic`) |
 | `simweave.continuous` | `simulate(...)`, `SimulationResult`, `ContinuousProcess`, ready-made systems (`MassSpringDamper`, `SimplePendulum`, `QuarterCarModel`, `HalfCarModel`, `RollCarModel`, `FullCarModel`, `SeriesRLC`, `ThermalRC`, `TwoMassThermal`), PID control (`PIDController`) |
+| `simweave.faults` | `FaultProfile` (onset/failure times + shape), `ParameterFault` (maps profile to a system attribute), `FaultInjector` (wraps any `DynamicSystem`, plug-in to `simulate()`), `FaultRecorder` (hybrid env path), `FaultDataset` (health_index, rul, is_failed, failure_mode labels + `to_dataframe()`) |
 | `simweave.agents` | `Agent`, `Compass`, `a_star`, `dijkstra`, heuristics (`manhattan`, `euclidean`, `chebyshev`) |
 | `simweave.spatial` | `Graph`, `grid_graph` |
 | `simweave.supplychain` | `InventoryItems`, `Warehouse` (multi-echelon, `(R, Q)` policy) |
@@ -39,8 +40,9 @@ pip install simweave[optim]  # scipy        -- supplychain optimisation
 pip install simweave[graph]  # networkx     -- richer graph adapters
 pip install simweave[geo]    # osmnx        -- street-network graphs
 pip install simweave[fast]   # numba        -- JIT speedups
+pip install simweave[ml]     # pandas       -- FaultDataset.to_dataframe()
 pip install simweave[intl]   # babel        -- locale-aware money formatting
-pip install simweave[dev]    # pytest, scipy, networkx, plotly, babel
+pip install simweave[dev]    # pytest, scipy, networkx, plotly, babel, pandas
 pip install simweave[all]    # everything except dev tooling
 ```
 
@@ -121,6 +123,74 @@ env = sw.SimEnvironment(dt=0.1, end=10.0)
 env.register(proc)
 env.run()
 res = proc.result()           # SimulationResult, same shape as standalone
+```
+
+### Fault injection for predictive-maintenance datasets
+
+```python
+import numpy as np
+import simweave as sw
+from simweave.faults import FaultProfile, ParameterFault, FaultInjector, FaultDataset
+
+# 1. Describe degradation (onset → failure window + shape)
+profile = FaultProfile(
+    onset_time=200, failure_time=800,
+    mode="insulation_loss", shape="exponential",  # or "linear", "abrupt", callable
+)
+
+# 2. Map to a system parameter (perturbs R_th at runtime)
+fault = ParameterFault(param="R_th", profile=profile, max_delta=3.0, relative=True)
+# relative=True:  perturbed = nominal * (1 + max_delta * fault_fraction)
+# relative=False: perturbed = nominal + max_delta * fault_fraction
+
+# 3. Wrap — FaultInjector satisfies SupportsDynamics, drops into simulate() unchanged
+injector = FaultInjector(system=sw.ThermalRC(R_th=1.0, C_th=800.0), faults=[fault])
+
+# 4. Simulate
+result = sw.simulate(injector, t_span=(0, 1000), dt=0.5)
+
+# 5. Build labelled dataset (labels computed analytically — no recorder needed)
+ds = FaultDataset.from_result(result, injector, noise_std=0.5,
+                               rng=np.random.default_rng(42))
+# ds.features        shape (N, n_features)  — sensor readings
+# ds.health_index    shape (N,) float [0,1] — 1=healthy, 0=failed
+# ds.rul             shape (N,) float       — remaining useful life (sim time units)
+# ds.is_failed       shape (N,) bool
+# ds.failure_mode    shape (N,) str         — "healthy" | mode label
+
+df = ds.to_dataframe()   # requires pip install simweave[ml]
+train, test = ds.train_test_split(test_frac=0.2)
+
+# Multi-run corpus (combine healthy + several fault runs)
+corpus = FaultDataset.concat([healthy_ds, linear_ds, exp_ds])
+
+# Multi-fault / multi-mode: attach several ParameterFaults to one injector
+# system health = min(all fault health indices); mode = worst fault's label
+```
+
+**Parameter–system quick reference:**
+
+| System | `param=` | Physical meaning |
+|---|---|---|
+| `ThermalRC` | `"R_th"` | Insulation loss |
+| `ThermalRC` | `"C_th"` | Phase-change material degradation |
+| `MassSpringDamper` | `"stiffness"` | Spring fatigue |
+| `MassSpringDamper` | `"damping"` | Damper seal wear |
+| `SeriesRLC` | `"R"` | Conductor corrosion |
+| `QuarterCarModel` | `"k_s"` | Suspension spring rate change |
+
+**Hybrid environment path** (when combining with discrete events):
+
+```python
+from simweave.faults import FaultRecorder
+
+proc = sw.ContinuousProcess(injector)
+rec  = FaultRecorder(injector)   # register after proc
+env  = sw.SimEnvironment(dt=1.0, end=1000.0)
+env.register(proc)
+env.register(rec)
+env.run()
+ds = FaultDataset.from_recorder(rec, proc.result())
 ```
 
 ### Agents on a graph
@@ -351,6 +421,10 @@ fig = sw.plot_state_trajectories(res)
 fig = sw.plot_phase_portrait(res, x_idx=0, y_idx=1)
 fig = sw.plot_vehicle_metrics(res, model=car)
 
+# Fault injection
+fig = sw.plot_fault_signals(result, injector)          # state traces + shaded fault window
+fig = sw.plot_health_index(ds, show_rul=True)          # health index + RUL dual y-axis
+
 # Monte Carlo
 fig = sw.plot_mc_fan(mc, times=t_axis, percentiles=(5, 25, 50, 75, 95))
 
@@ -378,6 +452,7 @@ wrec  = sw.WarehouseStockRecorder(wh)
 frec  = sw.FleetAvailabilityRecorder(fleet)        # reliability
 rrec  = sw.RoadOccupancyRecorder([road_a, road_b]) # roads
 iqrec = sw.IntersectionQueueRecorder(junction)     # roads
+frec2 = sw.FaultRecorder(injector)                 # faults (hybrid env path)
 
 sw.plot_queue_length(qrec)
 sw.plot_service_utilisation(urec)   # aggregate util + per-channel busy
@@ -427,6 +502,16 @@ re-theming on the JS side just requires merging a layout patch.
 * **Reliability failure rates are per simulation time unit** —
   `failure_rate=1/120` means MTBF of 120 time units. Both time-based
   and cycle-based rates can be active simultaneously on the same subsystem.
+* **`FaultInjector` parameter names must match actual system attributes** —
+  use `"stiffness"` not `"k"` for `MassSpringDamper`, `"R_th"` not `"R"` for
+  `ThermalRC`. The injector will raise `AttributeError` at construction if the
+  name is wrong.
+* **`FaultDataset.to_dataframe()` requires pandas** — install via
+  `pip install simweave[ml]`. All other `FaultDataset` operations need only numpy.
+* **`FaultDataset.concat()` requires matching `feature_names`** — only combine
+  datasets from the same system type (same state labels and input count).
+* **Healthy runs have `rul=inf`** — filter with `np.isfinite(ds.rul)` before
+  passing to a regressor that cannot handle inf values.
 
 ## Reference docs in the repo
 
@@ -441,6 +526,7 @@ re-theming on the JS side just requires merging a layout patch.
 * `demos/23_time_axis_calendar.py` — calendar date axes.
 * `demos/24_signalised_intersection.py` — signalised 4-way crossroads.
 * `demos/25_roundabout.py` — roundabout vs signal comparison.
+* `demos/26_fault_injection.py` — thermal insulation fault, linear vs exponential profiles, multi-run corpus assembly, DataFrame output.
 
 ## When suggesting code
 
