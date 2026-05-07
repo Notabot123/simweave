@@ -54,7 +54,9 @@ class TestFaultProfile:
 
     def test_callable_shape(self):
         # Custom S-curve: health = cos(pi * progress / 2)^2
-        s_curve = lambda prog: math.cos(math.pi * prog / 2) ** 2
+        def s_curve(prog):
+            return math.cos(math.pi * prog / 2) ** 2
+
         p = FaultProfile(onset_time=0.0, failure_time=10.0, shape=s_curve)
         assert p.health_index(0.0) == pytest.approx(1.0, abs=1e-6)
         assert p.health_index(10.0) == pytest.approx(0.0, abs=1e-6)
@@ -314,7 +316,7 @@ class TestFaultDataset:
         """to_dataframe should work if pandas is installed, or give a clear error."""
         ds = self._make_dataset()
         try:
-            import pandas as pd
+            import pandas  # noqa: F401
             df = ds.to_dataframe()
             assert "time" in df.columns
             assert "health_index" in df.columns
