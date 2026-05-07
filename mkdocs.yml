@@ -57,6 +57,11 @@ markdown_extensions:
       alternate_style: true
   - pymdownx.tasklist:
       custom_checkbox: true
+  - pymdownx.arithmatex:
+      generic: true
+
+extra_javascript:
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
 
 plugins:
   - search
@@ -103,6 +108,12 @@ nav:
       - Currency: modules/currency.md
       - Units: modules/units.md
       - Visualisation: modules/viz.md
+  - Blog:
+      - blog/index.md
+      - Suspension dynamics: blog/suspension-dynamics.md
+      - DES vs SimPy: blog/des-vs-simpy.md
+      - Road traffic: blog/road-traffic.md
+      - Predictive maintenance: blog/predictive-maintenance.md
   - Design notes:
       - design/index.md
       - Currency: design/currency.md
