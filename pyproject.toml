@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "simweave"
-version = "0.7.2"
-description = "SimWeave: a hybrid discrete/continuous simulation engine with currency, units, agents, supply chains, and Monte Carlo."
+version = "0.8.0"
+description = "SimWeave: a hybrid discrete/continuous simulation engine with fault injection, currency, units, agents, supply chains, and Monte Carlo."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
@@ -22,6 +22,7 @@ graph = ["networkx>=3.0"]
 geo = ["osmnx>=1.8", "networkx>=3.0"]
 fast = ["numba>=0.58"]
 intl = ["babel>=2.14"]
+ml = ["pandas>=2.0"]
 dev = [
     "pytest>=8.0",
     "pytest-cov>=4.1",
@@ -29,6 +30,7 @@ dev = [
     "networkx>=3.0",
     "babel>=2.14",
     "plotly>=5.18",
+    "pandas>=2.0",
 ]
 docs = [
     "mkdocs>=1.6",
@@ -50,6 +52,7 @@ all = [
     "networkx>=3.0",
     "numba>=0.58",
     "babel>=2.14",
+    "pandas>=2.0",
 ]
 
 [tool.setuptools]

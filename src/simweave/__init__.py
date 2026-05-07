@@ -83,6 +83,13 @@ from simweave.roads import (
     RoadOccupancyRecorder,
     IntersectionQueueRecorder,
 )
+from simweave.faults import (
+    FaultProfile,
+    ParameterFault,
+    FaultInjector,
+    FaultRecorder,
+    FaultDataset,
+)
 from simweave.mc import MCResult, run_monte_carlo, run_batched_mc
 from simweave.units import (
     SIUnit,
@@ -133,9 +140,11 @@ from simweave.viz import (
     register_theme,
     set_default_theme,
     plot_vehicle_metrics,
+    plot_fault_signals,
+    plot_health_index,
 )
 
-__version__ = "0.7.2"
+__version__ = "0.8.0"
 
 __all__ = [
     # Core
@@ -202,6 +211,12 @@ __all__ = [
     "RoadNetwork",
     "RoadOccupancyRecorder",
     "IntersectionQueueRecorder",
+    # Faults / predictive maintenance
+    "FaultProfile",
+    "ParameterFault",
+    "FaultInjector",
+    "FaultRecorder",
+    "FaultDataset",
     # Reliability
     "SubsystemSpec",
     "SubsystemState",
@@ -259,6 +274,8 @@ __all__ = [
     "plot_road_occupancy",
     "plot_intersection_queues",
     "plot_vehicle_metrics",
+    "plot_fault_signals",
+    "plot_health_index",
     "register_theme",
     "set_default_theme",
     # Meta

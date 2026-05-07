@@ -973,6 +973,153 @@ def plot_intersection_queues(
     return apply_theme(_apply_time_axis(fig, time_axis), theme)
 
 
+def plot_fault_signals(
+    result: Any,
+    injector: Any,
+    channels: Sequence[int] | None = None,
+    *,
+    theme: str | None = None,
+    title: str | None = None,
+) -> Any:
+    """State trajectories with shaded regions for degraded and failed phases.
+
+    The plot overlays the simulated state channels with coloured background
+    bands:
+
+    * **green** — healthy (health index = 1).
+    * **amber** — degrading (0 < health index < 1).
+    * **red** — failed (health index = 0).
+
+    Parameters
+    ----------
+    result:
+        A :class:`~simweave.continuous.solver.SimulationResult` from a run
+        that used a :class:`~simweave.faults.injector.FaultInjector`.
+    injector:
+        The :class:`~simweave.faults.injector.FaultInjector` used for the run
+        (provides fault profile timings).
+    channels:
+        State channel indices to plot.  Default: all.
+    theme, title:
+        Standard overrides.
+    """
+    go = _plotly.require_go()
+    time = np.asarray(result.time)
+    state = np.asarray(result.state)
+    labels = list(getattr(result, "state_labels", ()) or [
+        f"x{i}" for i in range(state.shape[1])
+    ])
+    idxs = list(channels) if channels is not None else list(range(state.shape[1]))
+
+    fig = go.Figure()
+
+    # Shade degradation / failure windows
+    t0, tf = float(time[0]), float(time[-1])
+    for f in injector.faults:
+        onset = max(f.profile.onset_time, t0)
+        failure = min(f.profile.failure_time, tf)
+        if onset < failure:
+            fig.add_vrect(
+                x0=onset, x1=failure,
+                fillcolor="orange", opacity=0.12, layer="below", line_width=0,
+                annotation_text=f"degrading ({f.profile.mode})",
+                annotation_position="top left",
+            )
+        if failure < tf:
+            fig.add_vrect(
+                x0=failure, x1=tf,
+                fillcolor="red", opacity=0.12, layer="below", line_width=0,
+                annotation_text="failed",
+                annotation_position="top left",
+            )
+
+    for i in idxs:
+        fig.add_trace(
+            go.Scatter(
+                x=time,
+                y=state[:, i],
+                mode="lines",
+                name=labels[i] if i < len(labels) else f"x{i}",
+            )
+        )
+
+    sys_name = getattr(result, "system_name", "system")
+    fig.update_layout(
+        title=title or f"{sys_name} — fault signals",
+        xaxis_title="time",
+        yaxis_title="state",
+        legend_title_text="channel",
+    )
+    return apply_theme(fig, theme)
+
+
+def plot_health_index(
+    dataset: Any,
+    *,
+    show_rul: bool = True,
+    theme: str | None = None,
+    title: str | None = None,
+) -> Any:
+    """Health index (and optionally RUL) over simulation time.
+
+    Parameters
+    ----------
+    dataset:
+        A :class:`~simweave.faults.dataset.FaultDataset` (or any object
+        exposing ``.time``, ``.health_index``, and ``.rul``).
+    show_rul:
+        If ``True`` (default), overlay remaining useful life on a secondary
+        y-axis.
+    theme, title:
+        Standard overrides.
+    """
+    go = _plotly.require_go()
+    time = np.asarray(dataset.time)
+    hi = np.asarray(dataset.health_index)
+
+    fig = go.Figure()
+    fig.add_trace(
+        go.Scatter(
+            x=time,
+            y=hi,
+            mode="lines",
+            name="health index",
+            line={"color": "royalblue", "width": 2},
+        )
+    )
+
+    if show_rul:
+        rul = np.asarray(dataset.rul, dtype=float)
+        rul_finite = np.where(np.isinf(rul), np.nan, rul)
+        if not np.all(np.isnan(rul_finite)):
+            fig.add_trace(
+                go.Scatter(
+                    x=time,
+                    y=rul_finite,
+                    mode="lines",
+                    name="RUL",
+                    line={"color": "darkorange", "dash": "dash", "width": 1.5},
+                    yaxis="y2",
+                )
+            )
+            fig.update_layout(
+                yaxis2={
+                    "title": "remaining useful life",
+                    "overlaying": "y",
+                    "side": "right",
+                    "showgrid": False,
+                }
+            )
+
+    fig.update_layout(
+        title=title or "Health index and RUL",
+        xaxis_title="time",
+        yaxis={"title": "health index", "range": [-0.05, 1.05]},
+        legend={"orientation": "h", "y": -0.2},
+    )
+    return apply_theme(fig, theme)
+
+
 __all__ = [
     "plot_state_trajectories",
     "plot_phase_portrait",
@@ -985,4 +1132,6 @@ __all__ = [
     "plot_sensitivity_surface",
     "plot_road_occupancy",
     "plot_intersection_queues",
+    "plot_fault_signals",
+    "plot_health_index",
 ]

@@ -1,11 +1,15 @@
 # SimWeave — a hybrid discrete/continuous simulation engine
 [![CI](https://github.com/Notabot123/simweave/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Notabot123/simweave/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/Notabot123/simweave/branch/main/graph/badge.svg)](https://codecov.io/gh/Notabot123/simweave)
+[![PyPI](https://img.shields.io/pypi/v/simweave)](https://pypi.org/project/simweave/)
+[![docs](https://img.shields.io/badge/docs-mkdocs-blue)](https://notabot123.github.io/simweave/)
 
-`simweave` (PyPI: [`simweave`](https://pypi.org/project/simweave/)) is a
-lightweight Python simulation library built around an **atomic-clock
-core** with an **optional heap-based event queue** layered on top. It is
-designed for Monte Carlo studies where reproducibility and vectorised
+`simweave` is a lightweight Python simulation library built around an
+**atomic-clock core** with an **optional heap-based event queue** layered on
+top. It is designed for Monte Carlo studies where reproducibility and vectorised
 aggregation across replicates matter as much as per-event precision.
+
+**Full documentation:** [notabot123.github.io/simweave](https://notabot123.github.io/simweave/)
 
 Sister project: [EdgeWeave](https://github.com/) — desktop frontend that
 generates and runs SimWeave scenarios.
@@ -97,6 +101,7 @@ Only `numpy` is a hard dependency. Everything else is optional:
 | `simweave[geo]`    | osmnx — OSM map ingestion                                | `pip install simweave[geo]`          |
 | `simweave[plot]`   | matplotlib — bring-your-own static plotting              | `pip install simweave[plot]`         |
 | `simweave[viz]`    | plotly — first-class viz module (`simweave.viz`)         | `pip install simweave[viz]`          |
+| `simweave[ml]`     | pandas — `FaultDataset.to_dataframe()` export            | `pip install simweave[ml]`           |
 | `simweave[intl]`   | babel — locale-aware money formatting                    | `pip install simweave[intl]`         |
 | `simweave[fast]`   | numba — opt-in JIT for MC inner loops                    | `pip install simweave[fast]`         |
 | `simweave[dev]`    | pytest / mypy / plus the optional libs needed for tests  | `pip install simweave[dev]`          |
@@ -113,13 +118,17 @@ The submodules compose through the shared `Entity` base class:
 ```
 simweave/
   core/          Clock, EventQueue, Entity, SimEnvironment
-  units/         SI exponent-tagged units (preserved from the original)
+  units/         SI exponent-tagged units with dimensional analysis
   discrete/      Queue, PriorityQueue, Service, ArrivalGenerator, Resource, ResourcePool
   continuous/    DynamicSystem, RK4/Euler, ContinuousProcess (hybrid)
+  faults/        FaultInjector, FaultProfile, FaultDataset — PdM dataset generation
   spatial/       Graph + A*-friendly adj_view adapter, grid_graph helper
   agents/        Compass, routing.a_star, Agent (Entity subclass)
   supplychain/   InventoryItems, Warehouse, steady-state optimisation
+  reliability/   ReliableEntity, Fleet, RepairCentre, sensitivity_sweep
+  roads/         Road, Intersection, Roundabout, RoadNetwork, traffic signals
   mc/            run_monte_carlo, run_batched_mc
+  viz/           Plotly-based plot helpers; applies themes
 ```
 
 A hybrid sim that moves a pallet (Agent) through a service line (Service
@@ -129,19 +138,38 @@ three separate libraries to do it would be the wrong trade.
 
 ## Installation
 
+### From PyPI (recommended)
+
+```bash
+pip install simweave
+```
+
+Optional extras (install only what you need):
+
+```bash
+pip install simweave[viz]    # plotly charts
+pip install simweave[optim]  # scipy optimiser
+pip install simweave[ml]     # pandas DataFrame export
+pip install simweave[all]    # everything above
+```
+
+### From source (latest development)
+
 ```bash
 git clone https://github.com/Notabot123/simweave
 cd simweave
 python -m venv .venv && source .venv/bin/activate   # or .venv\Scripts\activate on Windows
-pip install -e .[dev]   # editable install with test deps
+pip install -e .[dev]   # editable install with all test deps
 pytest                  # should show green
 ```
 
 ## Worked examples
 
-Sixteen runnable scripts live under [`demos/`](demos/):
+26 runnable scripts live under
+[`demos/`](https://github.com/Notabot123/simweave/tree/main/demos):
 
 **Discrete-event / agents / Monte Carlo**
+
 1. `01_simple_queue.py` — M/M/1 queue, Little's law diagnostics
 2. `02_chained_services.py` — three-stage production line with blocking
 3. `03_resource_pool.py` — bounded concurrency via a physician pool
@@ -151,25 +179,51 @@ Sixteen runnable scripts live under [`demos/`](demos/):
 7. `07_monte_carlo.py` — serial vs threads vs processes vs batched numpy
 8. `08_hybrid_continuous_discrete.py` — queue coupled to an MSD
 
-**Continuous dynamical systems** (added for teaching use)
+**Continuous dynamical systems**
 
 9. `09_mass_spring_damper.py` — under-, critical-, over-damped responses
 10. `10_quarter_car.py` — 2-DOF suspension over a speed bump, three damper setups
 11. `11_series_rlc.py` — RLC step and resonant drive, reports ω₀, ζ, Q
 12. `12_thermal_system.py` — single-body RC thermal + CPU/heatsink two-mass model
+13. `17_half_car_pitch.py` — 4-DOF half-car pitch model
+14. `18_half_car_roll.py` — 4-DOF half-car roll model
+15. `19_full_car_dynamics.py` — 7-DOF full-car model
+16. `20_PID_thermal_system.py` — PID temperature controller
 
 **Currency, visualisation, units, optimisation**
 
-13. `13_money_cashflow.py` — `Money`, FX conversion, locale-aware formatting
-14. `14_viz_tour.py` — every `simweave.viz` plot helper end-to-end, with HTML index
-15. `15_units_dimensional.py` — SI-units algebra (`Distance / TimeUnit → Velocity`)
-16. `16_inventory_optimisation.py` — recover demand rate from a sim, then optimise reorder points
+17. `13_money_cashflow.py` — `Money`, FX conversion, locale-aware formatting
+18. `14_viz_tour.py` — every `simweave.viz` plot helper end-to-end
+19. `15_units_dimensional.py` — SI-units algebra (`Distance / TimeUnit → Velocity`)
+20. `16_inventory_optimisation.py` — recover demand rate from a sim, then optimise reorder points
+21. `23_time_axis_calendar.py` — calendar-date x-axes on time-series plots
 
-Run any of them directly, e.g. `python demos/01_simple_queue.py` from
-the repo root. The two-digit prefix is just an ordering hint; the
-scripts have no dependency on each other. A small `demos/_bootstrap.py`
-shim adds `src/` to `sys.path` if the package isn't installed; with
-`pip install -e .` in place, the shim becomes a no-op.
+**Reliability and fleet management**
+
+22. `21_reliable_fleet.py` — 8-vehicle taxi fleet with repair centre and spare parts
+23. `22_sensitivity_analysis.py` — parameter sweep over repair bays and stock level
+
+**Traffic and road networks**
+
+24. `24_signalised_intersection.py` — four-way signalised junction with traffic signals
+25. `25_roundabout.py` — two-lane roundabout with yield logic
+
+**Fault injection and predictive maintenance** *(new in v0.8.0)*
+
+26. `26_fault_injection.py` — inject insulation-loss fault into a thermal model; produce
+    a labelled dataset with health index, RUL, and failure-mode columns ready for
+    LSTM / time-series model training
+
+Run any script directly from the repo root, e.g.:
+
+```bash
+python demos/01_simple_queue.py
+python demos/26_fault_injection.py
+```
+
+The two-digit prefix is just an ordering hint; scripts have no dependency on each
+other. A small `demos/_bootstrap.py` shim adds `src/` to `sys.path` when the
+package is not installed; with `pip install -e .` in place the shim is a no-op.
 
 ## Monte Carlo performance: picking the right strategy
 
@@ -293,10 +347,6 @@ sim_engine/
 
 ## Next steps on the roadmap
 
-- **PID Controllers.** To extend utility of dynamic simulations, allow
-  controllers which are easily exposed to EdgeWeave.
-- **Fault injection.** This should be suitable for ML datasets with use
-  cases such as predictive maintenance,
 - **True sim-based optimisation.** `cost_optimise_stock_sim` already
   wraps a user callback; a future step is an adaptive surrogate model
   (kriging / BO) so each evaluation doesn't need a full MC sweep.
