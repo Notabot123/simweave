@@ -21,7 +21,7 @@ class GroundhookDamper:
 
     def force(self, body_velocity: float, wheel_velocity: float) -> float:
         # For groundhook uses wheel velocity only, but signature makes modular/easy to toggle controller
-        return -self.c * wheel_velocity
+        return self.c * wheel_velocity
     
 class HybridActiveDamper:
     "Hybrid Skyhook & Groundhook."
@@ -32,8 +32,8 @@ class HybridActiveDamper:
 
     def force(self, body_velocity: float, wheel_velocity: float) -> float:
         return (
-            self.alpha * self.sky.force(body_velocity)
-            + (1 - self.alpha) * self.ground.force(wheel_velocity)
+            self.alpha * self.sky.force(body_velocity, 0)
+            + (1 - self.alpha) * self.ground.force(0, wheel_velocity)
         )
     
 class SemiActiveWrapper:
