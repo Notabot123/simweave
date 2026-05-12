@@ -333,6 +333,6 @@ The leading Python ABM library is [**Mesa**](https://mesa.readthedocs.io). In a 
 
 ---
 
-## Medium Edition Notes
+## Try it out yourself
 
-*If you arrived here from Medium, the headline is: SimPy is excellent, mature, and battle-tested for traditional DES. SimWeave adds built-in Monte Carlo, hybrid ODE-DES coupling, inventory management, and visualisation — at the cost of a smaller community. Both use clean Python APIs; the choice depends on your use case. Full runnable code is in the [companion notebook](https://github.com/Notabot123/simweave-notebooks).*
+Full runnable code is in the [companion notebook](https://github.com/Notabot123/simweave-notebooks).
