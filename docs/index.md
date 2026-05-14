@@ -1,3 +1,7 @@
+<figure markdown>
+  ![SimWeave](assets/logo_tagline.png){ width=640 }
+</figure>
+
 # SimWeave
 
 A hybrid discrete/continuous simulation engine for Python. SimWeave gives

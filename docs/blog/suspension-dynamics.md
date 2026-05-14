@@ -68,21 +68,14 @@ This is especially useful when feeding suspension outputs into downstream calcul
 
 The simplest useful suspension model treats one corner of the vehicle in isolation: a **sprung mass** (a quarter of the car body, ~250–300 kg) sitting on a **suspension spring and damper**, itself resting on an **unsprung mass** (wheel, hub, brake assembly, ~40–50 kg), which contacts the road through the **tyre spring** (very stiff, ~200,000 N/m).
 
-```
-  m_s  ─── sprung mass (body)
-   |
-  k_s / c_s  ─── suspension spring + damper
-   |
-  m_u  ─── unsprung mass (wheel + hub)
-   |
-  k_t  ─── tyre stiffness
-   |
-  z_r(t)  ─── road input
-```
+<figure markdown>
+  ![SimWeave](assets/quarter_car.png){ width=640 }
+</figure>
 
 The equations of motion are:
 
 $$m_s \ddot{z}_s = -k_s(z_s - z_u) - c_s(\dot{z}_s - \dot{z}_u)$$
+
 $$m_u \ddot{z}_u = k_s(z_s - z_u) + c_s(\dot{z}_s - \dot{z}_u) - k_t(z_u - z_r)$$
 
 The state vector is `[z_s, ż_s, z_u, ż_u]` — body and wheel position and velocity. The road profile `z_r(t)` enters as an external input.
@@ -156,15 +149,20 @@ def road_pair(t):
     return bump(1.0), bump(1.15)   # (front z_r, rear z_r)
 
 model = HalfCarModel(
-    mass_f=400.0, mass_r=350.0,    # front/rear sprung mass (kg)
-    I_pitch=1_200.0,               # pitch moment of inertia (kg·m²)
-    k_f=22_000.0, k_r=20_000.0,    # suspension stiffnesses (N/m)
-    c_f=1_600.0, c_r=1_400.0,      # suspension damping (Ns/m)
-    L=2.7,                         # wheelbase (m)
-    h=0.55,                        # centre-of-gravity height (m)
-    road=road_pair,
-)
-result = simulate(model, (0, 5), dt=0.001)
+        sprung_mass=1200.0,         # total sprung mass (kg)
+        pitch_inertia=2500.0,       # pitch moment of inertia (kg·m²)
+        unsprung_mass_front=60.0,   # front unsprung mass (kg)
+        unsprung_mass_rear=60.0,    # rear unsprung mass (kg)
+        k_sf=20000.0,               # front suspension stiffness (N/m)
+        k_sr=20000.0,               # rear suspension stiffness (N/m)
+        c_sf=1500.0,                # front suspension damping (Ns/m)
+        c_sr=1500.0,                # rear suspension damping (Ns/m)
+        k_tf=150000.0,              # front tyre stiffness (N/m)
+        k_tr=150000.0,              # rear tyre stiffness (N/m)
+        a=1.2,                      # front to Centre of Gravity (m)
+        b=1.6,                      # rear to Centre of Gravity (m)
+    )
+result = simulate(model, (0, 5), dt=0.001, inputs=road_pair)
 ```
 
 The state vector expands to four degrees of freedom: front and rear body positions plus body pitch angle and pitch rate.
@@ -179,18 +177,17 @@ The `FullCarModel` couples all four corners and tracks heave (vertical bounce), 
 from simweave.continuous.systems import FullCarModel
 
 model = FullCarModel(
-    m_total=1_200.0,     # total sprung mass (kg)
-    I_pitch=2_500.0,     # pitch inertia (kg·m²)
-    I_roll=2_200.0,      # roll inertia (kg·m²)
-    I_yaw=60.0,          # yaw inertia (kg·m²) — not excited by vertical inputs
-    k_f=20_000.0,        # front suspension stiffness (N/m)
-    k_r=18_000.0,        # rear suspension stiffness (N/m)
-    c_f=1_500.0,         # front damping (Ns/m)
-    c_r=1_400.0,         # rear damping (Ns/m)
-    L=2.7,               # wheelbase (m)
-    W=1.5,               # track width (m)
-    h=0.55,              # CG height (m)
-)
+        sprung_mass=1200,       # total sprung mass (kg)
+        pitch_inertia=2500,     # pitch inertia (kg·m²)
+        roll_inertia=2200,      # roll inertia (kg·m²)
+        unsprung_mass=60,       # unsprung mass (kg)
+        k_s=20000,              # suspension stiffness (N/m)
+        c_s=1500,               # suspension damping (Ns/m)
+        k_t=150000,             # tyre stiffness (N/m)
+        a=1.2,                  # CG → front axle
+        b=1.6,                  # CG → rear axle
+        track_width=1.6         # width between wheels (m)
+    )
 
 def asymmetric_input(t):
     """Front-left pothole only — excites both pitch and roll."""
@@ -214,6 +211,10 @@ The `wrap_states()` call here returns `Angle` quantities for pitch and roll — 
 Passive suspension is a fixed compromise between comfort and handling. **Active** and **semi-active** suspension systems use controllable dampers (electro-rheological fluid, electromagnetic actuators) to adapt in real time. But what's the theoretical best you could possibly do?
 
 Two benchmark controllers answer that question:
+
+<figure markdown>
+  ![SimWeave](assets/quarter_skyhook.png){ width=640 }
+</figure>
 
 ### Skyhook
 
@@ -277,12 +278,16 @@ configs = [
     ("Semi-active", semi_active),
 ]
 
+print(f'{"Controller":20s}  {"RMS accel (m/s²)":>12s}  {"Peak tyre (mm)":>15s} {"RMS tyre load (N)":>18s}')
+print('-' * 80)
 for name, model in configs:
     r = simulate(model, (0, 5), dt=0.001, inputs=road_bump)
     z_s_ddot  = np.gradient(r.state[:, 1], r.time)
     tyre_def  = r.state[:, 2]
-    print(f"{name:20s}  RMS accel = {np.sqrt(np.mean(z_s_ddot**2)):.3f} m/s²  "
-          f"Peak tyre deflection = {np.max(np.abs(tyre_def))*1000:.1f} mm")
+    tyre_force = K_T * r.state[:, 2]
+    rms_acc = np.sqrt(np.mean(z_s_ddot**2))
+    rms_tyre   = np.sqrt(np.mean(tyre_force**2))
+    print(f'{name:20s}  {rms:>12.3f}  {peak:>15.1f} {rms_tyre:>18.1f}')
 ```
 
 !!! example "What to expect"
@@ -319,9 +324,10 @@ The suspension models shown here are all **passive** or **idealised active**. Th
 - Feed real road profiles from measured accelerometer data as inputs.
 - Run **Monte Carlo** sweeps over road roughness to compute probabilistic ride quality distributions.
 - Couple the suspension model to a **tyre friction model** for combined longitudinal–lateral dynamics.
+- Inclusion of Yaw Inertia, Handling models and optional stiffness and damping for front and rear on FullCarModel independently
 
 ---
 
-## Medium Edition Notes
+## Try it out yourself
 
-*If you arrived here from Medium, the key ideas are: (1) suspension design is a trade-off between body comfort and tyre road-holding that can be precisely quantified with a 2-DOF model; (2) the Skyhook/Groundhook controllers are the theoretical ideals for each end of the trade-off; (3) SimWeave lets you build, extend, and sweep these models in pure Python with dimensional safety baked in. The full code, with all imports and visualisation helpers, is in the [companion notebook](https://github.com/Notabot123/simweave-notebooks).*
+The full code, with all imports and visualisation helpers, is in the [companion notebook](https://github.com/Notabot123/simweave-notebooks).

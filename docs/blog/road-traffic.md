@@ -344,6 +344,6 @@ We'll also show how to import a real road network from OpenStreetMap using the `
 
 ---
 
-## Medium Edition Notes
+## Try it out yourself
 
-*The headline for a broader audience: traffic simulation doesn't require expensive specialist software. SimWeave lets you build a programmable road network model in pure Python, run hundreds of "what if" scenarios automatically, and produce clear visualisations that make the results actionable. The full code — including the 3×2 network wiring and all plots — is in the [companion notebook](https://github.com/Notabot123/simweave-notebooks).*
+The full code — including the 3×2 network wiring and all plots — is in the [companion notebook](https://github.com/Notabot123/simweave-notebooks).

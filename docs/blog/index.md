@@ -28,7 +28,3 @@ https://github.com/Notabot123/simweave-notebooks
 Each notebook is Binder-ready — click **launch binder** at the top of any notebook to run it in the browser with no local install.
 
 ---
-
-## Writing for Medium / Towards Data Science
-
-The posts here are the "full technical edition". If you're reading a shortened version on Medium or Towards Data Science, come back here for the complete API walkthrough and extended code examples.

@@ -406,6 +406,6 @@ The goal is a single, coherent path from physics model to production-ready PdM t
 
 ---
 
-## Medium Edition Notes
+## Try it out yourself
 
-*If you arrived here from Medium: the key idea is that real fault data is expensive and limited; physics simulation lets you generate as much labelled training data as you need for any system you can model mathematically. SimWeave's `FaultInjector` wraps any ODE model, degrades parameters over time according to a profile (linear, exponential, or custom), and `FaultDataset` produces clean NumPy arrays with health index, RUL, and failure mode labels ready for PyTorch or Keras. Full runnable code is in the [companion notebook](https://github.com/Notabot123/simweave-notebooks).*
+ Full runnable code is in the [companion notebook](https://github.com/Notabot123/simweave-notebooks).

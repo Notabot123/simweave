@@ -1,0 +1,7 @@
+.md-header__title {
+  display: none;
+}
+
+.md-header__button.md-logo {
+  padding-right: 0.5rem; /* tweak spacing */
+}
