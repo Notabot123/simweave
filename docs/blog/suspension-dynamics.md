@@ -68,21 +68,14 @@ This is especially useful when feeding suspension outputs into downstream calcul
 
 The simplest useful suspension model treats one corner of the vehicle in isolation: a **sprung mass** (a quarter of the car body, ~250–300 kg) sitting on a **suspension spring and damper**, itself resting on an **unsprung mass** (wheel, hub, brake assembly, ~40–50 kg), which contacts the road through the **tyre spring** (very stiff, ~200,000 N/m).
 
-```
-  m_s  ─── sprung mass (body)
-   |
-  k_s / c_s  ─── suspension spring + damper
-   |
-  m_u  ─── unsprung mass (wheel + hub)
-   |
-  k_t  ─── tyre stiffness
-   |
-  z_r(t)  ─── road input
-```
+<figure markdown>
+  ![SimWeave](assets/quarter_car.png){ width=640 }
+</figure>
 
 The equations of motion are:
 
 $$m_s \ddot{z}_s = -k_s(z_s - z_u) - c_s(\dot{z}_s - \dot{z}_u)$$
+
 $$m_u \ddot{z}_u = k_s(z_s - z_u) + c_s(\dot{z}_s - \dot{z}_u) - k_t(z_u - z_r)$$
 
 The state vector is `[z_s, ż_s, z_u, ż_u]` — body and wheel position and velocity. The road profile `z_r(t)` enters as an external input.
@@ -218,6 +211,10 @@ The `wrap_states()` call here returns `Angle` quantities for pitch and roll — 
 Passive suspension is a fixed compromise between comfort and handling. **Active** and **semi-active** suspension systems use controllable dampers (electro-rheological fluid, electromagnetic actuators) to adapt in real time. But what's the theoretical best you could possibly do?
 
 Two benchmark controllers answer that question:
+
+<figure markdown>
+  ![SimWeave](assets/quarter_skyhook.png){ width=640 }
+</figure>
 
 ### Skyhook
 

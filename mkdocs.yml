@@ -5,8 +5,13 @@ repo_url: https://github.com/Notabot123/simweave
 repo_name: Notabot123/simweave
 edit_uri: edit/main/docs/
 
+extra_css:
+  - overrides/styles.css # remove text title, show only logo
+  
 theme:
   name: material
+  logo: assets/logo.png      # horizontal logo with text — shown in nav header
+  favicon: assets/favicon.png  # mark only, no text — shown in browser tab
   features:
     - navigation.instant
     - navigation.tracking
@@ -21,15 +26,15 @@ theme:
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      primary: indigo
-      accent: indigo
+      primary: teal
+      accent: teal
       toggle:
         icon: material/weather-night
         name: Switch to dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      primary: indigo
-      accent: indigo
+      primary: teal
+      accent: teal
       toggle:
         icon: material/weather-sunny
         name: Switch to light mode
