@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from simweave.continuous.solver import DynamicSystem, simulate, ContinuousProcess
-from simweave.continuous.control import PIDController, SkyhookDamper
+from simweave.continuous.control import PIDController, SkyhookDamper, GroundhookDamper, HybridActiveDamper
 from simweave.continuous.systems import (
     MassSpringDamper,
     SimplePendulum,
@@ -173,3 +173,35 @@ def test_skyhook_reduces_body_motion():
     z_control = r_control.state[:, 0]
 
     assert z_control.std() < z_passive.std()
+
+def test_groundhook_reduces_wheel_motion():
+    passive = QuarterCarModel(250, 40, 15000, 1500, 200000)
+    controlled = QuarterCarModel(250, 40, 15000, 1500, 200000, controller=GroundhookDamper(1500))
+
+    r_passive = simulate(passive, (0, 2), dt=0.001, inputs=lambda t: 0.01)
+    r_control = simulate(controlled, (0, 2), dt=0.001, inputs=lambda t: 0.01)
+
+    z_passive = r_passive.state[:, 2]
+    z_control = r_control.state[:, 2]
+
+    assert z_control.std() < z_passive.std()
+
+def test_hybrid_groundhook_skyhook():
+    """ Assert std dev matches from hybrid to ground or sky """
+    sky = QuarterCarModel(250, 40, 15000, 1500, 200000, controller=SkyhookDamper(1500))
+    grnd = QuarterCarModel(250, 40, 15000, 1500, 200000, controller=GroundhookDamper(1500))
+    hyrbid0 = QuarterCarModel(250, 40, 15000, 1500, 200000, controller=HybridActiveDamper(1500, 1500, 0))
+    hyrbid1 = QuarterCarModel(250, 40, 15000, 1500, 200000, controller=HybridActiveDamper(1500, 1500, 1))
+
+    r_sky = simulate(sky, (0, 2), dt=0.001, inputs=lambda t: 0.01)
+    r_grnd = simulate(grnd, (0, 2), dt=0.001, inputs=lambda t: 0.01)
+    r_h0 = simulate(hyrbid0, (0, 2), dt=0.001, inputs=lambda t: 0.01)
+    r_h1 = simulate(hyrbid1, (0, 2), dt=0.001, inputs=lambda t: 0.01)
+
+    z_sky = r_sky.state[:, 2]
+    z_grnd = r_grnd.state[:, 2]
+    z_h0 = r_h0.state[:, 2]
+    z_h1 = r_h1.state[:, 2]
+
+    assert z_sky.std() == z_h1.std()
+    assert z_grnd.std() == z_h0.std()
