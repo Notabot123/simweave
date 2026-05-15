@@ -90,11 +90,16 @@ def cost_optimise_stock(
     ub: float = 100.0,
     seed: int | None = 1,
     maxiter: int = 200,
+    workers: int = -1,
 ) -> tuple[np.ndarray, float]:
     """Differential-evolution cost minimisation with availability constraint.
 
     This balances cost vs availability on a whole-warehouse basis rather than
     per item -- cheap items should cover more risk, expensive items less.
+
+    workers defaults to -1 which is using all available cores (fastest).
+    For reproducibility, use 1.
+    Specify workers as desired on shared devices.
     """
     _ensure_scipy()
     import scipy.stats as stats
@@ -127,8 +132,16 @@ def cost_optimise_stock(
     nlc = NonlinearConstraint(availability_con, target_availability, 1.0)
 
     result = differential_evolution(
-        objective, bounds, constraints=nlc, seed=seed, maxiter=maxiter, polish=True
+        objective,
+        bounds,
+        constraints=nlc,
+        seed=seed,
+        maxiter=maxiter,
+        polish=False,
+        updating="deferred",
+        workers=workers
     )
+
 
     solution = np.round(result.x * quant)
     total_cost = float(np.sum(inv.unit_cost * (inv.batchsize + solution)))
