@@ -41,6 +41,8 @@ import numpy as np
 
 from simweave.viz import _plotly
 from simweave.viz.themes import apply_theme
+from simweave.supplychain.warehouse import Warehouse
+from simweave.supplychain.optimization import pareto_sweep
 
 if TYPE_CHECKING:
     from simweave.core.time_axis import SimTimeAxis
@@ -348,6 +350,71 @@ def plot_warehouse_stock(
         legend_title_text="SKU",
     )
     return apply_theme(_apply_time_axis(fig, time_axis), theme)
+
+# --------------------------------------------------------------------------- #
+# Inventory optimisation: pareto sweep                                        #
+# --------------------------------------------------------------------------- #
+
+
+def plot_pareto_sweep(
+    warehouse: Warehouse,
+    availability_range: np.ndarray | None = None,
+    *,
+    theme: str | None = None,
+    title: str | None = None,
+) -> Any:
+    """Plot cost vs availability for both heuristic and DE optimisation.
+
+    Parameters
+    ----------
+    warehouse:
+        The Warehouse instance to optimise.
+    availability_range:
+        Optional array of availability targets. Default: 0.1 → 0.95 in steps of 0.05.
+    theme:
+        Optional Plotly theme name.
+    title:
+        Optional plot title.
+    """
+    go = _plotly.require_go()
+
+    sweep = pareto_sweep(warehouse, availability_range)
+    a = sweep["availability"]
+    c_de = sweep["cost_cost_optimal"]
+    c_p = sweep["cost_poisson"]
+
+    fig = go.Figure()
+
+    fig.add_trace(
+        go.Scatter(
+            x=a,
+            y=c_de,
+            mode="lines+markers",
+            name="cost-optimal (DE)",
+            line={"width": 2},
+        )
+    )
+
+    fig.add_trace(
+        go.Scatter(
+            x=a,
+            y=c_p,
+            mode="lines+markers",
+            name="Poisson heuristic",
+            line={"dash": "dash", "width": 2},
+        )
+    )
+
+    wname = getattr(warehouse, "name", "warehouse")
+
+    fig.update_layout(
+        title=title or f"cost vs availability: {wname}",
+        xaxis_title="target availability",
+        yaxis_title="total cost",
+        legend_title_text="method",
+    )
+
+    return apply_theme(fig, theme)
 
 
 # --------------------------------------------------------------------------- #
@@ -1126,6 +1193,7 @@ __all__ = [
     "plot_queue_length",
     "plot_service_utilisation",
     "plot_warehouse_stock",
+    "plot_pareto_sweep",
     "plot_mc_fan",
     "plot_agent_path",
     "plot_fleet_availability",
