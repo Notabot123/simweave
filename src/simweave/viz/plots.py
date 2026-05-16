@@ -41,6 +41,8 @@ import numpy as np
 
 from simweave.viz import _plotly
 from simweave.viz.themes import apply_theme
+from simweave.supplychain.warehouse import Warehouse
+from simweave.supplychain.optimization import pareto_sweep
 
 if TYPE_CHECKING:
     from simweave.core.time_axis import SimTimeAxis
@@ -348,6 +350,93 @@ def plot_warehouse_stock(
         legend_title_text="SKU",
     )
     return apply_theme(_apply_time_axis(fig, time_axis), theme)
+
+# --------------------------------------------------------------------------- #
+# Inventory optimisation: pareto sweep                                        #
+# --------------------------------------------------------------------------- #
+
+
+def plot_pareto_sweep(
+    warehouse: Warehouse,
+    availability_range: np.ndarray | None = None,
+    *,
+    method: str = "both",
+    theme: str | None = None,
+    title: str | None = None,
+) -> Any:
+    """Plot cost vs availability with optional DE and Poisson curves.
+
+    Parameters
+    ----------
+    warehouse:
+        Warehouse instance to optimise.
+    availability_range:
+        Optional array of availability targets.
+    method:
+        "both" (default), "poisson", or "de".
+    theme:
+        Optional Plotly theme.
+    title:
+        Optional plot title.
+    """
+    go = _plotly.require_go()
+
+    sweep = pareto_sweep(warehouse, availability_range, method=method)
+    a = sweep["availability"]
+
+    fig = go.Figure()
+
+    # Poisson heuristic
+    if "cost_poisson" in sweep:
+        c_p = sweep["cost_poisson"]
+        fig.add_trace(
+            go.Scatter(
+                x=c_p,
+                y=a,
+                mode="lines+markers",
+                name="Poisson heuristic",
+                line={"dash": "dash", "width": 2},
+            )
+        )
+
+    # DE cost-optimal
+    if "cost_cost_optimal" in sweep:
+        c_de = sweep["cost_cost_optimal"]
+        fig.add_trace(
+            go.Scatter(
+                x=c_de,
+                y=a,
+                mode="lines+markers",
+                name="cost-optimal (DE)",
+                line={"width": 2},
+            )
+        )
+
+        # Shaded savings region (only if Poisson also present)
+        if "cost_poisson" in sweep:
+            fig.add_trace(
+                go.Scatter(
+                    x=np.concatenate([c_p, c_de[::-1]]),
+                    y=np.concatenate([a, a[::-1]]),
+                    fill="toself",
+                    fillcolor="rgba(0, 150, 0, 0.1)",
+                    line={"width": 0},
+                    name="savings region",
+                    hoverinfo="skip",
+                    showlegend=True,
+                )
+            )
+
+    wname = getattr(warehouse, "name", "warehouse")
+
+    fig.update_layout(
+        title=title or f"cost vs availability: {wname}",
+        xaxis_title="total cost",
+        yaxis_title="target availability",
+        legend_title_text="method",
+    )
+
+    return apply_theme(fig, theme)
 
 
 # --------------------------------------------------------------------------- #
@@ -1126,6 +1215,7 @@ __all__ = [
     "plot_queue_length",
     "plot_service_utilisation",
     "plot_warehouse_stock",
+    "plot_pareto_sweep",
     "plot_mc_fan",
     "plot_agent_path",
     "plot_fleet_availability",

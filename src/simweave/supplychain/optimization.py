@@ -81,6 +81,12 @@ def poisson_reorder_points(
 
     return k, total_cost
 
+def _objective(x: np.ndarray, inv, quant) -> float:
+    return float(np.sum(inv.unit_cost * np.round(x) * quant))
+
+def _availability_con(x: np.ndarray, lam) -> float:
+    import scipy.stats as stats
+    return float(np.prod(stats.poisson.cdf(np.round(x), lam)))
 
 def cost_optimise_stock(
     warehouse: Warehouse,
@@ -90,14 +96,19 @@ def cost_optimise_stock(
     ub: float = 100.0,
     seed: int | None = 1,
     maxiter: int = 200,
+    workers: int = -1,
 ) -> tuple[np.ndarray, float]:
     """Differential-evolution cost minimisation with availability constraint.
 
     This balances cost vs availability on a whole-warehouse basis rather than
     per item -- cheap items should cover more risk, expensive items less.
+
+    workers defaults to -1 which is using all available cores (fastest).
+    For reproducibility, use 1.
+    Specify workers as desired on shared devices.
     """
     _ensure_scipy()
-    import scipy.stats as stats
+    from functools import partial
     from scipy.optimize import differential_evolution, NonlinearConstraint, Bounds
 
     if not 0.0 < target_availability < 0.999:
@@ -117,18 +128,25 @@ def cost_optimise_stock(
     lam = demand * logistics_delay
     quant = inv.batchsize if quantize_by_batchsize else np.ones(inv.n_items)
 
-    def objective(x: np.ndarray) -> float:
-        return float(np.sum(inv.unit_cost * np.round(x) * quant))
-
-    def availability_con(x: np.ndarray) -> float:
-        return float(np.prod(stats.poisson.cdf(np.round(x), lam)))
+    ## v0.8.2 we moved _objective and _availability_con outside this function, to be pickable, required for workers>1
+    ## partial is required, as scipy multiprocessing won't pickle lambda either (or any local-defined callable)
+    obj = partial(_objective, inv=inv, quant=quant)
+    con = partial(_availability_con, lam=lam)
 
     bounds = Bounds(lb=np.zeros(inv.n_items), ub=ub * np.ones(inv.n_items))
-    nlc = NonlinearConstraint(availability_con, target_availability, 1.0)
+    nlc = NonlinearConstraint(con, target_availability, 1.0)
 
     result = differential_evolution(
-        objective, bounds, constraints=nlc, seed=seed, maxiter=maxiter, polish=True
+        obj,
+        bounds,
+        constraints=nlc,
+        seed=seed,
+        maxiter=maxiter,
+        polish=False,
+        updating="deferred",
+        workers=workers
     )
+
 
     solution = np.round(result.x * quant)
     total_cost = float(np.sum(inv.unit_cost * (inv.batchsize + solution)))
@@ -141,25 +159,38 @@ def cost_optimise_stock(
 
 
 def pareto_sweep(
-    warehouse: Warehouse, availability_range: np.ndarray | None = None
+    warehouse: Warehouse,
+    availability_range: np.ndarray | None = None,
+    *,
+    method: str = "both",
 ) -> dict[str, np.ndarray]:
-    """Sweep availability targets and return costs for both heuristic and DE."""
+    """Sweep availability targets and return costs for Poisson and/or DE."""
+
     if availability_range is None:
         availability_range = np.clip(np.arange(0.1, 1.0, 0.05), 0.0, 0.99)
 
+    do_de = method in ("both", "de")
+    do_poisson = method in ("both", "poisson")
+
     costs_de = []
     costs_poisson = []
-    for a in availability_range:
-        _, c_de = cost_optimise_stock(warehouse, target_availability=float(a))
-        _, c_p = poisson_reorder_points(warehouse, target_availability=float(a))
-        costs_de.append(c_de)
-        costs_poisson.append(c_p)
 
-    return {
-        "availability": np.asarray(availability_range),
-        "cost_cost_optimal": np.asarray(costs_de),
-        "cost_poisson": np.asarray(costs_poisson),
-    }
+    for a in availability_range:
+        if do_de:
+            _, c_de = cost_optimise_stock(warehouse, target_availability=float(a))
+            costs_de.append(c_de)
+        if do_poisson:
+            _, c_p = poisson_reorder_points(warehouse, target_availability=float(a))
+            costs_poisson.append(c_p)
+
+    out = {"availability": np.asarray(availability_range)}
+
+    if do_de:
+        out["cost_cost_optimal"] = np.asarray(costs_de)
+    if do_poisson:
+        out["cost_poisson"] = np.asarray(costs_poisson)
+
+    return out
 
 
 # ---------------------------------------------------------------------------

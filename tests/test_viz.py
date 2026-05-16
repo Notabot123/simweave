@@ -16,7 +16,7 @@ import pytest
 import simweave as sw
 from simweave.viz import themes as themes_mod
 from simweave.viz._plotly import have_plotly
-
+from .utils import warehouse_with_demand
 
 # --------------------------------------------------------------------------- #
 # Module-import sanity                                                        #
@@ -37,6 +37,7 @@ def test_top_level_reexports_viz_symbols():
         "plot_queue_length",
         "plot_service_utilisation",
         "plot_warehouse_stock",
+        "plot_pareto_sweep",
         "plot_mc_fan",
         "plot_agent_path",
     ):
@@ -300,6 +301,18 @@ def test_plot_warehouse_stock_returns_figure(plotly_go):
     env.register(rec)
     env.run()
     fig = sw.plot_warehouse_stock(rec)
+    assert _is_figure(fig)
+    _round_trip_json(fig)
+
+
+def test_plot_pareto_sweep_returns_figure(plotly_go):
+    w = warehouse_with_demand(n=2, rate=1.0)
+
+    fig = sw.plot_pareto_sweep(
+        w,
+        availability_range=np.array([0.5, 0.8])
+    )
+
     assert _is_figure(fig)
     _round_trip_json(fig)
 

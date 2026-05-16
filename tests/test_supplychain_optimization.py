@@ -18,27 +18,14 @@ from simweave.supplychain.optimization import (  # noqa: E402
     cost_optimise_stock,
     pareto_sweep,
     cost_optimise_stock_sim,
+    _availability_con,
+    _objective
 )
-
-
-def _warehouse_with_demand(n=3, rate=1.0):
-    inv = InventoryItems(
-        part_names=[f"sku_{i}" for i in range(n)],
-        unit_cost=[1.0 + i for i in range(n)],
-        stock_level=[10.0] * n,
-        batchsize=[5.0] * n,
-        reorder_points=[2.0] * n,
-        repairable_prc=[0.0] * n,
-        repair_times=[0.0] * n,
-        newbuy_leadtimes=[3.0] * n,
-    )
-    w = Warehouse(inv, name="w")
-    w._demand_rate = np.full(n, rate)
-    return w
+from .utils import warehouse_with_demand # noqa: E402
 
 
 def test_poisson_returns_monotone_in_availability():
-    w = _warehouse_with_demand()
+    w = warehouse_with_demand()
     k_lo, _ = poisson_reorder_points(w, target_availability=0.5)
     k_hi, _ = poisson_reorder_points(w, target_availability=0.95)
     # Higher availability target => at least as much safety stock.
@@ -46,7 +33,7 @@ def test_poisson_returns_monotone_in_availability():
 
 
 def test_poisson_rejects_bad_target():
-    w = _warehouse_with_demand()
+    w = warehouse_with_demand()
     with pytest.raises(ValueError):
         poisson_reorder_points(w, target_availability=1.5)
 
@@ -68,7 +55,7 @@ def test_poisson_requires_demand_rate():
 
 
 def test_poisson_assign_mutates_inventory():
-    w = _warehouse_with_demand(n=2, rate=1.0)
+    w = warehouse_with_demand(n=2, rate=1.0)
     original_rop = w.inv.reorder_points.copy()
     k, _ = poisson_reorder_points(w, target_availability=0.9, assign=True)
     assert np.array_equal(w.inv.reorder_points, k)
@@ -81,7 +68,7 @@ def test_poisson_assign_mutates_inventory():
 
 
 def test_cost_optimise_stock_runs():
-    w = _warehouse_with_demand(n=2, rate=1.0)
+    w = warehouse_with_demand(n=2, rate=1.0)
     solution, cost = cost_optimise_stock(
         w,
         target_availability=0.8,
@@ -111,8 +98,28 @@ def test_cost_optimise_stock_sim_respects_bounds():
 
 
 def test_pareto_sweep_returns_expected_keys():
-    w = _warehouse_with_demand(n=2, rate=1.0)
+    w = warehouse_with_demand(n=2, rate=1.0)
     out = pareto_sweep(w, availability_range=np.array([0.5, 0.8]))
     assert set(out) == {"availability", "cost_cost_optimal", "cost_poisson"}
     assert out["availability"].shape == (2,)
     assert out["cost_cost_optimal"].shape == (2,)
+
+def test_objective_returns_float():
+    class DummyInv:
+        unit_cost = np.array([10.0, 5.0])
+
+    x = np.array([2.2, 3.7])
+    quant = np.array([1.0, 1.0])
+
+    out = _objective(x, DummyInv, quant)
+    assert isinstance(out, float)
+    assert out == 10.0 * 2 + 5.0 * 4  # rounded
+
+
+def test_availability_con_returns_float():
+    x = np.array([2.2, 3.7])
+    lam = np.array([1.0, 2.0])
+
+    out = _availability_con(x, lam)
+    assert isinstance(out, float)
+    assert 0.0 <= out <= 1.0
