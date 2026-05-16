@@ -81,6 +81,12 @@ def poisson_reorder_points(
 
     return k, total_cost
 
+def _objective(x: np.ndarray, inv, quant) -> float:
+        return float(np.sum(inv.unit_cost * np.round(x) * quant))
+
+def _availability_con(x: np.ndarray, lam) -> float:
+    import scipy.stats as stats
+    return float(np.prod(stats.poisson.cdf(np.round(x), lam)))
 
 def cost_optimise_stock(
     warehouse: Warehouse,
@@ -102,7 +108,7 @@ def cost_optimise_stock(
     Specify workers as desired on shared devices.
     """
     _ensure_scipy()
-    import scipy.stats as stats
+    from functools import partial
     from scipy.optimize import differential_evolution, NonlinearConstraint, Bounds
 
     if not 0.0 < target_availability < 0.999:
@@ -122,17 +128,16 @@ def cost_optimise_stock(
     lam = demand * logistics_delay
     quant = inv.batchsize if quantize_by_batchsize else np.ones(inv.n_items)
 
-    def objective(x: np.ndarray) -> float:
-        return float(np.sum(inv.unit_cost * np.round(x) * quant))
-
-    def availability_con(x: np.ndarray) -> float:
-        return float(np.prod(stats.poisson.cdf(np.round(x), lam)))
+    ## v0.8.2 we moved _objective and _availability_con outside this function, to be pickable, required for workers>1
+    ## partial is required, as scipy multiprocessing won't pickle lambda either (or any local-defined callable)
+    obj = partial(_objective, inv=inv, quant=quant)
+    con = partial(_availability_con, lam=lam)
 
     bounds = Bounds(lb=np.zeros(inv.n_items), ub=ub * np.ones(inv.n_items))
-    nlc = NonlinearConstraint(availability_con, target_availability, 1.0)
+    nlc = NonlinearConstraint(con, target_availability, 1.0)
 
     result = differential_evolution(
-        objective,
+        obj,
         bounds,
         constraints=nlc,
         seed=seed,
