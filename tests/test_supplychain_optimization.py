@@ -19,7 +19,7 @@ from simweave.supplychain.optimization import (  # noqa: E402
     pareto_sweep,
     cost_optimise_stock_sim,
 )
-from .utils import warehouse_with_demand
+from .utils import warehouse_with_demand # noqa: E402
 
 
 def test_poisson_returns_monotone_in_availability():
