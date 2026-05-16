@@ -82,7 +82,7 @@ def poisson_reorder_points(
     return k, total_cost
 
 def _objective(x: np.ndarray, inv, quant) -> float:
-        return float(np.sum(inv.unit_cost * np.round(x) * quant))
+    return float(np.sum(inv.unit_cost * np.round(x) * quant))
 
 def _availability_con(x: np.ndarray, lam) -> float:
     import scipy.stats as stats

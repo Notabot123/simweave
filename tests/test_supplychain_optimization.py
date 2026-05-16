@@ -18,6 +18,8 @@ from simweave.supplychain.optimization import (  # noqa: E402
     cost_optimise_stock,
     pareto_sweep,
     cost_optimise_stock_sim,
+    _availability_con,
+    _objective
 )
 from .utils import warehouse_with_demand # noqa: E402
 
@@ -101,3 +103,23 @@ def test_pareto_sweep_returns_expected_keys():
     assert set(out) == {"availability", "cost_cost_optimal", "cost_poisson"}
     assert out["availability"].shape == (2,)
     assert out["cost_cost_optimal"].shape == (2,)
+
+def test_objective_returns_float():
+    class DummyInv:
+        unit_cost = np.array([10.0, 5.0])
+
+    x = np.array([2.2, 3.7])
+    quant = np.array([1.0, 1.0])
+
+    out = _objective(x, DummyInv, quant)
+    assert isinstance(out, float)
+    assert out == 10.0 * 2 + 5.0 * 4  # rounded
+
+
+def test_availability_con_returns_float():
+    x = np.array([2.2, 3.7])
+    lam = np.array([1.0, 2.0])
+
+    out = _availability_con(x, lam)
+    assert isinstance(out, float)
+    assert 0.0 <= out <= 1.0
