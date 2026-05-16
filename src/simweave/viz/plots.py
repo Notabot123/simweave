@@ -360,57 +360,79 @@ def plot_pareto_sweep(
     warehouse: Warehouse,
     availability_range: np.ndarray | None = None,
     *,
+    method: str = "both",
     theme: str | None = None,
     title: str | None = None,
 ) -> Any:
-    """Plot cost vs availability for both heuristic and DE optimisation.
+    """Plot cost vs availability with optional DE and Poisson curves.
 
     Parameters
     ----------
     warehouse:
-        The Warehouse instance to optimise.
+        Warehouse instance to optimise.
     availability_range:
-        Optional array of availability targets. Default: 0.1 → 0.95 in steps of 0.05.
+        Optional array of availability targets.
+    method:
+        "both" (default), "poisson", or "de".
     theme:
-        Optional Plotly theme name.
+        Optional Plotly theme.
     title:
         Optional plot title.
     """
     go = _plotly.require_go()
 
-    sweep = pareto_sweep(warehouse, availability_range)
+    sweep = pareto_sweep(warehouse, availability_range, method=method)
     a = sweep["availability"]
-    c_de = sweep["cost_cost_optimal"]
-    c_p = sweep["cost_poisson"]
 
     fig = go.Figure()
 
-    fig.add_trace(
-        go.Scatter(
-            x=a,
-            y=c_de,
-            mode="lines+markers",
-            name="cost-optimal (DE)",
-            line={"width": 2},
+    # Poisson heuristic
+    if "cost_poisson" in sweep:
+        c_p = sweep["cost_poisson"]
+        fig.add_trace(
+            go.Scatter(
+                x=c_p,
+                y=a,
+                mode="lines+markers",
+                name="Poisson heuristic",
+                line={"dash": "dash", "width": 2},
+            )
         )
-    )
 
-    fig.add_trace(
-        go.Scatter(
-            x=a,
-            y=c_p,
-            mode="lines+markers",
-            name="Poisson heuristic",
-            line={"dash": "dash", "width": 2},
+    # DE cost-optimal
+    if "cost_cost_optimal" in sweep:
+        c_de = sweep["cost_cost_optimal"]
+        fig.add_trace(
+            go.Scatter(
+                x=c_de,
+                y=a,
+                mode="lines+markers",
+                name="cost-optimal (DE)",
+                line={"width": 2},
+            )
         )
-    )
+
+        # Shaded savings region (only if Poisson also present)
+        if "cost_poisson" in sweep:
+            fig.add_trace(
+                go.Scatter(
+                    x=np.concatenate([c_p, c_de[::-1]]),
+                    y=np.concatenate([a, a[::-1]]),
+                    fill="toself",
+                    fillcolor="rgba(0, 150, 0, 0.1)",
+                    line={"width": 0},
+                    name="savings region",
+                    hoverinfo="skip",
+                    showlegend=True,
+                )
+            )
 
     wname = getattr(warehouse, "name", "warehouse")
 
     fig.update_layout(
         title=title or f"cost vs availability: {wname}",
-        xaxis_title="target availability",
-        yaxis_title="total cost",
+        xaxis_title="total cost",
+        yaxis_title="target availability",
         legend_title_text="method",
     )
 

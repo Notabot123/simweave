@@ -159,25 +159,38 @@ def cost_optimise_stock(
 
 
 def pareto_sweep(
-    warehouse: Warehouse, availability_range: np.ndarray | None = None
+    warehouse: Warehouse,
+    availability_range: np.ndarray | None = None,
+    *,
+    method: str = "both",
 ) -> dict[str, np.ndarray]:
-    """Sweep availability targets and return costs for both heuristic and DE."""
+    """Sweep availability targets and return costs for Poisson and/or DE."""
+
     if availability_range is None:
         availability_range = np.clip(np.arange(0.1, 1.0, 0.05), 0.0, 0.99)
 
+    do_de = method in ("both", "de")
+    do_poisson = method in ("both", "poisson")
+
     costs_de = []
     costs_poisson = []
-    for a in availability_range:
-        _, c_de = cost_optimise_stock(warehouse, target_availability=float(a))
-        _, c_p = poisson_reorder_points(warehouse, target_availability=float(a))
-        costs_de.append(c_de)
-        costs_poisson.append(c_p)
 
-    return {
-        "availability": np.asarray(availability_range),
-        "cost_cost_optimal": np.asarray(costs_de),
-        "cost_poisson": np.asarray(costs_poisson),
-    }
+    for a in availability_range:
+        if do_de:
+            _, c_de = cost_optimise_stock(warehouse, target_availability=float(a))
+            costs_de.append(c_de)
+        if do_poisson:
+            _, c_p = poisson_reorder_points(warehouse, target_availability=float(a))
+            costs_poisson.append(c_p)
+
+    out = {"availability": np.asarray(availability_range)}
+
+    if do_de:
+        out["cost_cost_optimal"] = np.asarray(costs_de)
+    if do_poisson:
+        out["cost_poisson"] = np.asarray(costs_poisson)
+
+    return out
 
 
 # ---------------------------------------------------------------------------
