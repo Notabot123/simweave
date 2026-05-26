@@ -138,3 +138,7 @@ SimWeave extends this paradigm into:
 - optimisation.
 
 This example demonstrates how a simple wealth exchange model can evolve into a full logistics simulation within a single coherent framework.
+
+## Try it out yourself
+
+Full runnable code is in the [companion notebook](https://github.com/Notabot123/simweave-notebooks).

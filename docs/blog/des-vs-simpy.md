@@ -2,7 +2,27 @@
 
 *A practical comparison using the classic Machine Shop tutorial, with Monte Carlo extensions and warehouse inventory optimisation.*
 
+Links to runnable notebooks, and a selection of plots found at the end of this article
+
+## Table of Contents
+1. [Introduction](#introduction)
+2. [What is Discrete-Event Simulation?](#what-is-discrete-event-simulation)
+3. [The Machine Shop Tutorial](#the-machine-shop-tutorial)
+    - [SimPy Implementation](#simpy-implementation)
+    - [SimWeave Implementation](#simweave-implementation)
+4. [Monte Carlo Replications](#monte-carlo-replications)
+    - [Visualising the Distribution](#visualising-the-distribution)
+5. [Extending to Warehouse Inventory Optimisation](#extending-to-warehouse-inventory-optimisation)
+    - [Optimising Reorder Points](#optimising-reorder-points)
+    - [Analytical Steady-State Optimisation](#analytical-steady-state-optimisation)
+6. [Side-by-Side Comparison](#side-by-side-comparison)
+7. [What's Next: Agent-Based Modelling](#whats-next-agent-based-modelling)
+8. [Try it out yourself](#try-it-out-yourself)
+
+
 ---
+
+## Introduction
 
 Queues are everywhere. Customers waiting at a bank, jobs queuing on a compute cluster, ambulances waiting for a bay at A&E. Discrete-Event Simulation (DES) is the tool that lets you model these systems and ask "what if?" questions — what happens to throughput if we add another server? What's the probability of running out of stock before the next resupply arrives?
 
@@ -336,3 +356,20 @@ The leading Python ABM library is [**Mesa**](https://mesa.readthedocs.io). In a 
 ## Try it out yourself
 
 Full runnable code is in the [companion notebook](https://github.com/Notabot123/simweave-notebooks).
+
+### Selection of Visuals from this Blog
+
+<figure markdown>
+  ![SimWeave](assets/des/shop_mc_histogram.png){ width=640 }
+</figure>
+*A histogram showing Operational Availability across Monte-Carlo repeated runs.*
+
+<figure markdown>
+  ![SimWeave](assets/des/cost_optimise.png){ width=640 }
+</figure>
+*Cost Optimisation with Differential Evolution, or inverse Poisson result with cost savings highlighted*
+
+<figure markdown>
+  ![SimWeave](assets/des/inventory_surface.png){ width=640 }
+</figure>
+*Sensitivity Analysis, results shown as Surface Plot.*
