@@ -4,11 +4,25 @@
 
 Mesa’s Boltzmann Wealth Model is a classic demonstration of emergent behaviour in agent‑based modelling. It shows how simple random exchanges between agents can produce an exponential wealth distribution.
 
-SimWeave can reproduce this model, but it can also extend it far beyond what Mesa was designed for. In this article, we begin with the familiar Mesa‑style wealth model and gradually evolve it into a full logistics simulation involving continuous time, routing, warehouses, queueing, and optimisation.
+## Table of Contents
+1. [Introduction](#introduction)
+2. [Baseline: Mesa‑Style Wealth Exchange](#baseline-mesa-style-wealth-exchange)
+3. [Adding Movement and Routing](#adding-movement-and-routing)
+4. [Adding Warehouses and Inventory](#adding-warehouses-and-inventory)
+5. [Adding a Central Depot with Queueing](#adding-a-central-depot-with-queueing)
+6. [Event‑Driven Stochastic Processes](#event-driven-stochastic-processes)
+7. [Optimisation: Cost vs Availability](#optimisation-cost-vs-availability)
+8. [Visualisation](#visualisation)
+9. [Conclusion](#conclusion)
+10. [Try it out yourself](#try-it-out-yourself)
 
 ---
 
-## 1. Baseline: Mesa‑Style Wealth Exchange
+## Introduction
+
+SimWeave can reproduce this model, but it can also extend it far beyond what Mesa was designed for. In this article, we begin with the familiar Mesa‑style wealth model and gradually evolve it into a full logistics simulation involving continuous time, routing, warehouses, queueing, and optimisation.
+
+## Baseline: Mesa‑Style Wealth Exchange
 
 We begin with a simple model:
 
@@ -26,7 +40,7 @@ This reproduces the behaviour of the Mesa model while operating in continuous ti
 
 ---
 
-## 2. Adding Movement and Routing
+## Adding Movement and Routing
 
 Mesa’s agents typically move on a discrete grid with synchronous steps.  
 SimWeave’s `Agent` class provides:
@@ -42,7 +56,7 @@ This introduces spatial structure and routing dynamics that Mesa does not provid
 
 ---
 
-## 3. Adding Warehouses and Inventory
+## Adding Warehouses and Inventory
 
 Each trader is now given a `Warehouse` with:
 
@@ -60,7 +74,7 @@ This transforms the model from a pure ABM into a supply chain simulation.
 
 ---
 
-## 4. Adding a Central Depot with Queueing
+## Adding a Central Depot with Queueing
 
 We introduce a central depot located at the centre of the grid.  
 It is modelled as a `Service` with:
@@ -76,7 +90,7 @@ This demonstrates SimWeave’s queueing and service abstractions, which allow re
 
 ---
 
-## 5. Event‑Driven Stochastic Processes
+## Event‑Driven Stochastic Processes
 
 SimWeave supports both:
 
@@ -93,7 +107,7 @@ This is a significant modelling advantage over frameworks that rely solely on di
 
 ---
 
-## 6. Optimisation: Cost vs Availability
+## Optimisation: Cost vs Availability
 
 After running the simulation, we estimate demand using:
 
@@ -112,7 +126,7 @@ This connects simulation outputs directly to optimisation, enabling data‑drive
 
 ---
 
-## 7. Visualisation
+## Visualisation
 
 SimWeave integrates with Plotly for:
 
@@ -126,7 +140,7 @@ Animations of agent movement can be generated using a helper function that expor
 
 ---
 
-## 8. Conclusion
+## Conclusion
 
 Mesa is an excellent framework for discrete, grid‑based agent models.  
 SimWeave extends this paradigm into:
