@@ -14,7 +14,7 @@ Each post is written to be accessible to newcomers while staying technically hon
 | [Discrete-Event Simulation: SimWeave vs SimPy](des-vs-simpy.md) | `discrete` `monte-carlo` `supply-chain` `benchmarks` | Beginner–Intermediate |
 | [Urban Traffic Simulation and Decision Support](road-traffic.md) | `roads` `sensitivity` `network analysis` | Intermediate |
 | [Synthetic Datasets for Predictive Maintenance](predictive-maintenance.md) | `faults` `monte-carlo` `machine-learning` `RUL` | Intermediate |
-
+| [Agent Based Simulation](agent-based-sim.md) | `agent` `wealth` `supply-chain` `Mesa` | Intermediate |
 ---
 
 ## Jupyter Notebooks

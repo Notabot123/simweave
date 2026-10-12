@@ -2,7 +2,26 @@
 
 *Building a road network from a single junction to a connected town, then stress-testing it with scenario analysis.*
 
+Links to runnable notebooks, and a selection of plots found at the end of this article
+
+## Table of Contents
+1. [Introduction](#introduction)
+2. [Why SimWeave for Traffic?](#why-simweave-for-traffic)
+3. [The Building Blocks](#the-building-blocks)
+4. [Step 1: A Single Signalised Junction](#step-1-a-single-signalised-junction)
+5. [Step 2: A Connected Network](#step-2-a-connected-network)
+6. [Step 3: Scenario Analysis — Replacing a Junction](#step-3-scenario-analysis--replacing-a-junction)
+7. [Step 4: Roadworks Sensitivity Analysis](#step-4-roadworks-sensitivity-analysis)
+    - [Signal Timing Sweep](#signal-timing-sweep)
+8. [Decision Support Capabilities at a Glance](#decision-support-capabilities-at-a-glance)
+9. [Comparing with Other Approaches](#comparing-with-other-approaches)
+10. [What's Next](#whats-next)
+11. [Try it out yourself](#try-it-out-yourself)
+    - [Selection of Visuals from this Blog](#selection-of-visuals-from-this-blog)
+
 ---
+
+## Introduction
 
 Traffic congestion costs the UK around £9 billion a year in lost time. Cities are constantly making decisions — changing signal timings, replacing junctions with roundabouts, closing roads for maintenance, adding new routes — that affect millions of journeys. Most of those decisions are made with limited quantitative support, often based on intuition, historical counts, or expensive specialist studies.
 
@@ -347,3 +366,25 @@ We'll also show how to import a real road network from OpenStreetMap using the `
 ## Try it out yourself
 
 The full code — including the 3×2 network wiring and all plots — is in the [companion notebook](https://github.com/Notabot123/simweave-notebooks).
+
+### Selection of Visuals from this Blog
+
+<figure markdown>
+  ![SimWeave](assets/traffic/junction_occupancy.png){ width=640 }
+</figure>
+*A line graph showing occupancy / vehicles in transit.*
+
+<figure markdown>
+  ![SimWeave](assets/traffic/junction_queues.png){ width=640 }
+</figure>
+*A line graph showing vehicles queuing.*
+
+<figure markdown>
+  ![SimWeave](assets/traffic/scenario_signal_vs_roundabout.png){ width=640 }
+</figure>
+*A stacked bar with secondary y axis, showing delays caused by roundabout versus traffic light signal junctions*
+
+<figure markdown>
+  ![SimWeave](assets/traffic/signal_timing_heatmap.png){ width=640 }
+</figure>
+*A heatmap showing delays, with varying signal times*

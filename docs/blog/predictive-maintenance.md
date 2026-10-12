@@ -2,7 +2,32 @@
 
 *Using SimWeave's fault injection module to generate physics-grounded, labelled training data for RUL estimation and fault classification.*
 
+Links to runnable notebooks, and a selection of plots found at the end of this article
+
+## Table of Contents
+1. [Introduction](#introduction)
+2. [The Core Idea](#the-core-idea)
+    - [Step 1: Model the Healthy System](#step-1-model-the-healthy-system)
+    - [Step 2: Define a Degradation Profile](#step-2-define-a-degradation-profile)
+    - [Step 3: Attach the Fault to a Parameter](#step-3-attach-the-fault-to-a-parameter)
+    - [Step 4: Simulate the Faulted-System](#step-4-simulate-the-faulted-system)
+    - [Step 5: Build a Labelled Dataset](#step-5-build-a-labelled-dataset)
+    - [Step 6: Build a Multi-Mode Training Corpus](#step-6-build-a-multi-mode-training-corpus)
+        - [Scaling up with Monte Carlo](#scaling-up-with-monte-carlo)
+3. [Visualising the Data](#visualising-the-data)
+    - [Fault Signal View](#fault-signal-view)
+    - [Health Index and RUL View](#health-index-and-rul-view)
+4. [Connecting to an ML Pipeline](#connecting-to-an-ml-pipeline)
+    - [Pandas Export](#pandas-export)
+    - [NumPy Arrays for PyTorch--Keras](#numpy-arrays-for-pytorch--keras)
+5. [Beyond Motor Windings](#beyond-motor-windings)
+6. [What SimWeave Adds vs DIY](#what-simweave-adds-vs-diy)
+7. [What's Next](#whats-next)
+8. [Try it Out Yourself](#try-it-out-yourself)
+
 ---
+
+## Introduction
 
 Predictive maintenance (PdM) promises a simple deal: instrument your equipment, watch the sensor signals, and intervene *before* failure rather than after. The economics are compelling — unplanned downtime in manufacturing costs around $260,000 per hour on average, and modern ML models can predict remaining useful life (RUL) with impressive accuracy.
 
@@ -409,3 +434,15 @@ The goal is a single, coherent path from physics model to production-ready PdM t
 ## Try it out yourself
 
  Full runnable code is in the [companion notebook](https://github.com/Notabot123/simweave-notebooks).
+
+### Selection of Visuals from this Blog
+
+<figure markdown>
+  ![SimWeave](assets/pred_maint/pdm_hi_linear.png){ width=640 }
+</figure>
+*A histogram showing Operational Availability across Monte-Carlo repeated runs.*
+
+<figure markdown>
+  ![SimWeave](assets/pred_maint/pdm_hi_exponential.png){ width=640 }
+</figure>
+*A histogram showing Operational Availability across Monte-Carlo repeated runs.*

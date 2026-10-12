@@ -2,7 +2,27 @@
 
 *Physics-based vehicle modelling and ideal active control with SimWeave.*
 
+Links to runnable notebooks, and a selection of plots found at the end of this article
+
+## Table of Contents
+1. [Introduction](#introduction)
+2. [Why Bother Modelling Suspension?](#why-bother-modelling-suspension)
+3. [A Note on Units](#a-note-on-units-first)
+4. [The Quarter Car Model](#the-quarter-car-model)
+    - [Comparing Damping Setups](#comparing-damping-setups)
+5. [Half Car Models: Adding Pitch and Roll](#half-car-models-adding-pitch-and-roll)
+6. [Full Car: Seven Degrees of Freedom](#full-car-seven-degrees-of-freedom)
+7. [Ideal Controllers: Skyhook and Groundhook](#ideal-controllers-skyhook-and-groundhook)
+    - [Skyhook](#skyhook)
+    - [Groundhook](#groundhook)
+    - [Using the Built-in Controllers](#using-the-built-in-controllers)
+8. [SimWeave vs the Alternatives](#simweave-vs-the-alternatives)
+9. [What's Next?](#whats-next)
+10. [Try it out yourself](#try-it-out-yourself)
+
 ---
+
+## Introduction
 
 Every time your car hits a pothole, two things happen simultaneously: the wheel tries to follow the road surface up and over the obstacle, and the car body tries to stay still. The suspension system — spring, damper, and tyre — mediates between those two desires. Get the balance wrong and you either have a ride that hammers your spine (too stiff) or a car that wallows like a boat and loses tyre contact with the road (too soft).
 
@@ -69,7 +89,7 @@ This is especially useful when feeding suspension outputs into downstream calcul
 The simplest useful suspension model treats one corner of the vehicle in isolation: a **sprung mass** (a quarter of the car body, ~250–300 kg) sitting on a **suspension spring and damper**, itself resting on an **unsprung mass** (wheel, hub, brake assembly, ~40–50 kg), which contacts the road through the **tyre spring** (very stiff, ~200,000 N/m).
 
 <figure markdown>
-  ![SimWeave](assets/quarter_car.png){ width=640 }
+  ![SimWeave](assets/suspension/quarter_car.png){ width=640 }
 </figure>
 
 The equations of motion are:
@@ -213,7 +233,7 @@ Passive suspension is a fixed compromise between comfort and handling. **Active*
 Two benchmark controllers answer that question:
 
 <figure markdown>
-  ![SimWeave](assets/quarter_skyhook.png){ width=640 }
+  ![SimWeave](assets/suspension/quarter_skyhook.png){ width=640 }
 </figure>
 
 ### Skyhook
@@ -331,3 +351,37 @@ The suspension models shown here are all **passive** or **idealised active**. Th
 ## Try it out yourself
 
 The full code, with all imports and visualisation helpers, is in the [companion notebook](https://github.com/Notabot123/simweave-notebooks).
+
+### Selection of Visuals from this Blog
+
+<figure markdown>
+  ![SimWeave](assets/suspension/qc_controllers.png){ width=640 }
+</figure>
+*Comparative response of passive and controller based, quarter car models.*
+
+<figure markdown>
+  ![SimWeave](assets/suspension/skyhook_pareto.png){ width=640 }
+</figure>
+*A parameter sweep of Skyhook Damping coefficient.*
+*Note that increasing Skyhook broadly improves ride comfort, at the expense of handling.*
+
+<figure markdown>
+  ![SimWeave](assets/suspension/groundhook_pareto.png){ width=640 }
+</figure>
+*A parameter sweep of Skyhook Damping coefficient.*
+*Note that increasing Groundhook broadly improves handling, at the expense of ride comfort.*
+
+<figure markdown>
+  ![SimWeave](assets/suspension/overlay_pareto.png){ width=640 }
+</figure>
+*A parameter sweep of Skyhook, Groundhook and Hybrid blends.*
+
+<figure markdown>
+  ![SimWeave](assets/suspension/half_car_pitch.png){ width=640 }
+</figure>
+*A half car suspension model, with pitch shown.*
+
+<figure markdown>
+  ![SimWeave](assets/suspension/full_car.png){ width=640 }
+</figure>
+*A 7 DOF full car model, with pitch and roll.*
