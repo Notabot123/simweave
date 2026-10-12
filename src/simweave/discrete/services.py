@@ -8,6 +8,7 @@ next queue is full) it sits in a "blocked-completion" slot until it clears.
 
 from __future__ import annotations
 
+import weakref
 from typing import TYPE_CHECKING, Callable
 
 import numpy as np
@@ -142,6 +143,9 @@ class Service(Queue):
         self.completed_total_time: float = (
             0.0  # sum of (wait + service) across completed
         )
+        self._entry_age: "weakref.WeakKeyDictionary[Entity, float]" = (
+            weakref.WeakKeyDictionary()
+        )
 
     # ------------------------------------------------------------------
     # next_q propagation to channels is implicit: they read parent.next_q.
@@ -168,14 +172,29 @@ class Service(Queue):
         return busy / (self.capacity * elapsed)
 
     def average_residence(self) -> float:
-        """Mean total time (waiting + service) for completed items."""
+        """Mean time in this service (buffer wait + service) per completed item.
+
+        This is ``W`` in Little's law (``L = lambda * W``); for M/M/1 it is
+        ``Wq + 1/mu = 1/(mu - lambda)``. Compare :meth:`Queue.average_wait`,
+        which is the buffer-only wait ``Wq``.
+        """
         if self.completed_count == 0:
             return 0.0
         return self.completed_total_time / self.completed_count
 
+    def enqueue(self, item: Entity) -> bool:
+        # ``age`` accrues both in the buffer and in service, so residence at
+        # this stage is the age delta between entry and completion. Recording
+        # the entry age keeps this correct for chained services too.
+        age_in = item.age
+        accepted = super().enqueue(item)
+        if accepted:
+            self._entry_age[item] = age_in
+        return accepted
+
     def _record_completion(self, item: Entity) -> None:
         self.completed_count += 1
-        self.completed_total_time += item.total_wait_time + item.age  # rough summary
+        self.completed_total_time += item.age - self._entry_age.pop(item, 0.0)
 
 
 # ---------------------------------------------------------------------------

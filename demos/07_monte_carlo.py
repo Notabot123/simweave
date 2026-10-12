@@ -1,7 +1,7 @@
 """Monte Carlo over a small queuing sim.
 
 Runs ``run_monte_carlo`` with 32 replicates, each returning the
-mean residence time. Demonstrates all three executors: serial,
+mean queue wait (Wq). Demonstrates all three executors: serial,
 processes, threads; and also the batched numpy-vectorised style via
 ``run_batched_mc`` for when you can express the whole population at once.
 
