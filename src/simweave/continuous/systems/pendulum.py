@@ -26,10 +26,10 @@ class SimplePendulum(DynamicSystem):
         damping: float | Damping = 0.0,
         x0: tuple[float, float] = (0.0, 0.0),
     ):
-        if length <= 0 or mass <= 0:
-            raise ValueError("length and mass must be positive")
         self.length = self._val(length)
         self.mass = self._val(mass)
+        if self.length <= 0 or self.mass <= 0:
+            raise ValueError("length and mass must be positive")
         self.gravity = self._val(gravity)
         self.damping = self._val(damping)
         self._x0 = np.asarray([self._val(v) for v in x0], dtype=float)
