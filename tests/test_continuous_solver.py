@@ -205,3 +205,18 @@ def test_hybrid_groundhook_skyhook():
 
     assert z_sky.std() == z_h1.std()
     assert z_grnd.std() == z_h0.std()
+
+def test_msd_and_pendulum_accept_unit_objects():
+    """Constructors advertise float | unit types; the positivity check must run after conversion."""
+    from simweave.units.si import Mass, Distance, SpringStiffness, Damping
+
+    msd = MassSpringDamper(Mass(2.0), Damping(0.5), SpringStiffness(50.0))
+    assert (msd.mass, msd.damping, msd.stiffness) == (2.0, 0.5, 50.0)
+
+    pend = SimplePendulum(length=Distance(1.5), mass=Mass(2.0))
+    assert (pend.length, pend.mass) == (1.5, 2.0)
+
+    with pytest.raises(ValueError):
+        MassSpringDamper(Mass(0.0), 0.5, 50.0)
+    with pytest.raises(ValueError):
+        SimplePendulum(length=Distance(-1.0))
