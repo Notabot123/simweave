@@ -24,9 +24,9 @@ class MassSpringDamper(DynamicSystem):
         stiffness: float | SpringStiffness,
         x0: tuple[float, float] = (0.0, 0.0),
     ):
-        if mass <= 0:
-            raise ValueError("mass must be positive")
         self.mass = self._val(mass)
+        if self.mass <= 0:
+            raise ValueError("mass must be positive")
         self.damping = self._val(damping)
         self.stiffness = self._val(stiffness)
         self._x0 = np.asarray([self._val(v) for v in x0], dtype=float)
