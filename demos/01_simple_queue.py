@@ -53,9 +53,10 @@ def main(arrival_rate: float = 0.7, service_rate: float = 1.0,
     print(f"Arrivals generated : {gen.generated}")
     print(f"Completions        : {svc.completed_count}")
     print(f"Observed lambda    : {lam_observed:.3f}  (configured {arrival_rate})")
-    print(f"Mean queue length L: {L:.3f}")
-    print(f"Mean wait      W   : {W:.3f}")
-    print(f"Little's L=lam*W   : {lam_observed * W:.3f}")
+    print(f"Mean queue length Lq: {L:.3f}")
+    print(f"Mean queue wait   Wq: {W:.3f}  (theory {rho / (service_rate - arrival_rate):.3f})")
+    print(f"Mean time in sys  W : {svc.average_residence():.3f}  (theory {1 / (service_rate - arrival_rate):.3f})")
+    print(f"Little's Lq=lam*Wq  : {lam_observed * W:.3f}")
     print(f"Utilisation        : {svc.utilisation(elapsed):.3f}  (configured rho={rho})")
 
 

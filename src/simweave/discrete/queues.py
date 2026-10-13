@@ -212,13 +212,21 @@ class Queue(Entity):
     # Metrics
     # ------------------------------------------------------------------
     def average_length(self, elapsed: float) -> float:
-        """Mean queue length over the elapsed simulation time (L in Little's law)."""
+        """Time-averaged number waiting in the buffer (``Lq``), excluding items in service.
+
+        For M/M/1, ``Lq = rho**2 / (1 - rho)``; Little's law gives ``Lq = lambda * Wq``.
+        """
         if elapsed <= 0:
             return 0.0
         return self.cumulative_length_time / elapsed
 
     def average_wait(self) -> float:
-        """Mean residence time of completed items (W in Little's law)."""
+        """Mean queue-only wait (``Wq``) of items that have left the buffer.
+
+        Only time spent sitting in the buffer counts; service time does not. For
+        M/M/1, ``Wq = rho / (mu - lambda)`` and the total time in system is
+        ``W = Wq + 1/mu`` (see :meth:`Service.average_residence`).
+        """
         if self.departures == 0:
             return 0.0
         return self.cumulative_wait_time / self.departures

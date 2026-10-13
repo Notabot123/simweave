@@ -3,8 +3,9 @@
 Little's law says that for any stable queuing system in steady state,
     L = lambda * W
 where L is the mean number in the system, lambda is the arrival rate, and
-W is the mean residence time. We run a long M/M/1-ish simulation and
-check the identity holds to a tolerance.
+W is the mean time in system. Applied to the buffer alone it reads
+Lq = lambda * Wq. We run a long M/M/1-ish simulation and check the identity
+holds to a tolerance.
 """
 
 import numpy as np
@@ -123,3 +124,37 @@ def test_pipeline_conservation():
     in_channels = sum(1 for ch in svc.channels if ch.is_busy())
     in_sink = len(sink)
     assert in_buffer + in_channels + in_sink == n_inject
+
+def test_mm1_wait_and_residence_match_theory():
+    """average_wait is Wq (buffer only); average_residence is W = Wq + 1/mu."""
+    lam, mu = 0.6, 1.0
+    wq_theory = (lam / mu) / (mu - lam)  # 1.5
+    w_theory = 1.0 / (mu - lam)  # 2.5
+
+    wq, w = [], []
+    for seed in (1, 2, 3, 4):
+        rng = np.random.default_rng(seed)
+        sink = Queue(maxlen=100_000, name="sink")
+        svc = Service(
+            capacity=1,
+            buffer_size=100_000,
+            next_q=sink,
+            default_service_time=1.0 / mu,
+            rng=rng,
+        )
+        gen = ArrivalGenerator(
+            interarrival=lambda r: r.exponential(1.0 / lam),
+            factory=_factory(exponential(1.0 / mu)),
+            target=svc,
+            rng=rng,
+        )
+        env = SimEnvironment(dt=0.1, end=3000.0)
+        env.register(gen)
+        env.register(svc)
+        env.register(sink)
+        env.run()
+        wq.append(svc.average_wait())
+        w.append(svc.average_residence())
+
+    assert abs(np.mean(wq) - wq_theory) / wq_theory < 0.20
+    assert abs(np.mean(w) - w_theory) / w_theory < 0.15
