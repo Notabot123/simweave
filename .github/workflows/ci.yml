@@ -58,6 +58,69 @@ jobs:
           files: coverage.xml
           fail_ci_if_error: false
 
+  base-install:
+    # Installs ONLY the declared base dependencies (no extras, no dev tools)
+    # into a clean venv. The `test` job installs [dev], which pulls in plotly
+    # and friends and so masks missing-dependency import errors.
+    name: base install smoke (${{ matrix.os }} / py${{ matrix.python-version }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ["3.10", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Build wheel
+        run: |
+          python -m pip install --upgrade pip build
+          python -m build --wheel --outdir dist
+
+      - name: Install wheel into clean venv (base deps only)
+        shell: bash
+        run: |
+          python -m venv "$RUNNER_TEMP/base-venv"
+          if [ -x "$RUNNER_TEMP/base-venv/bin/python" ]; then
+            PY="$RUNNER_TEMP/base-venv/bin/python"
+          else
+            PY="$RUNNER_TEMP/base-venv/Scripts/python.exe"
+          fi
+          echo "BASE_PY=$PY" >> "$GITHUB_ENV"
+          "$PY" -m pip install --upgrade pip
+          "$PY" -m pip install dist/*.whl
+          "$PY" -m pip list
+
+      - name: Import + version
+        shell: bash
+        working-directory: ${{ runner.temp }}
+        run: '"$BASE_PY" -c "import simweave; print(simweave.__version__)"'
+
+      - name: Smoke test
+        shell: bash
+        working-directory: ${{ runner.temp }}
+        run: |
+          "$BASE_PY" - <<'EOF'
+          import importlib.util
+          import simweave as sw
+          import simweave.viz
+
+          assert importlib.util.find_spec("plotly") is None, "plotly must be absent"
+          assert sw.have_plotly() is False
+          from simweave.viz.plots import plot_state_trajectories
+          try:
+              plot_state_trajectories(object())
+          except ImportError as e:
+              assert "simweave[viz]" in str(e), e
+          else:
+              raise SystemExit("plot helper should raise ImportError without plotly")
+          print("base-install smoke OK")
+          EOF
+
   lint:
     name: lint + type check
     runs-on: ubuntu-latest
