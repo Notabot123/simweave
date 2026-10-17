@@ -13,8 +13,6 @@ from simweave.units.si import (
         Force,
     )
 
-from plotly.subplots import make_subplots
-
 
 def plot_vehicle_metrics(
     result,
@@ -25,7 +23,8 @@ def plot_vehicle_metrics(
 ):
     """Plot vehicle metrics with adaptive layout and automatic units."""
 
-    go = _plotly.require_go()
+    go = _plotly.require_go()  # friendly ImportError if plotly is missing
+    from plotly.subplots import make_subplots
 
     metrics = compute_vehicle_metrics(result, model)
     t = np.asarray(result.time)
