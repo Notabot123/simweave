@@ -15,6 +15,7 @@ Each post is written to be accessible to newcomers while staying technically hon
 | [Urban Traffic Simulation and Decision Support](road-traffic.md) | `roads` `sensitivity` `network analysis` | Intermediate |
 | [Synthetic Datasets for Predictive Maintenance](predictive-maintenance.md) | `faults` `monte-carlo` `machine-learning` `RUL` | Intermediate |
 | [Agent Based Simulation](agent-based-sim.md) | `agent` `wealth` `supply-chain` `Mesa` | Intermediate |
+| [Flying a Quadcopter in Simulation](quadcopter-flight.md) | `flight` `control` `monte-carlo` `faults` | Intermediate |
 ---
 
 ## Jupyter Notebooks

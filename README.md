@@ -122,6 +122,7 @@ simweave/
   discrete/      Queue, PriorityQueue, Service, ArrivalGenerator, Resource, ResourcePool
   continuous/    DynamicSystem, RK4/Euler, ContinuousProcess (hybrid)
   faults/        FaultInjector, FaultProfile, FaultDataset — PdM dataset generation
+  flight/        Quadrotor, CascadedController, Mission, fly — multirotor flight dynamics
   spatial/       Graph + A*-friendly adj_view adapter, grid_graph helper
   agents/        Compass, routing.a_star, Agent (Entity subclass)
   supplychain/   InventoryItems, Warehouse, steady-state optimisation
@@ -213,6 +214,12 @@ pytest                  # should show green
 26. `26_fault_injection.py` — inject insulation-loss fault into a thermal model; produce
     a labelled dataset with health index, RUL, and failure-mode columns ready for
     LSTM / time-series model training
+
+**Flight dynamics** *(new in v0.9.0)*
+
+27. `27_quadcopter_figure8.py` — take off, fly a figure-8 in wind, land; tracking metrics per phase
+28. `28_quadcopter_wind_montecarlo.py` — landing dispersion over random wind and unknown payload
+29. `29_quadcopter_motor_fault.py` — degrade one rotor until the controller runs out of thrust
 
 Run any script directly from the repo root, e.g.:
 

@@ -148,7 +148,7 @@ from simweave.viz import (
     plot_landing_dispersion,
 )
 
-__version__ = "0.8.2"
+__version__ = "0.9.0"
 
 __all__ = [
     # Core

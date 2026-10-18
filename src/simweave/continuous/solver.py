@@ -230,6 +230,8 @@ def simulate(
         Control period; must be a whole multiple of ``dt``. Defaults to
         ``dt`` (the controller runs every step). Ignored without a controller.
 
+    Notes
+    -----
     If the system defines ``post_step(state) -> state`` it is applied after
     every integration step (for example to clamp a ground contact or
     renormalise a quaternion).

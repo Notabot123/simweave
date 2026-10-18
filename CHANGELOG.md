@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.9.0 - 2026-10-18
+
+Flight dynamics: a quadcopter you can fly in Python, plus the control hooks it needed.
 
 ### Added
 
@@ -33,6 +35,9 @@
   `FlightResult.touchdown()` also reports the touchdown `x` and `y`.
 - Demo 28 (wind and payload Monte Carlo of landing dispersion) and demo 29
   (progressive rotor degradation).
+- Blog post "Flying a Quadcopter in Simulation", a flight module docs page, and
+  README, API reference and skill updates (the skill's PID example now uses the
+  real `PIDController(Kp=...)` signature).
 
 ### Fixed
 

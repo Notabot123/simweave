@@ -141,6 +141,46 @@ env.run(until=10.0)
 res = proc.result()            # SimulationResult as if run by simulate(...)
 ```
 
+### Closed-loop control and hooks
+
+`simulate(system, t_span, dt, ..., controller=ctrl, control_dt=Tc)` runs a
+sampled-data controller: every `Tc` seconds `ctrl.update(t, state, Tc)` is
+called and its output held until the next tick. `Tc` must be a whole multiple
+of `dt`, and `controller` excludes `inputs=`. `ContinuousProcess` takes the same
+arguments. A system may define `post_step(state) -> state`, applied after every
+step (ground contact, renormalisation). `PIDController` supports
+`output_limits`, `anti_windup`, `derivative_on_measurement` and `derivative_tau`.
+
+---
+
+## Flight dynamics (`simweave.flight`)
+
+Numpy only. Z-up world, body x forward / y left / z up, ZYX Euler angles
+(positive pitch is nose down).
+
+```python
+from simweave.flight import (
+    Quadrotor, QuadrotorParams, Mixer, CascadedController, ControllerGains,
+    Mission, Figure8, Quintic, Hold, RefPoint, fly, FlightResult,
+    ConstantWind, GustWind, TurbulentWind,
+)
+```
+
+- `Quadrotor(params=None, position=, yaw=, hover=False, wind=None, motor_eff=)`:
+  16-state `DynamicSystem` (`x y z vx vy vz roll pitch yaw p q r f1..f4`); input
+  is four commanded rotor thrusts (N). `motor_eff_1..4`, `mass`, `drag_lin` are
+  plain attributes, so `FaultInjector` and sweeps can perturb them.
+- `Mixer(params).allocate(collective, torques)`: rotor thrusts within limits,
+  attitude torques before collective thrust.
+- `Mission.figure8(height=3, a=4, b=2, period=20, laps=1, ...)`: take off, blend in,
+  figure-8, blend out, hover, land. Any callable `ref(t) -> RefPoint` also works.
+- `fly(vehicle, mission, gains=None, dt=0.004, control_dt=0.008)` -> `FlightResult`
+  with `metrics()`, `phase_rms()`, `touchdown()`, `to_dict()`, `to_frame()`
+  (pandas optional) and `to_viewer()`. `vehicle` may be a wrapper exposing
+  `.system`, such as a `FaultInjector`.
+- Plots (`simweave.viz`): `plot_trajectory_3d`, `plot_flight_summary`,
+  `plot_landing_dispersion`.
+
 ---
 
 ## Discrete-event (`simweave.discrete`)

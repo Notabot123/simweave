@@ -120,6 +120,7 @@ nav:
       - DES vs SimPy: blog/des-vs-simpy.md
       - Road traffic: blog/road-traffic.md
       - Predictive maintenance: blog/predictive-maintenance.md
+      - Quadcopter flight: blog/quadcopter-flight.md
   - Design notes:
       - design/index.md
       - Currency: design/currency.md
