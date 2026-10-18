@@ -1,6 +1,6 @@
 ---
 name: simweave
-description: "Use this skill whenever the user asks for help building, running, debugging, or visualising simulations with the SimWeave Python library (`pip install simweave`). Triggers include any mention of: simweave, SimWeave, the EdgeWeave companion app, hybrid discrete/continuous simulation, Monte Carlo with `MCResult`/`run_monte_carlo`/`run_batched_mc`, queueing/Service/Queue/PriorityQueue/ArrivalGenerator, Resource/ResourcePool, supply-chain Warehouse/InventoryItems, agent routing on a Graph with A*/dijkstra, continuous dynamic systems (mass-spring-damper, pendulum, RLC, thermal, quarter-car, half-car, full-car) using `simulate(...)`, PID control via `PIDController`, fault injection / predictive maintenance datasets via `FaultInjector`/`FaultProfile`/`ParameterFault`/`FaultDataset`/`FaultRecorder`, `Money` and FX conversion via `simweave.currency`, plotly figures via `simweave.viz`, time-sampled recorders (`QueueLengthRecorder`, `ServiceUtilisationRecorder`, `WarehouseStockRecorder`, `RoadOccupancyRecorder`, `IntersectionQueueRecorder`, `FleetAvailabilityRecorder`, `FaultRecorder`), calendar date axes via `SimTimeAxis`, fleet operational availability via `simweave.reliability` (ReliableEntity/Fleet/RepairCentre/sensitivity_sweep), road networks via `simweave.roads` (Road/Intersection/Roundabout/TrafficSignal/RoadNetwork), or producing plotly JSON for an EdgeWeave frontend. Also use when generating example simulations for documentation or when the user is integrating SimWeave outputs into another tool. Do NOT use this skill for unrelated python work, generic plotting questions, or when the user is working with a different sim library."
+description: "Use this skill whenever the user asks for help building, running, debugging, or visualising simulations with the SimWeave Python library (`pip install simweave`). Triggers include any mention of: simweave, SimWeave, the EdgeWeave companion app, hybrid discrete/continuous simulation, Monte Carlo with `MCResult`/`run_monte_carlo`/`run_batched_mc`, queueing/Service/Queue/PriorityQueue/ArrivalGenerator, Resource/ResourcePool, supply-chain Warehouse/InventoryItems, agent routing on a Graph with A*/dijkstra, continuous dynamic systems (mass-spring-damper, pendulum, RLC, thermal, quarter-car, half-car, full-car) using `simulate(...)`, PID control via `PIDController`, fault injection / predictive maintenance datasets via `FaultInjector`/`FaultProfile`/`ParameterFault`/`FaultDataset`/`FaultRecorder`, `Money` and FX conversion via `simweave.currency`, plotly figures via `simweave.viz`, time-sampled recorders (`QueueLengthRecorder`, `ServiceUtilisationRecorder`, `WarehouseStockRecorder`, `RoadOccupancyRecorder`, `IntersectionQueueRecorder`, `FleetAvailabilityRecorder`, `FaultRecorder`), calendar date axes via `SimTimeAxis`, fleet operational availability via `simweave.reliability` (ReliableEntity/Fleet/RepairCentre/sensitivity_sweep), road networks via `simweave.roads` (Road/Intersection/Roundabout/TrafficSignal/RoadNetwork), quadcopter / multirotor flight dynamics via `simweave.flight` (Quadrotor/CascadedController/Mission/fly/FlightResult), or producing plotly JSON for an EdgeWeave frontend. Also use when generating example simulations for documentation or when the user is integrating SimWeave outputs into another tool. Do NOT use this skill for unrelated python work, generic plotting questions, or when the user is working with a different sim library."
 ---
 
 # SimWeave: hybrid discrete/continuous simulation engine
@@ -9,7 +9,7 @@ description: "Use this skill whenever the user asks for help building, running, 
 
 SimWeave (`pip install simweave`) is an atomic-clock simulation engine
 that treats discrete events and continuous dynamics as first-class
-citizens on the same timeline. Current version: **0.8.2**.
+citizens on the same timeline. Current version: **0.9.0**.
 
 | Module | Purpose |
 |---|---|
@@ -17,6 +17,7 @@ citizens on the same timeline. Current version: **0.8.2**.
 | `simweave.discrete` | `Queue`, `PriorityQueue`, `Service`, `ArrivalGenerator`, `Resource`, `ResourcePool`, `EntityProperties`, distributions (`exponential`, `uniform`, `normal`, `deterministic`) |
 | `simweave.continuous` | `simulate(...)`, `SimulationResult`, `ContinuousProcess`, ready-made systems (`MassSpringDamper`, `SimplePendulum`, `QuarterCarModel`, `HalfCarModel`, `RollCarModel`, `FullCarModel`, `SeriesRLC`, `ThermalRC`, `TwoMassThermal`), PID control (`PIDController`) |
 | `simweave.faults` | `FaultProfile` (onset/failure times + shape), `ParameterFault` (maps profile to a system attribute), `FaultInjector` (wraps any `DynamicSystem`, plug-in to `simulate()`), `FaultRecorder` (hybrid env path), `FaultDataset` (health_index, rul, is_failed, failure_mode labels + `to_dataframe()`) |
+| `simweave.flight` | `Quadrotor`, `QuadrotorParams`, `Mixer`, `CascadedController`, `ControllerGains`, trajectories (`Hold`, `Quintic`, `Figure8`), `Mission.figure8()`, `fly()` -> `FlightResult` (metrics, `to_dict`, `to_viewer`), wind (`ConstantWind`, `GustWind`, `TurbulentWind`); numpy only |
 | `simweave.agents` | `Agent`, `Compass`, `a_star`, `dijkstra`, heuristics (`manhattan`, `euclidean`, `chebyshev`) |
 | `simweave.spatial` | `Graph`, `grid_graph` |
 | `simweave.supplychain` | `InventoryItems`, `Warehouse` (multi-echelon, `(R, Q)` policy) |
@@ -109,10 +110,34 @@ res.time, res.state, res.state_labels  # ready for plotting
 ### Continuous: PID control
 
 ```python
-from simweave.continuous.control.pid import PIDController
+from simweave.continuous.control import PIDController
 
-pid = PIDController(kp=2.0, ki=0.5, kd=0.1, setpoint=1.0)
-# pid.update(measurement, dt) returns the control output each step
+pid = PIDController(Kp=2.0, Ki=0.5, Kd=0.1, setpoint=1.0,
+                    output_limits=(-10, 10))   # also: anti_windup, derivative_on_measurement, derivative_tau
+u = pid(measurement, dt)                        # control output for one step
+
+# Closed loop in simulate(): a sampled-data controller is any object with
+# update(t, state, dt) -> input. The output is held between control ticks.
+res = sw.simulate(plant, (0.0, 20.0), dt=0.01, controller=ctrl, control_dt=0.02)
+# (PIDController.update uses state[0] as the measurement, so it fits a 1-state plant.)
+```
+
+### Flight: quadcopter mission
+
+```python
+from simweave.flight import Mission, Quadrotor, ConstantWind, fly
+
+mission = Mission.figure8(height=3.0, a=4.0, b=2.0, period=20.0)   # take off, figure-8, land
+flight = fly(Quadrotor(wind=ConstantWind((4.0, 0.0, 0.0))), mission)
+
+flight.metrics()      # rms_error, max_error, max_tilt_deg, energy_wh, touchdown_speed, ...
+flight.phase_rms()    # tracking error per mission phase
+flight.to_dict()      # time, x, y, z, roll, pitch, yaw, ... (Z up, radians)
+flight.to_viewer()    # same, mapped for a Y-up 3D viewer (EdgeWeave)
+# Conventions: Z-up world, body x forward / y left / z up, ZYX Euler, +pitch = nose down.
+# Change quad.mass or quad.motor_eff_1..4 AFTER building to test model mismatch / faults;
+# fly() also accepts a FaultInjector wrapping the Quadrotor.
+# Plots: simweave.viz.plot_trajectory_3d / plot_flight_summary / plot_landing_dispersion.
 ```
 
 ### Hybrid: continuous process driven by the SimEnvironment clock

@@ -51,6 +51,8 @@ class Quadrotor(DynamicSystem):
         the scalar attributes ``motor_eff_1`` .. ``motor_eff_4`` so a
         :class:`~simweave.faults.FaultInjector` can degrade one rotor.
 
+    Notes
+    -----
     The commanded rotor thrusts are supplied through ``simulate(...,
     controller=...)`` or ``inputs=``; with no input the rotors are commanded
     to zero thrust.
