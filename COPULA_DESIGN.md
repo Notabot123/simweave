@@ -355,8 +355,8 @@ higher utilisation or by plotting overflow probabilities of a finite buffer.
 | 4 | **(3) Demand vs lead-time in supply chain** | Practical (safety stock moves). | `pareto_sweep` is analytic and cannot see it; needs the sim-path hook and a MC-quantile safety-stock helper, so it is more design than showcase. Phase 4. |
 | 5 | **(5) Drone delivery capstone** | Ties to the flight thread; payload, flight time, interarrival. | Depends on the quadcopter work landing and a stable interface; keep it a later, separate effort. Only the *interface contract* (a `JointSampler` plus a factory that reads `draw`) needs agreeing now. |
 
-Recommended demo set: `27` = showcase 2 (serial dependence), `28` = showcase 1
-(copula families), `29` = common-cause failures; supply-chain and drone
+Recommended demo set: `30` = showcase 2 (serial dependence), `31` = showcase 1
+(copula families), `32` = common-cause failures; supply-chain and drone (demos 27-29 are reserved for the flight thread)
 capstone as later numbers. The existing demo style applies
 (`_bootstrap.py` import, module docstring with scenario and `Run::` line,
 parameters block, MC replicates with `run_monte_carlo`, plotly figure via
@@ -442,7 +442,7 @@ without scipy (like the existing `base-install` job).
   `ArrivalGenerator(joint=...)`, `EntityProperties.from_draw`.
 - Blog post following the `blog-writer` skill (opening TOC, closing "Try it out
   yourself" Binder link): "When arrivals aren't independent: copulas in
-  SimWeave", built around demos 27/28 with the lag-1 scatter and wait CCDF
+  SimWeave", built around demos 30/31 with the lag-1 scatter and wait CCDF
   figures; a companion notebook in the notebooks repo via the
   `companion-notebooks` skill. Add it to `docs/blog/index.md`.
 - `CHANGELOG.md` `## 0.9.0` with **Added** (`simweave.stats`, `JointSampler`,
@@ -462,9 +462,9 @@ without scipy (like the existing `base-install` job).
 | --- | --- | --- |
 | 0 | `stats/marginals.py`, `special.py`, `ppf` attributes on existing helpers, tests 2 and 4 | marginals usable standalone |
 | 1 | Copula classes, `from_kendall_tau`, flips, tail coefficients, tests 1 and 3 | `sample_u` |
-| 2 | `JointSampler`, `ArrivalGenerator(joint=)`, `EntityProperties.from_draw`, `MarkovCopulaProcess`, tests 5, 7 to 11; demos 27 and 28 | the feature users asked for |
+| 2 | `JointSampler`, `ArrivalGenerator(joint=)`, `EntityProperties.from_draw`, `MarkovCopulaProcess`, tests 5, 7 to 11; demos 30 and 31 | the feature users asked for |
 | 3 | Fitting (`pseudo_obs`, `fit_copula`, `from_data`), test 6 | calibration from logs |
-| 4 | Reliability lifetime-based common cause; `Warehouse` samplers + MC safety stock; demo 29 and supply-chain demo | showcase 3 and 4 |
+| 4 | Reliability lifetime-based common cause; `Warehouse` samplers + MC safety stock; demo 32 and supply-chain demo | showcase 3 and 4 |
 | 5 | `VehicleArrivalProcess(joint=)`; drone capstone once the flight thread lands | showcase 5 |
 
 Each phase is an independent PR to `main` with its own tests and CHANGELOG
