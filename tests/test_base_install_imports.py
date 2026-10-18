@@ -86,3 +86,15 @@ def test_plot_helpers_raise_friendly_import_error_without_plotly():
         """
     )
     assert proc.returncode == 0, proc.stderr
+
+
+def test_flight_imports_without_plotly():
+    proc = _run(
+        """
+        import simweave.flight as flight
+        assert "plotly" not in sys.modules
+        assert "scipy" not in sys.modules
+        flight.Quadrotor()
+        """
+    )
+    assert proc.returncode == 0, proc.stderr

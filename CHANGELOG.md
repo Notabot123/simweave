@@ -14,6 +14,13 @@
   `derivative_on_measurement`, `derivative_tau`, plus an `update()` adapter.
   Defaults reproduce the previous output; `dt <= 0` now raises `ValueError`.
 - Flight dynamics design plan (`FLIGHT_DESIGN.md`).
+- `simweave.flight` (numpy only): `Quadrotor` (16-state rigid body with
+  first-order rotor response, drag, ground contact and an energy model),
+  `QuadrotorParams`, `Mixer` (X-layout control allocation with attitude-first
+  desaturation), wind models (`ConstantWind`, `GustWind`, `TurbulentWind`) and
+  rotation/quaternion helpers. Rotor effectiveness is exposed as
+  `motor_eff_1..4` for `FaultInjector`. Controllers, trajectories and missions
+  follow in later releases.
 
 ## 0.8.2 - 2026-10-18
 
