@@ -104,6 +104,7 @@ nav:
       - Core: modules/core.md
       - Continuous: modules/continuous.md
       - Discrete: modules/discrete.md
+      - Flight: modules/flight.md
       - Agents and spatial: modules/agents.md
       - Supply chain: modules/supplychain.md
       - Reliability: modules/reliability.md
