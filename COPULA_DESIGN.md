@@ -1,6 +1,15 @@
 # Copula-driven sampling for discrete-event simulation
 
-**Status:** proposal (no code yet). Target release: 0.9.0.
+**Status:** proposal (no code yet). Implementation is on hold until the quadcopter work completes. Target release: 0.9.0 (Phases 0 to 3; Phases 4 and 5 are future extensions).
+
+## Decisions so far (user)
+
+- Package name: `simweave.stats`.
+- scipy stays **optional** (existing `[optim]` extra); the base install stays numpy-only and lightweight. Student-t copula and MLE fitting need scipy and raise a friendly `ImportError`; docs and demos that use them say so.
+- `gap_alignment` default: `"before"` (conventional: the attribute belongs to the entity that arrived after the gap).
+- First release: Phases 0 to 3. Phases 4 and 5 are recorded as future extensions.
+- Demo numbers: take the next available numbers once the quadcopter work completes (the `30`-`32` figures below are placeholders).
+
 
 ## Motivation
 
@@ -355,8 +364,8 @@ higher utilisation or by plotting overflow probabilities of a finite buffer.
 | 4 | **(3) Demand vs lead-time in supply chain** | Practical (safety stock moves). | `pareto_sweep` is analytic and cannot see it; needs the sim-path hook and a MC-quantile safety-stock helper, so it is more design than showcase. Phase 4. |
 | 5 | **(5) Drone delivery capstone** | Ties to the flight thread; payload, flight time, interarrival. | Depends on the quadcopter work landing and a stable interface; keep it a later, separate effort. Only the *interface contract* (a `JointSampler` plus a factory that reads `draw`) needs agreeing now. |
 
-Recommended demo set: `30` = showcase 2 (serial dependence), `31` = showcase 1
-(copula families), `32` = common-cause failures; supply-chain and drone (demos 27-29 are reserved for the flight thread)
+Recommended demo set (numbers are placeholders; use the next free ones): `30` = showcase 2 (serial dependence), `31` = showcase 1
+(copula families), `32` = common-cause failures; supply-chain and drone
 capstone as later numbers. The existing demo style applies
 (`_bootstrap.py` import, module docstring with scenario and `Run::` line,
 parameters block, MC replicates with `run_monte_carlo`, plotly figure via
