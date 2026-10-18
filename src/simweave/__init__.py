@@ -145,7 +145,7 @@ from simweave.viz import (
     plot_health_index,
 )
 
-__version__ = "0.8.1"
+__version__ = "0.8.2"
 
 __all__ = [
     # Core
