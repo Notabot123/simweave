@@ -21,6 +21,9 @@ optional `theme=` and `title=`.
 | `plot_warehouse_stock`          | `WarehouseStockRecorder`                       |
 | `plot_mc_fan`                   | `MCResult`, ndarray, or `(times, samples)`     |
 | `plot_agent_path`               | `Agent` (with optional `graph=`)               |
+| `plot_trajectory_3d`            | `FlightResult` (3D path, coloured by speed)    |
+| `plot_flight_summary`           | `FlightResult` (error, tilt, thrusts, power)   |
+| `plot_landing_dispersion`       | `(n, 2)` array of landing points               |
 
 ## Recorders
 

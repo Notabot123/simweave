@@ -59,6 +59,11 @@ from simweave.viz.plots import (
 from simweave.viz.vehicle_dynamics import(
     plot_vehicle_metrics,
 )
+from simweave.viz.flight import (
+    plot_flight_summary,
+    plot_landing_dispersion,
+    plot_trajectory_3d,
+)
 from simweave.viz._plotly import have_plotly
 
 __all__ = [
@@ -90,6 +95,9 @@ __all__ = [
     "plot_vehicle_metrics",
     "plot_fault_signals",
     "plot_health_index",
+    "plot_trajectory_3d",
+    "plot_flight_summary",
+    "plot_landing_dispersion",
     # Probe
     "have_plotly",
 ]

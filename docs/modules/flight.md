@@ -34,6 +34,32 @@ the vehicle are on the ground.
 
 Run `demos/27_quadcopter_figure8.py` for a complete example.
 
+## Plots
+
+```python
+from simweave.viz import plot_trajectory_3d, plot_flight_summary
+
+plot_trajectory_3d(flight).show()    # flown path coloured by speed, plus the reference
+plot_flight_summary(flight).show()   # error, tilt, rotor thrusts and power, phases shaded
+```
+
+`plot_landing_dispersion(points)` scatters `(x, y)` landing points with circles
+containing 50% and 95% of them. Plotly is imported lazily, so the rest of
+`simweave.flight` works without the `viz` extra.
+
+## Monte Carlo and faults
+
+`fly` is a plain function of a vehicle and a mission, so it drops straight into
+`run_monte_carlo`. Demo 28 randomises steady wind, seeded turbulence and an
+unknown payload and summarises tracking error, touchdown speed and landing
+dispersion. Define the scenario at module level so the process pool can pickle it.
+
+`fly` also accepts a `FaultInjector` wrapping the quadrotor. Demo 29 degrades
+one rotor during the figure-8: the integral terms push that rotor harder to
+compensate until it reaches its thrust limit, which for the default vehicle is
+a loss of about 58% (`1 - hover_thrust / max_thrust`). Past that, the vehicle
+can no longer hold altitude and attitude together.
+
 ## Conventions
 
 - World frame is **Z up**; body frame is x forward, y left, z up.
