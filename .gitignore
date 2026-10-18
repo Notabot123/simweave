@@ -192,3 +192,9 @@ CLAUDE.md
 .cursor*
 .aider*
 
+
+# SimWeave for Simulants (draft book -- local only)
+book/
+
+# SimWeave training course (local draft; may be published via the EdgeWeave docs site)
+training/
