@@ -1,6 +1,6 @@
 # Copula-driven sampling for discrete-event simulation
 
-**Status:** proposal (no code yet). Implementation is on hold until the quadcopter work completes. Target release: 0.9.0 (Phases 0 to 3; Phases 4 and 5 are future extensions).
+**Status:** Phases 0 to 3 implemented (target release 0.10.0); Phases 4 and 5 are future extensions. The release number shifted from 0.9.0 because the flight work shipped as 0.9.0.
 
 ## Decisions so far (user)
 
@@ -8,7 +8,7 @@
 - scipy stays **optional** (existing `[optim]` extra); the base install stays numpy-only and lightweight. Student-t copula and MLE fitting need scipy and raise a friendly `ImportError`; docs and demos that use them say so.
 - `gap_alignment` default: `"before"` (conventional: the attribute belongs to the entity that arrived after the gap).
 - First release: Phases 0 to 3. Phases 4 and 5 are recorded as future extensions.
-- Demo numbers: take the next available numbers once the quadcopter work completes (the `30`-`32` figures below are placeholders).
+- Demo numbers: implemented as demos 30 (serial dependence) and 31 (copula families); the reliability demo (32 in the plan below) remains future work.
 
 
 ## Motivation

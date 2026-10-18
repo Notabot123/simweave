@@ -209,36 +209,97 @@ class ArrivalGenerator(Entity):
     the next scheduled arrival, invokes ``factory(env)`` to mint a new
     entity and pushes it into ``target``. Multiple arrivals within a single
     tick are handled correctly.
+
+    Parameters
+    ----------
+    interarrival:
+        ``(rng) -> float`` gap sampler. Omit (``None``) when ``joint`` is given.
+    factory:
+        ``factory(env) -> Entity``; with ``joint`` it is called as
+        ``factory(env, draw)`` where ``draw`` is the ``{name: value}`` dict of
+        the joint draw (see :class:`~simweave.stats.JointSampler`).
+    joint:
+        Optional :class:`~simweave.stats.JointSampler` that draws the gap
+        (under ``interarrival_key``) together with entity attributes, so they
+        can be dependent. It uses a child generator seeded from ``rng``.
+    interarrival_key:
+        Name of the gap in the joint draw.
+    gap_alignment:
+        ``"before"`` (default): the attributes drawn with a gap belong to the
+        entity that arrives after that gap (attribute vs. time since the last
+        arrival). ``"after"``: attributes belong to the entity just created and
+        the gap is the time until the next arrival.
     """
 
     def __init__(
         self,
-        interarrival: Callable[[np.random.Generator], float],
-        factory: Callable[[SimEnvironment], Entity],
+        interarrival: Callable[[np.random.Generator], float] | None,
+        factory: Callable[..., Entity],
         target: Queue,
         rng: np.random.Generator | None = None,
         name: str | None = None,
+        *,
+        joint=None,
+        interarrival_key: str = "interarrival",
+        gap_alignment: str = "before",
     ) -> None:
         super().__init__(name=name)
+        if gap_alignment not in ("before", "after"):
+            raise ValueError("gap_alignment must be 'before' or 'after'.")
+        if joint is None and interarrival is None:
+            raise ValueError("Provide interarrival, or a joint sampler.")
+        if joint is not None and interarrival is not None:
+            raise ValueError("Pass either interarrival or joint, not both.")
+        if joint is not None and interarrival_key not in joint.names:
+            raise ValueError(f"joint has no {interarrival_key!r} variable; has {joint.names}.")
         self.interarrival = interarrival
         self.factory = factory
         self.target = target
         self.rng = rng if rng is not None else np.random.default_rng()
-        self._countdown: float = float(self.interarrival(self.rng))
+        self.joint = joint
+        self.interarrival_key = interarrival_key
+        self.gap_alignment = gap_alignment
+        self._pending: dict[str, float] | None = None
+        if joint is None:
+            self._countdown: float = float(self.interarrival(self.rng))
+        else:
+            # Dedicated stream: adding a copula must not perturb other draws on rng.
+            self._joint_rng = np.random.default_rng(int(self.rng.integers(2**63 - 1)))
+            if gap_alignment == "before":
+                self._pending = joint.draw(self._joint_rng)
+                self._countdown = float(self._pending[interarrival_key])
+            else:
+                first = joint.marginals[interarrival_key].rvs(self._joint_rng)
+                self._countdown = float(first)
         self.generated: int = 0
         self.rejected: int = 0
+
+    def _next(self, env) -> Entity:
+        """Create the arriving entity and schedule the following arrival."""
+        if self.joint is None:
+            entity = self.factory(env)
+            self._countdown = float(self.interarrival(self.rng))
+            return entity
+        if self.gap_alignment == "before":
+            entity = self.factory(env, self._pending)
+            self._pending = self.joint.draw(self._joint_rng)
+            self._countdown = float(self._pending[self.interarrival_key])
+        else:
+            draw = self.joint.draw(self._joint_rng)
+            entity = self.factory(env, draw)
+            self._countdown = float(draw[self.interarrival_key])
+        return entity
 
     def tick(self, dt: float, env) -> None:
         super().tick(dt, env)
         remaining = dt
         while remaining >= self._countdown:
             remaining -= self._countdown
-            entity = self.factory(env)
+            entity = self._next(env)
             if self.target.enqueue(entity):
                 self.generated += 1
             else:
                 self.rejected += 1
-            self._countdown = float(self.interarrival(self.rng))
         self._countdown -= remaining
 
     def has_work(self, env) -> bool:

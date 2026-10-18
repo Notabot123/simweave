@@ -123,3 +123,44 @@ def test_flight_imports_without_plotly():
         """
     )
     assert proc.returncode == 0, proc.stderr
+
+
+def test_stats_works_without_scipy_and_t_copula_is_friendly():
+    proc = _run(
+        """
+        from importlib.abc import MetaPathFinder
+
+        class _BlockScipy(MetaPathFinder):
+            def find_spec(self, name, path=None, target=None):
+                if name == "scipy" or name.startswith("scipy."):
+                    raise ModuleNotFoundError(f"No module named {name!r}", name=name)
+                return None
+
+        sys.meta_path.insert(0, _BlockScipy())
+        for _m in [m for m in sys.modules if m == "scipy" or m.startswith("scipy.")]:
+            del sys.modules[_m]
+
+        import numpy as np
+        import simweave as sw
+        from simweave.stats import Exponential, LogNormal, JointSampler, kendall_tau, fit_copula
+
+        rng = np.random.default_rng(0)
+        js = JointSampler(
+            sw.GumbelCopula.from_kendall_tau(0.5),
+            {"a": Exponential(1.0), "b": LogNormal.from_mean_cv(2.0, 0.5)},
+        )
+        x = js.sample(rng, 2000)
+        assert abs(kendall_tau(x["a"], x["b"]) - 0.5) < 0.05
+        sw.GaussianCopula.from_kendall_tau(0.4).sample_u(10, rng)
+        sw.FrankCopula.from_kendall_tau(0.4).sample_u(10, rng)
+        assert fit_copula(js.sample_array(rng, 1500)).table
+        try:
+            sw.StudentTCopula.from_kendall_tau(0.4)
+        except ImportError as e:
+            assert "pip install simweave[optim]" in str(e), str(e)
+        else:
+            raise SystemExit("t copula did not raise ImportError")
+        assert "scipy" not in sys.modules
+        """
+    )
+    assert proc.returncode == 0, proc.stderr
