@@ -1,5 +1,20 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- `simulate(..., controller=, control_dt=)` and the matching
+  `ContinuousProcess` arguments: a sampled-data controller protocol
+  (`simweave.continuous.Controller`) whose output is held across the
+  integration steps of each control period. Existing calls are unchanged.
+- Optional `post_step(state) -> state` hook on dynamic systems, applied after
+  every integration step.
+- `PIDController` options: `output_limits`, `anti_windup`,
+  `derivative_on_measurement`, `derivative_tau`, plus an `update()` adapter.
+  Defaults reproduce the previous output; `dt <= 0` now raises `ValueError`.
+- Flight dynamics design plan (`FLIGHT_DESIGN.md`).
+
 ## 0.8.2 - 2026-10-18
 
 ### Fixed

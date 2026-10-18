@@ -3,6 +3,7 @@
 from simweave.continuous.solver import (
     DynamicSystem,
     SupportsDynamics,
+    Controller,
     SimulationResult,
     simulate,
     ContinuousProcess,
@@ -29,6 +30,7 @@ from simweave.continuous.systems import (
 __all__ = [
     "DynamicSystem",
     "SupportsDynamics",
+    "Controller",
     "SimulationResult",
     "simulate",
     "ContinuousProcess",

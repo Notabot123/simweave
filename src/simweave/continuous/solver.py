@@ -52,6 +52,21 @@ class SupportsDynamics(Protocol):
     ) -> np.ndarray: ...
 
 
+@runtime_checkable
+class Controller(Protocol):
+    """Protocol for sampled-data (digital) controllers.
+
+    ``update`` is called once per control period with the current time and
+    state and returns the control input, which the solver holds constant
+    (zero-order hold) until the next control tick. ``reset`` is optional and,
+    when present, is called at the start of every run.
+    """
+
+    def update(
+        self, t: float, state: np.ndarray, dt: float
+    ) -> np.ndarray | float | int | None: ...
+
+
 class WrappedResult:
     def __init__(self, data):
         self._data = data
@@ -164,6 +179,32 @@ def _step_rk4(system, t, x, dt, external_inputs):
 _STEPPERS = {"euler": _step_euler, "rk4": _step_rk4}
 
 
+def _control_steps(control_dt: float | None, dt: float) -> int:
+    """Number of integration steps per control period."""
+    if control_dt is None:
+        return 1
+    if control_dt <= 0:
+        raise ValueError("control_dt must be positive.")
+    k = int(round(control_dt / dt))
+    if k < 1 or abs(k * dt - control_dt) > 1e-9 * max(1.0, abs(control_dt)):
+        raise ValueError(
+            f"control_dt ({control_dt}) must be a whole multiple of dt ({dt})."
+        )
+    return k
+
+
+def _hold(value) -> InputFunc:
+    """Wrap a held control value as a time-independent input function."""
+    return lambda t: value
+
+
+def _post_step(system, state: np.ndarray) -> np.ndarray:
+    hook = getattr(system, "post_step", None)
+    if hook is None:
+        return state
+    return np.asarray(hook(state), dtype=float)
+
+
 def simulate(
     system: SupportsDynamics,
     t_span: tuple[float, float],
@@ -171,8 +212,28 @@ def simulate(
     x0: Iterable[float] | np.ndarray | None = None,
     method: str = "rk4",
     inputs: Optional[InputFunc] = None,
+    controller: Optional[Controller] = None,
+    control_dt: float | None = None,
 ) -> SimulationResult:
-    """Integrate a system over ``t_span`` with fixed step ``dt``."""
+    """Integrate a system over ``t_span`` with fixed step ``dt``.
+
+    Parameters
+    ----------
+    controller:
+        Optional sampled-data controller (see :class:`Controller`). Every
+        ``control_dt`` seconds it is called as ``controller.update(t, state,
+        control_dt)`` and its output is held constant across the integration
+        steps of that period. It replaces ``inputs`` and the system's own
+        ``inputs(t)``, so passing both ``controller`` and ``inputs`` is an
+        error.
+    control_dt:
+        Control period; must be a whole multiple of ``dt``. Defaults to
+        ``dt`` (the controller runs every step). Ignored without a controller.
+
+    If the system defines ``post_step(state) -> state`` it is applied after
+    every integration step (for example to clamp a ground contact or
+    renormalise a quaternion).
+    """
     t0, tf = t_span
     if dt <= 0:
         raise ValueError("dt must be positive.")
@@ -180,6 +241,9 @@ def simulate(
         raise ValueError("t_span must satisfy tf > t0.")
     if method not in _STEPPERS:
         raise ValueError(f"Unknown method '{method}'. Use one of {tuple(_STEPPERS)}")
+    if controller is not None and inputs is not None:
+        raise ValueError("Pass either `controller` or `inputs`, not both.")
+    k_ctrl = _control_steps(control_dt, dt) if controller is not None else 1
 
     x_init = _as_state_vector(system.initial_state() if x0 is None else x0)
     if hasattr(system, "validate_state"):
@@ -192,7 +256,14 @@ def simulate(
     state = np.zeros((time.size, x_init.size), dtype=float)
     state[0] = x_init
 
-    t0_input = _resolve_inputs(system, inputs, time[0])
+    held = None
+    if controller is not None:
+        if hasattr(controller, "reset"):
+            controller.reset()
+        held = controller.update(time[0], state[0].copy(), k_ctrl * dt)
+        t0_input = held
+    else:
+        t0_input = _resolve_inputs(system, inputs, time[0])
     inputs_log = [np.atleast_1d(t0_input).astype(float) if t0_input is not None else np.zeros(1)]
 
     stepper = _STEPPERS[method]
@@ -200,9 +271,16 @@ def simulate(
         t_prev = time[i - 1]
 
         # --- resolve inputs ---
-        if inputs is not None:
+        if controller is not None:
+            if (i - 1) % k_ctrl == 0 and i > 1:
+                held = controller.update(t_prev, state[i - 1].copy(), k_ctrl * dt)
+            inputs_fn = _hold(held)
+            u = held
+        elif inputs is not None:
+            inputs_fn = inputs
             u = inputs(t_prev)
         else:
+            inputs_fn = inputs
             u = system.inputs(t_prev)
 
         # normalise to array for storage
@@ -214,7 +292,9 @@ def simulate(
         inputs_log.append(u_arr)
 
         # --- step ---
-        state[i] = stepper(system, time[i - 1], state[i - 1], dt, inputs)
+        state[i] = _post_step(
+            system, stepper(system, time[i - 1], state[i - 1], dt, inputs_fn)
+        )
 
     # gather inputs
     inputs_array = np.vstack(inputs_log)
@@ -254,6 +334,8 @@ class ContinuousProcess(Entity):
         n_substeps: int = 1,
         inputs: InputFunc | None = None,
         name: str | None = None,
+        controller: Controller | None = None,
+        control_dt: float | None = None,
     ) -> None:
         super().__init__(
             name=name or getattr(system, "name", system.__class__.__name__)
@@ -262,10 +344,18 @@ class ContinuousProcess(Entity):
             raise ValueError(f"Unknown method '{method}'")
         if n_substeps < 1:
             raise ValueError("n_substeps must be >= 1")
+        if controller is not None and inputs is not None:
+            raise ValueError("Pass either `controller` or `inputs`, not both.")
+        if control_dt is not None and control_dt <= 0:
+            raise ValueError("control_dt must be positive.")
         self.system = system
         self.method = method
         self.n_substeps = n_substeps
         self.inputs = inputs
+        self.controller = controller
+        self.control_dt = control_dt
+        self._held = None
+        self._substep_index = 0
         self.state = _as_state_vector(system.initial_state())
         self._stepper = _STEPPERS[method]
         self.history_time: list[float] = []
@@ -275,13 +365,32 @@ class ContinuousProcess(Entity):
         super().on_register(env)
         self.history_time.append(env.clock.t)
         self.history_state.append(self.state.copy())
+        if self.controller is not None and hasattr(self.controller, "reset"):
+            self.controller.reset()
+        self._substep_index = 0
 
     def tick(self, dt: float, env) -> None:
         super().tick(dt, env)
         sub_dt = dt / self.n_substeps
         t = env.clock.t
+        k_ctrl = (
+            _control_steps(self.control_dt, sub_dt)
+            if self.controller is not None
+            else 1
+        )
         for _ in range(self.n_substeps):
-            self.state = self._stepper(self.system, t, self.state, sub_dt, self.inputs)
+            inputs_fn = self.inputs
+            if self.controller is not None:
+                if self._substep_index % k_ctrl == 0:
+                    self._held = self.controller.update(
+                        t, self.state.copy(), k_ctrl * sub_dt
+                    )
+                inputs_fn = _hold(self._held)
+            self.state = _post_step(
+                self.system,
+                self._stepper(self.system, t, self.state, sub_dt, inputs_fn),
+            )
+            self._substep_index += 1
             t += sub_dt
         self.history_time.append(env.clock.t + dt)
         self.history_state.append(self.state.copy())
