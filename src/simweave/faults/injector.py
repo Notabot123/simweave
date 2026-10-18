@@ -96,6 +96,11 @@ class FaultInjector(DynamicSystem):
         finally:
             self._restore_nominal()
 
+    def post_step(self, state: np.ndarray) -> np.ndarray:
+        """Forward the wrapped system's ``post_step`` hook, if it has one."""
+        hook = getattr(self.system, "post_step", None)
+        return state if hook is None else hook(state)
+
     # ------------------------------------------------------------------
     # Health / label helpers
     # ------------------------------------------------------------------

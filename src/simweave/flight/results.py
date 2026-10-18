@@ -131,7 +131,7 @@ class FlightResult:
         return float(hit.mean())
 
     def touchdown(self) -> dict[str, float] | None:
-        """Vertical speed and horizontal miss distance at touchdown.
+        """Time, vertical speed, horizontal position and miss distance at touchdown.
 
         Touchdown is the first sample at or below 2 cm after the vehicle has
         been above 0.5 m; ``None`` if it never lands.
@@ -149,6 +149,8 @@ class FlightResult:
             "time": float(self.time[i]),
             "vertical_speed": float(self.velocity[i, 2]),
             "horizontal_error": float(np.linalg.norm(self.position[i, 0:2] - ref_xy)),
+            "x": float(self.position[i, 0]),
+            "y": float(self.position[i, 1]),
         }
 
     def metrics(self) -> dict[str, float]:
@@ -194,16 +196,22 @@ def fly(
 
     The controller models the vehicle with ``vehicle.params``, so changing
     ``vehicle.mass`` (a payload) or motor effectiveness afterwards tests the
-    controller against model mismatch. ``t_end`` defaults to the mission
-    duration.
+    controller against model mismatch. ``vehicle`` may also be a wrapper with a
+    ``.system`` attribute, such as a :class:`~simweave.faults.FaultInjector`.
+    ``t_end`` defaults to the mission duration.
     """
     if t_end is None:
         t_end = getattr(mission, "duration", None)
         if t_end is None:
             raise ValueError("Pass t_end for a reference without a duration.")
-    controller = CascadedController(mission, vehicle.params, gains)
+    quad = vehicle
+    while not isinstance(quad, Quadrotor):  # e.g. a FaultInjector wrapping the quad
+        quad = getattr(quad, "system", None)
+        if quad is None:
+            raise TypeError("fly needs a Quadrotor or a wrapper exposing .system.")
+    controller = CascadedController(mission, quad.params, gains)
     result = simulate(
         vehicle, (0.0, float(t_end)), dt=dt, method=method,
         controller=controller, control_dt=control_dt,
     )
-    return FlightResult(result=result, reference=mission, vehicle=vehicle)
+    return FlightResult(result=result, reference=mission, vehicle=quad)

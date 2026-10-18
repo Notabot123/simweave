@@ -88,6 +88,31 @@ def test_plot_helpers_raise_friendly_import_error_without_plotly():
     assert proc.returncode == 0, proc.stderr
 
 
+def test_flight_plot_helpers_raise_friendly_import_error_without_plotly():
+    proc = _run(
+        """
+        import numpy as np
+        import simweave
+        from simweave.viz import (
+            plot_flight_summary, plot_landing_dispersion, plot_trajectory_3d,
+        )
+
+        for fn, arg in (
+            (plot_trajectory_3d, object()),
+            (plot_flight_summary, object()),
+            (plot_landing_dispersion, np.zeros((3, 2))),
+        ):
+            try:
+                fn(arg)
+            except ImportError as e:
+                assert "pip install simweave[viz]" in str(e), str(e)
+            else:
+                raise SystemExit(f"{fn.__name__} did not raise ImportError")
+        """
+    )
+    assert proc.returncode == 0, proc.stderr
+
+
 def test_flight_imports_without_plotly():
     proc = _run(
         """

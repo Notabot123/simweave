@@ -143,6 +143,9 @@ from simweave.viz import (
     plot_vehicle_metrics,
     plot_fault_signals,
     plot_health_index,
+    plot_trajectory_3d,
+    plot_flight_summary,
+    plot_landing_dispersion,
 )
 
 __version__ = "0.8.2"
@@ -278,6 +281,9 @@ __all__ = [
     "plot_vehicle_metrics",
     "plot_fault_signals",
     "plot_health_index",
+    "plot_trajectory_3d",
+    "plot_flight_summary",
+    "plot_landing_dispersion",
     "register_theme",
     "set_default_theme",
     # Meta

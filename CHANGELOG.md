@@ -27,6 +27,18 @@
   and `fly()` returning a `FlightResult` with `metrics()`, `phase_rms()`,
   `to_dict()`, `to_frame()` and `to_viewer()` (Y-up viewer columns).
 - Demo 27: quadcopter figure-8 mission in wind.
+- Flight plots: `plot_trajectory_3d`, `plot_flight_summary` and
+  `plot_landing_dispersion` (plotly imported lazily, like the other helpers).
+- `fly()` accepts a wrapper exposing `.system` (such as `FaultInjector`), and
+  `FlightResult.touchdown()` also reports the touchdown `x` and `y`.
+- Demo 28 (wind and payload Monte Carlo of landing dispersion) and demo 29
+  (progressive rotor degradation).
+
+### Fixed
+
+- `FaultInjector` did not forward the wrapped system's `post_step` hook, so
+  wrapping a system that relies on it (the quadrotor's ground contact) let it
+  fall through the floor. It now forwards the hook.
 
 ## 0.8.2 - 2026-10-18
 
