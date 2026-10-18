@@ -19,8 +19,14 @@
   `QuadrotorParams`, `Mixer` (X-layout control allocation with attitude-first
   desaturation), wind models (`ConstantWind`, `GustWind`, `TurbulentWind`) and
   rotation/quaternion helpers. Rotor effectiveness is exposed as
-  `motor_eff_1..4` for `FaultInjector`. Controllers, trajectories and missions
-  follow in later releases.
+  `motor_eff_1..4` for `FaultInjector`.
+- `simweave.flight` control and missions: `CascadedController` (position,
+  velocity, attitude and rate loops with tilt limit and yaw-rate feed-forward),
+  `ControllerGains`, trajectories `Hold`, `Quintic` and `Figure8`,
+  `Mission.figure8()` (take off, figure-8, land with continuous transitions),
+  and `fly()` returning a `FlightResult` with `metrics()`, `phase_rms()`,
+  `to_dict()`, `to_frame()` and `to_viewer()` (Y-up viewer columns).
+- Demo 27: quadcopter figure-8 mission in wind.
 
 ## 0.8.2 - 2026-10-18
 

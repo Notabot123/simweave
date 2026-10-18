@@ -5,6 +5,7 @@ forward / y left / z up, ZYX Euler angles) are described in
 :mod:`simweave.flight.frames`.
 """
 
+from simweave.flight.control import CascadedController, ControllerGains
 from simweave.flight.frames import (
     euler_from_rotation,
     euler_to_quaternion,
@@ -15,6 +16,8 @@ from simweave.flight.frames import (
 from simweave.flight.mixer import Mixer
 from simweave.flight.params import QuadrotorParams
 from simweave.flight.quadrotor import Quadrotor
+from simweave.flight.results import FlightResult, fly
+from simweave.flight.trajectory import Figure8, Hold, Mission, Quintic, RefPoint
 from simweave.flight.wind import ConstantWind, GustWind, TurbulentWind, Wind
 
 __all__ = [
@@ -22,6 +25,15 @@ __all__ = [
     "QuadrotorParams",
     "Mixer",
     "Wind",
+    "CascadedController",
+    "ControllerGains",
+    "Mission",
+    "Figure8",
+    "Quintic",
+    "Hold",
+    "RefPoint",
+    "FlightResult",
+    "fly",
     "ConstantWind",
     "GustWind",
     "TurbulentWind",
