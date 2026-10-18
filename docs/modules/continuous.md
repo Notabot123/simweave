@@ -57,6 +57,25 @@ A temperature regulation system responding to workload changes could be helpful 
 - industrial heaters
 - HVAC systems
 
+### Closed-loop control in `simulate`
+
+`simulate` accepts a sampled-data controller. Every `control_dt` seconds it
+calls `controller.update(t, state, control_dt)` and holds the result constant
+(zero-order hold) while the system integrates, as a real digital controller
+does. `control_dt` must be a whole multiple of `dt` and defaults to `dt`.
+
+```python
+pid = PIDController(Kp=4.0, Ki=2.0, setpoint=1.0, output_limits=(-10, 10))
+result = simulate(plant, (0, 20), dt=0.01, controller=pid, control_dt=0.02)
+```
+
+`PIDController` also supports `output_limits`, anti-windup
+(`anti_windup="clamp"`, the default when limits are set),
+`derivative_on_measurement` and a derivative filter `derivative_tau`.
+`ContinuousProcess` takes the same `controller=` / `control_dt=` arguments. A
+system may define `post_step(state) -> state`, applied after every
+integration step (for example to clamp a ground contact).
+
 # Vehicle dynamics examples
 ## Quarter car
 A 2 DOF (Degrees of Freedom) model with 4 variables (position + velocity).
