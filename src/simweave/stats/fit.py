@@ -149,6 +149,9 @@ def fit_copula(
 ) -> FitResult:
     """Fit a bivariate copula (or a Gaussian/t copula of higher dimension).
 
+    Negative dependence is handled by reflecting the second axis; the returned
+    copula is then a flipped copula.
+
     Parameters
     ----------
     data:
@@ -164,8 +167,10 @@ def fit_copula(
     df:
         Degrees of freedom for the t copula (held fixed).
 
-    Negative dependence is handled by reflecting the second axis; the returned
-    copula is then a flipped copula.
+    Returns
+    -------
+    FitResult
+        The best candidate, with all candidates ranked in ``table``.
     """
     if method not in ("tau", "mle"):
         raise ValueError("method must be 'tau' or 'mle'.")
