@@ -16,6 +16,7 @@ Each post is written to be accessible to newcomers while staying technically hon
 | [Synthetic Datasets for Predictive Maintenance](predictive-maintenance.md) | `faults` `monte-carlo` `machine-learning` `RUL` | Intermediate |
 | [Agent Based Simulation](agent-based-sim.md) | `agent` `wealth` `supply-chain` `Mesa` | Intermediate |
 | [Flying a Quadcopter in Simulation](quadcopter-flight.md) | `flight` `control` `monte-carlo` `faults` | Intermediate |
+| [When Arrivals Aren't Independent: Copulas](copulas-dependence.md) | `stats` `copulas` `discrete` `queues` | Intermediate |
 ---
 
 ## Jupyter Notebooks

@@ -123,6 +123,7 @@ simweave/
   continuous/    DynamicSystem, RK4/Euler, ContinuousProcess (hybrid)
   faults/        FaultInjector, FaultProfile, FaultDataset — PdM dataset generation
   flight/        Quadrotor, CascadedController, Mission, fly — multirotor flight dynamics
+  stats/         Copulas, marginals, JointSampler, MarkovCopulaProcess, fit_copula
   spatial/       Graph + A*-friendly adj_view adapter, grid_graph helper
   agents/        Compass, routing.a_star, Agent (Entity subclass)
   supplychain/   InventoryItems, Warehouse, steady-state optimisation
@@ -220,6 +221,11 @@ pytest                  # should show green
 27. `27_quadcopter_figure8.py` — take off, fly a figure-8 in wind, land; tracking metrics per phase
 28. `28_quadcopter_wind_montecarlo.py` — landing dispersion over random wind and unknown payload
 29. `29_quadcopter_motor_fault.py` — degrade one rotor until the controller runs out of thrust
+
+**Dependence and copulas** *(new in v0.9.0)*
+
+30. `30_serial_dependence_queue.py` — bursty arrivals with identical marginals (copula Markov chain)
+31. `31_copula_families_queue.py` — same marginals and tau, different copula families in one queue
 
 Run any script directly from the repo root, e.g.:
 
