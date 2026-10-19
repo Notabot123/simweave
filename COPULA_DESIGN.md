@@ -1,6 +1,6 @@
 # Copula-driven sampling for discrete-event simulation
 
-**Status:** Phases 0 to 3 implemented (target release 0.10.0); Phases 4 and 5 are future extensions. The release number shifted from 0.9.0 because the flight work shipped as 0.9.0.
+**Status:** Phases 0 to 3 implemented (released in 0.9.0); Phases 4 and 5 are future extensions. It ships in 0.9.0 together with the flight work.
 
 ## Decisions so far (user)
 

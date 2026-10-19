@@ -122,6 +122,7 @@ nav:
       - Road traffic: blog/road-traffic.md
       - Predictive maintenance: blog/predictive-maintenance.md
       - Quadcopter flight: blog/quadcopter-flight.md
+      - Copulas and dependence: blog/copulas-dependence.md
   - Design notes:
       - design/index.md
       - Currency: design/currency.md

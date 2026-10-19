@@ -1,39 +1,9 @@
 # Changelog
 
-## Unreleased
+## 0.9.0 - 2026-10-19
 
-Dependence modelling: draw correlated quantities in discrete-event simulations.
-
-### Added
-
-- `simweave.stats` (numpy only): `GaussianCopula`, `ClaytonCopula`, `GumbelCopula`,
-  `FrankCopula` and `StudentTCopula` (needs scipy), each with `from_kendall_tau`,
-  `.flipped(axes)`, `.survival()` and `tail_dependence()`; marginals with `ppf`/`cdf`
-  (`Exponential`, `Uniform`, `Normal`, `LogNormal`, `Weibull`, `Deterministic`,
-  `Empirical`, `ScipyMarginal`, `as_marginal`).
-- `JointSampler` for named dependent draws, and `MarkovCopulaProcess` for serially
-  dependent sequences (bursty arrivals with unchanged marginals) that plugs into
-  `ArrivalGenerator(interarrival=...)`.
-- `ArrivalGenerator(joint=, interarrival_key=, gap_alignment=)` and
-  `EntityProperties.from_draw()` to carry a jointly drawn attribute (service time,
-  size) onto an entity. Without `joint` behaviour is unchanged.
-- `fit_copula` / `JointSampler.from_data`: fit from observations by Kendall-tau inversion
-  and rank families by AIC; `method="mle"` needs scipy.
-- `sw.exponential`, `sw.uniform`, `sw.normal`, `sw.deterministic` now also expose
-  `ppf`, `cdf` and (where defined) `mean`, so they can be used as copula marginals.
-  Their draws are unchanged.
-- Demos 30 (serial dependence) and 31 (copula families), and the copula design note
-  (`COPULA_DESIGN.md`).
-
-### Notes
-
-- scipy stays optional; only the Student-t copula and `method="mle"` need it and raise
-  the usual "pip install simweave[optim]" `ImportError`. `import simweave` still does not
-  import scipy.
-
-## 0.9.0 - 2026-10-18
-
-Flight dynamics: a quadcopter you can fly in Python, plus the control hooks it needed.
+Two additions: flight dynamics (a quadcopter you can fly in Python, plus the control hooks it
+needed) and dependence modelling (copulas for correlated draws in discrete-event simulations).
 
 ### Added
 
@@ -70,11 +40,37 @@ Flight dynamics: a quadcopter you can fly in Python, plus the control hooks it n
   README, API reference and skill updates (the skill's PID example now uses the
   real `PIDController(Kp=...)` signature).
 
+- `simweave.stats` (numpy only): `GaussianCopula`, `ClaytonCopula`, `GumbelCopula`,
+  `FrankCopula` and `StudentTCopula` (needs scipy), each with `from_kendall_tau`,
+  `.flipped(axes)`, `.survival()` and `tail_dependence()`; marginals with `ppf`/`cdf`
+  (`Exponential`, `Uniform`, `Normal`, `LogNormal`, `Weibull`, `Deterministic`,
+  `Empirical`, `ScipyMarginal`, `as_marginal`).
+- `JointSampler` for named dependent draws, and `MarkovCopulaProcess` for serially
+  dependent sequences (bursty arrivals with unchanged marginals) that plugs into
+  `ArrivalGenerator(interarrival=...)`.
+- `ArrivalGenerator(joint=, interarrival_key=, gap_alignment=)` and
+  `EntityProperties.from_draw()` to carry a jointly drawn attribute (service time,
+  size) onto an entity. Without `joint` behaviour is unchanged.
+- `fit_copula` / `JointSampler.from_data`: fit from observations by Kendall-tau inversion
+  and rank families by AIC; `method="mle"` needs scipy.
+- `sw.exponential`, `sw.uniform`, `sw.normal`, `sw.deterministic` now also expose
+  `ppf`, `cdf` and (where defined) `mean`, so they can be used as copula marginals.
+  Their draws are unchanged.
+- Demos 30 (serial dependence) and 31 (copula families), and the copula design note
+  (`COPULA_DESIGN.md`).
+- Blog post "When Arrivals Aren't Independent: Copulas in SimWeave".
+
 ### Fixed
 
 - `FaultInjector` did not forward the wrapped system's `post_step` hook, so
   wrapping a system that relies on it (the quadrotor's ground contact) let it
   fall through the floor. It now forwards the hook.
+
+### Notes
+
+- scipy stays optional; only the Student-t copula and `method="mle"` need it and raise
+  the usual "pip install simweave[optim]" `ImportError`. `import simweave` still does not
+  import scipy.
 
 ## 0.8.2 - 2026-10-18
 
