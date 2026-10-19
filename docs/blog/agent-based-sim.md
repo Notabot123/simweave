@@ -6,11 +6,11 @@ Mesa’s Boltzmann Wealth Model is a classic demonstration of emergent behaviour
 
 ## Table of Contents
 1. [Introduction](#introduction)
-2. [Baseline: Mesa‑Style Wealth Exchange](#baseline-mesa-style-wealth-exchange)
+2. [Baseline: Mesa‑Style Wealth Exchange](#baseline-mesastyle-wealth-exchange)
 3. [Adding Movement and Routing](#adding-movement-and-routing)
 4. [Adding Warehouses and Inventory](#adding-warehouses-and-inventory)
 5. [Adding a Central Depot with Queueing](#adding-a-central-depot-with-queueing)
-6. [Event‑Driven Stochastic Processes](#event-driven-stochastic-processes)
+6. [Event‑Driven Stochastic Processes](#eventdriven-stochastic-processes)
 7. [Optimisation: Cost vs Availability](#optimisation-cost-vs-availability)
 8. [Visualisation](#visualisation)
 9. [Conclusion](#conclusion)

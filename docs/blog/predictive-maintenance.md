@@ -19,7 +19,7 @@ Links to runnable notebooks, and a selection of plots found at the end of this a
     - [Health Index and RUL View](#health-index-and-rul-view)
 4. [Connecting to an ML Pipeline](#connecting-to-an-ml-pipeline)
     - [Pandas Export](#pandas-export)
-    - [NumPy Arrays for PyTorch--Keras](#numpy-arrays-for-pytorch--keras)
+    - [NumPy Arrays for PyTorch--Keras](#numpy-arrays-for-pytorch-keras)
 5. [Beyond Motor Windings](#beyond-motor-windings)
 6. [What SimWeave Adds vs DIY](#what-simweave-adds-vs-diy)
 7. [What's Next](#whats-next)

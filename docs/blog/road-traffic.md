@@ -10,7 +10,7 @@ Links to runnable notebooks, and a selection of plots found at the end of this a
 3. [The Building Blocks](#the-building-blocks)
 4. [Step 1: A Single Signalised Junction](#step-1-a-single-signalised-junction)
 5. [Step 2: A Connected Network](#step-2-a-connected-network)
-6. [Step 3: Scenario Analysis — Replacing a Junction](#step-3-scenario-analysis--replacing-a-junction)
+6. [Step 3: Scenario Analysis — Replacing a Junction](#step-3-scenario-analysis-replacing-a-junction)
 7. [Step 4: Roadworks Sensitivity Analysis](#step-4-roadworks-sensitivity-analysis)
     - [Signal Timing Sweep](#signal-timing-sweep)
 8. [Decision Support Capabilities at a Glance](#decision-support-capabilities-at-a-glance)
