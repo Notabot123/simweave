@@ -10,6 +10,7 @@ the primitives below.
 | `simweave.continuous` | [Continuous](continuous.md) | ODE integration, canonical example systems |
 | `simweave.discrete` | [Discrete](discrete.md) | Queues, services, generators, RNG distributions |
 | `simweave.flight` | [Flight](flight.md) | Quadrotor dynamics, control allocation, wind models |
+| `simweave.stats` | [Stats](stats.md) | Copulas, dependent marginals, joint and serial sampling, fitting |
 | `simweave.spatial` + `.agents` | [Agents and spatial](agents.md) | Graphs, A\* / Dijkstra, agent traversal |
 | `simweave.supplychain` | [Supply chain](supplychain.md) | Warehouses, multi-SKU inventory |
 | `simweave.reliability` | [Reliability](reliability.md) | Fleet availability, failure rates, repair centres, sensitivity sweeps |

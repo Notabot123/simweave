@@ -110,6 +110,7 @@ nav:
       - Reliability: modules/reliability.md
       - Fault injection: modules/faults.md
       - Roads: modules/roads.md
+      - Stats and copulas: modules/stats.md
       - Monte Carlo: modules/mc.md
       - Currency: modules/currency.md
       - Units: modules/units.md
@@ -129,6 +130,7 @@ nav:
       - Packaging: design/packaging.md
       - API surface: design/api-surface.md
       - Parameter sweeps & sensitivity: design/sweeps.md
+      - Copula sampling: design/copulas.md
   - API reference: api.md
 
 watch:

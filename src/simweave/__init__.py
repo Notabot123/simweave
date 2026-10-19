@@ -91,6 +91,17 @@ from simweave.faults import (
     FaultDataset,
 )
 from simweave.mc import MCResult, run_monte_carlo, run_batched_mc
+from simweave.stats import (
+    JointSampler,
+    MarkovCopulaProcess,
+    GaussianCopula,
+    StudentTCopula,
+    ClaytonCopula,
+    GumbelCopula,
+    FrankCopula,
+    Empirical,
+    fit_copula,
+)
 from simweave.units import (
     SIUnit,
     Distance,
@@ -236,6 +247,16 @@ __all__ = [
     "MCResult",
     "run_monte_carlo",
     "run_batched_mc",
+    # Stats / dependence
+    "JointSampler",
+    "MarkovCopulaProcess",
+    "GaussianCopula",
+    "StudentTCopula",
+    "ClaytonCopula",
+    "GumbelCopula",
+    "FrankCopula",
+    "Empirical",
+    "fit_copula",
     # Units
     "SIUnit",
     "Distance",
