@@ -9,7 +9,7 @@ next queue is full) it sits in a "blocked-completion" slot until it clears.
 from __future__ import annotations
 
 import weakref
-from typing import TYPE_CHECKING, Callable
+from typing import Callable
 
 import numpy as np
 
@@ -17,9 +17,6 @@ from simweave.core.entity import Entity
 from simweave.core.logging import get_logger
 from simweave.discrete.queues import Queue
 from simweave.discrete.resources import ResourcePool
-
-if TYPE_CHECKING:
-    from simweave.core.environment import SimEnvironment
 
 log = get_logger("discrete.service")
 

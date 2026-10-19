@@ -6,7 +6,7 @@ import pytest
 
 import simweave as sw
 from simweave.core.entity import Entity
-from simweave.stats import Deterministic, Exponential, GaussianCopula, JointSampler, kendall_tau
+from simweave.stats import Exponential, GaussianCopula, JointSampler, kendall_tau
 
 
 def _env():
@@ -19,7 +19,6 @@ def _comonotone():
 
 
 def test_legacy_path_unchanged_and_validation():
-    env = _env()
     q = sw.Queue(maxlen=10_000)
     g = sw.ArrivalGenerator(sw.exponential(1.0), lambda e: Entity(), q, rng=np.random.default_rng(1))
     assert g.joint is None
