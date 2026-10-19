@@ -85,3 +85,14 @@ def test_validation():
         Weibull(0, 1)
     with pytest.raises(ValueError):
         Empirical([1.0])
+
+
+def test_helper_closure_ppf_cdf_values():
+    e, u, n, d = sw.exponential(2.0), sw.uniform(1, 3), sw.normal(5, 1), sw.deterministic(4)
+    assert e.cdf(e.ppf(0.3)) == pytest.approx(0.3) and e.cdf(-1.0) == 0.0 and e.mean == 2.0
+    assert u.ppf(0.5) == 2.0 and u.cdf(2.0) == 0.5 and u.mean == 2.0
+    assert n.cdf(5.0) == pytest.approx(0.5) and n.cdf(-1.0) == 0.0
+    assert d.ppf(0.2) == 4.0 and d.ppf(np.array([0.1, 0.9])).tolist() == [4.0, 4.0]
+    assert d.cdf(3.0) == 0.0 and d.cdf(4.0) == 1.0 and d.mean == 4.0
+    free = sw.normal(0, 1, clip_nonnegative=False)
+    assert free.cdf(0.0) == pytest.approx(0.5) and free.ppf(0.975) == pytest.approx(1.96, abs=0.01)

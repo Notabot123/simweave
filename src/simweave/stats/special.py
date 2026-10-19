@@ -51,7 +51,7 @@ def clip_unit(u):
 
 def ndtr_numpy(x):
     x = np.asarray(x, dtype=float)
-    return 0.5 * _erfc_vec(-x / math.sqrt(2.0)).astype(float)
+    return 0.5 * np.asarray(_erfc_vec(-x / math.sqrt(2.0)), dtype=float)
 
 
 # Acklam's rational approximation, refined by two Halley steps against ndtr.
