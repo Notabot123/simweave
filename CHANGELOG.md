@@ -1,5 +1,31 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- `ThermalRC(controller=pid)` gave a closed-loop result that depended on the solver
+  step size. The PID was called inside `derivatives()` (several times per step) with a
+  hard-coded `dt = 1e-3`, so its integral term did not advance by real time: the same
+  gains ended at 343.5 K for `dt=0.05` and 350.6 K for `dt=0.01`. The embedded controller
+  now runs once per solver step with the true `dt` and its output is held across the step,
+  so the result is independent of `dt` (349.7 K final in both) and matches
+  `simulate(plant, ..., controller=pid, control_dt=dt)`. Controller state is also reset at
+  the start of every run (it used to carry over between runs).
+
+### Added
+
+- Optional system hooks `control_update(t, state, dt)` and `reset_controls()`: when a
+  system defines them, `simulate` and `ContinuousProcess` call `control_update` once before
+  every integration step with the true step size, and `reset_controls` at the start of a run.
+  They sit alongside the existing `post_step` hook.
+
+### Deprecated
+
+- `ThermalRC(controller=...)` now emits a `DeprecationWarning`. Pass the controller to
+  `simulate(plant, ..., controller=pid, control_dt=...)` (or to `ContinuousProcess`) instead.
+  Demo 20 and the docs use that route.
+
 ## 0.9.0 - 2026-10-19
 
 Two additions: flight dynamics (a quadcopter you can fly in Python, plus the control hooks it

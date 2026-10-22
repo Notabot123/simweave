@@ -50,7 +50,9 @@ Wrap a system in `ContinuousProcess` to register it on a
 call, so continuous physics share the clock with queues and agents.
 
 ## PID Control
-Please see demo 20_PID_thermal_system.py to see a PID controller applied to a simple ThermalRC system.
+Please see demo 20_PID_thermal_system.py to see a PID controller applied to a simple ThermalRC system,
+run as a sampled-data controller (`simulate(..., controller=pid, control_dt=...)`, described below).
+The older `ThermalRC(controller=...)` argument is deprecated.
 A temperature regulation system responding to workload changes could be helpful in real-world cases like:
 - CPUs
 - batteries
