@@ -90,9 +90,27 @@ needed) and dependence modelling (copulas for correlated draws in discrete-event
 - Docstrings for `Queue.average_wait()` and `Queue.average_length()` said
   "residence time"; they are the queue-only `Wq` and `Lq`. Use
   `Service.average_residence()` for time in the stage. (#27)
+- `MassSpringDamper` and `SimplePendulum` accept SI unit objects (for example
+  `Mass`, `Distance`) in their constructors. The positivity check previously
+  compared the unit object with an int and raised `TypeError`. (#25)
+
+### Changed
+
+- `cost_optimise_stock` now runs differential evolution with `workers=-1` (all
+  cores), `updating="deferred"` and `polish=False` (it was one worker with
+  `polish=True`). It is much faster, but results can differ slightly from 0.8.1
+  and parallel runs are not guaranteed to be bit-for-bit reproducible: pass
+  `workers=1` for reproducibility, or a specific count on shared machines.
+  `pareto_sweep` uses the same defaults. The objective and constraint moved to
+  module level so they can be pickled for `workers > 1`. (#24)
 
 ### Added
 
+- `cost_optimise_stock(..., workers=...)`, `pareto_sweep(..., method="both" | "de" |
+  "poisson")` to run just one optimiser (the default is unchanged), and
+  `simweave.viz.plot_pareto_sweep` to plot cost against availability. (#24)
+- Docs: blog posts gained tables of contents and images (#26); ruff is pinned to
+  0.15.x in CI so a new ruff release cannot break lint unprompted (#25).
 - Regression test (`tests/test_base_install_imports.py`) that blocks plotly via an
   import hook and checks `import simweave` works and plot helpers raise the
   friendly `ImportError`.
