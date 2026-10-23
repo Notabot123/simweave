@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.10.0 - 2026-10-23
 
 ### Fixed
 
@@ -24,7 +24,8 @@
 
 - `ThermalRC(controller=...)` now emits a `DeprecationWarning`. Pass the controller to
   `simulate(plant, ..., controller=pid, control_dt=...)` (or to `ContinuousProcess`) instead.
-  Demo 20 and the docs use that route.
+  Demo 20 and the docs use that route. The argument keeps working for now and is planned for
+  removal in 0.12.
 
 ## 0.9.0 - 2026-10-19
 

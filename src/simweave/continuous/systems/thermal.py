@@ -59,7 +59,7 @@ class ThermalRC(DynamicSystem):
                 "ThermalRC(controller=...) is deprecated; pass the controller to "
                 "simulate(plant, ..., controller=pid, control_dt=...) (or to "
                 "ContinuousProcess) instead. It still works, running the PID once "
-                "per solver step.",
+                "per solver step, and is planned for removal in 0.12.",
                 DeprecationWarning,
                 stacklevel=2,
             )
