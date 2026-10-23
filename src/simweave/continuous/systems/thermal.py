@@ -19,6 +19,8 @@ Two models live here:
 
 from __future__ import annotations
 
+import warnings
+
 import numpy as np
 
 from simweave.continuous.solver import DynamicSystem
@@ -52,6 +54,15 @@ class ThermalRC(DynamicSystem):
         initial_temperature: float | Temperature = 293.15,
         controller: None | PIDController = None,
     ) -> None:
+        if controller is not None:
+            warnings.warn(
+                "ThermalRC(controller=...) is deprecated; pass the controller to "
+                "simulate(plant, ..., controller=pid, control_dt=...) (or to "
+                "ContinuousProcess) instead. It still works, running the PID once "
+                "per solver step.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
         if self._val(thermal_resistance) <= 0 or self._val(thermal_capacitance) <= 0:
             raise ValueError(
                 "thermal_resistance and thermal_capacitance must be positive."
@@ -61,6 +72,7 @@ class ThermalRC(DynamicSystem):
         self.T_inf = self._val(ambient_temperature)
         self._x0 = np.array([self._val(initial_temperature)], dtype=float)
         self.controller = controller
+        self._u_ctrl = 0.0  # held output of the embedded controller
 
     def initial_state(self) -> np.ndarray:
         return self._x0.copy()
@@ -73,12 +85,27 @@ class ThermalRC(DynamicSystem):
     ) -> np.ndarray:
         T = state[0]
         heat_in = 0.0 if inputs is None else float(inputs)
-
-        if self.controller is not None:
-            dt = 1e-3  # or pass properly later from solver
-            heat_in += self.controller(T, dt)
+        heat_in += self._u_ctrl  # held across the step; see control_update
         dTdt = ((self.T_inf - T) / self.R_th + heat_in) / self.C_th
         return np.array([dTdt], dtype=float)
+
+    def reset_controls(self) -> None:
+        """Clear the embedded controller's state at the start of a run."""
+        self._u_ctrl = 0.0
+        if self.controller is not None and hasattr(self.controller, "reset"):
+            self.controller.reset()
+
+    def control_update(self, t: float, state: np.ndarray, dt: float) -> None:
+        """Run the embedded controller once per solver step with the true ``dt``.
+
+        Called by :func:`~simweave.continuous.solver.simulate` and
+        :class:`~simweave.continuous.solver.ContinuousProcess` before each
+        integration step. The output is held (zero-order hold) across that step
+        and added to any external heat input, so the closed loop no longer
+        depends on how many times the integrator evaluates ``derivatives``.
+        """
+        if self.controller is not None:
+            self._u_ctrl = float(self.controller(float(state[0]), dt))
 
     @property
     def time_constant(self) -> float:

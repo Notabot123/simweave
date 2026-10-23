@@ -205,6 +205,13 @@ def _post_step(system, state: np.ndarray) -> np.ndarray:
     return np.asarray(hook(state), dtype=float)
 
 
+def _reset_controls(system) -> None:
+    """Call the optional ``reset_controls()`` hook at the start of a run."""
+    hook = getattr(system, "reset_controls", None)
+    if hook is not None:
+        hook()
+
+
 def simulate(
     system: SupportsDynamics,
     t_span: tuple[float, float],
@@ -235,6 +242,13 @@ def simulate(
     If the system defines ``post_step(state) -> state`` it is applied after
     every integration step (for example to clamp a ground contact or
     renormalise a quaternion).
+
+    If the system defines ``control_update(t, state, dt)`` it is called once
+    before every integration step with the true step size ``dt`` (and
+    ``reset_controls()``, if present, is called at the start of the run). A
+    system that carries its own feedback law should use this hook instead of
+    evaluating a stateful controller inside ``derivatives``, which is called
+    several times per step and so cannot advance an integrator correctly.
     """
     t0, tf = t_span
     if dt <= 0:
@@ -250,6 +264,8 @@ def simulate(
     x_init = _as_state_vector(system.initial_state() if x0 is None else x0)
     if hasattr(system, "validate_state"):
         system.validate_state(x_init)  # type: ignore[attr-defined]
+    _reset_controls(system)
+    control_update = getattr(system, "control_update", None)
 
     n_steps = int(np.floor((tf - t0) / dt)) + 1
     time = t0 + np.arange(n_steps + 1, dtype=float) * dt
@@ -292,6 +308,10 @@ def simulate(
             u_arr = np.atleast_1d(u).astype(float)
 
         inputs_log.append(u_arr)
+
+        # --- the system's own feedback law, once per step with the true dt ---
+        if control_update is not None:
+            control_update(t_prev, state[i - 1].copy(), dt)
 
         # --- step ---
         state[i] = _post_step(
@@ -369,6 +389,7 @@ class ContinuousProcess(Entity):
         self.history_state.append(self.state.copy())
         if self.controller is not None and hasattr(self.controller, "reset"):
             self.controller.reset()
+        _reset_controls(self.system)
         self._substep_index = 0
 
     def tick(self, dt: float, env) -> None:
@@ -380,6 +401,7 @@ class ContinuousProcess(Entity):
             if self.controller is not None
             else 1
         )
+        control_update = getattr(self.system, "control_update", None)
         for _ in range(self.n_substeps):
             inputs_fn = self.inputs
             if self.controller is not None:
@@ -388,6 +410,8 @@ class ContinuousProcess(Entity):
                         t, self.state.copy(), k_ctrl * sub_dt
                     )
                 inputs_fn = _hold(self._held)
+            if control_update is not None:
+                control_update(t, self.state.copy(), sub_dt)
             self.state = _post_step(
                 self.system,
                 self._stepper(self.system, t, self.state, sub_dt, inputs_fn),
