@@ -9,7 +9,7 @@ description: "Use this skill whenever the user asks for help building, running, 
 
 SimWeave (`pip install simweave`) is an atomic-clock simulation engine
 that treats discrete events and continuous dynamics as first-class
-citizens on the same timeline. Current version: **0.10.0**.
+citizens on the same timeline. Current version: **0.10.1**.
 
 | Module | Purpose |
 |---|---|
