@@ -112,6 +112,29 @@ from simweave.units import (
     Area,
     Volume,
     TimeUnit,
+    Angle,
+    AngularVelocity,
+    AngularAcceleration,
+    Inertia,
+    Torque,
+    SpringStiffness,
+    Damping,
+    Energy,
+    Pressure,
+    Power,
+    Frequency,
+    Temperature,
+    TemperatureDelta,
+    Voltage,
+    Current,
+    Resistance,
+    Charge,
+    Capacitance,
+    Resistivity,
+    Inductance,
+    ThermalResistance,
+    ThermalCapacitance,
+    ThermalConductance,
 )
 from simweave.currency import (
     Money,
@@ -159,7 +182,7 @@ from simweave.viz import (
     plot_landing_dispersion,
 )
 
-__version__ = "0.10.0"
+__version__ = "0.10.1"
 
 __all__ = [
     # Core
@@ -260,6 +283,29 @@ __all__ = [
     # Units
     "SIUnit",
     "Distance",
+    "Angle",
+    "AngularVelocity",
+    "AngularAcceleration",
+    "Inertia",
+    "Torque",
+    "SpringStiffness",
+    "Damping",
+    "Energy",
+    "Pressure",
+    "Power",
+    "Frequency",
+    "Temperature",
+    "TemperatureDelta",
+    "Voltage",
+    "Current",
+    "Resistance",
+    "Charge",
+    "Capacitance",
+    "Resistivity",
+    "Inductance",
+    "ThermalResistance",
+    "ThermalCapacitance",
+    "ThermalConductance",
     "Velocity",
     "Acceleration",
     "Mass",

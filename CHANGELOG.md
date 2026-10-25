@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.10.1 - 2026-10-25
+
+### Fixed
+
+- `Charge` accepts numpy arrays (scalar input still gives a Python `float`).
+- `number / quantity` works (`__rtruediv__`), e.g. `1 / TimeUnit(4)` is a `Frequency`.
+- `SIUnit.format(precision=)` now actually rounds, and `auto_format` picks a display unit
+  for array values (by the largest magnitude) instead of raising.
+- `quantity * ndarray` and `ndarray * quantity` both give one quantity holding an array
+  (the latter used to return an object array of quantities).
+- `str()` of `Resistance` / `Resistivity` falls back to `ohm` when the output stream cannot
+  encode `Ω` (e.g. a cp1252 Windows console).
+
+### Added
+
+- `sum()` over quantities, unary minus, `abs`, ordering (`<`, `<=`, `>`, `>=`) between
+  same-dimension quantities, and `float()` for dimensionless quantities.
+- Conversion tables for `Volume`, `Voltage`, `Current`, `Resistance`, `Capacitance` and
+  `Resistivity` (e.g. `Volume(1).to("L")`).
+- Every unit class is now importable from the top level (`sw.Energy`, `sw.Power`, ...).
+
 ## 0.10.0 - 2026-10-23
 
 ### Fixed

@@ -551,3 +551,70 @@ def test_thermal_conductance():
 
     g_kw = ThermalConductance(1.0, "kW/K")
     assert g_kw.value == 1000.0
+
+# -- 0.10.1 regressions ---------------------------------------------------------
+def test_charge_accepts_arrays():
+    q = Charge(np.array([1, 2]), "mC")
+    assert np.allclose(q.value, [0.001, 0.002])
+    assert type(Charge(1.0, "mC").value) is float
+
+
+def test_reflected_division():
+    r = 1 / TimeUnit(4)
+    assert isinstance(r, Frequency) and r.value == 0.25
+    d = 2 / Distance(np.array([1.0, 4.0]))
+    assert np.allclose(d.value, [2, 0.5]) and tuple(d.exponents)[0] == -1
+    with pytest.raises(TypeError):
+        "a" / Distance(1)
+
+
+def test_format_rounds_and_auto_format_arrays():
+    assert Distance(1 / 3).format(precision=2) == "0.33 [m]"
+    assert Energy(np.array([1500.0, 2500.0])).auto_format() == "[1.5 2.5] [kJ]"
+    assert Energy(1500.0).auto_format() == "1.5 [kJ]"
+
+
+def test_arithmetic_helpers():
+    assert sum([Distance(1), Distance(2)]) == Distance(3)
+    assert -Distance(3) == Distance(-3)
+    assert abs(Distance(-3)) == Distance(3)
+    assert Distance(1) < Distance(2) <= Distance(2) and Distance(3) > Distance(2) >= Distance(2)
+    with pytest.raises(TypeError):
+        Distance(1) < Mass(2)
+    with pytest.raises(TypeError):
+        Distance(1) + 5  # non-zero numbers still rejected
+    with pytest.raises(TypeError):
+        5 + Distance(1)
+    assert float(Distance(2) / Distance(4)) == 0.5
+    with pytest.raises(TypeError):
+        float(Distance(1))
+
+
+def test_ndarray_times_quantity():
+    a = np.array([1.0, 2.0]) * Distance(3.0)
+    assert isinstance(a, Distance) and np.allclose(a.value, [3, 6])
+    b = Distance(3.0) * np.array([1.0, 2.0])
+    assert b == a
+
+
+def test_new_conversion_tables():
+    assert Volume(1.0, "L").value == pytest.approx(1e-3)
+    assert Volume(1.0).to("L") == pytest.approx(1000.0)
+    assert Voltage(1.0).to("mV") == pytest.approx(1000.0)
+    assert Current(2.0, "mA").value == pytest.approx(2e-3)
+    assert Resistance(1.0, "kohm").value == 1000.0
+    assert Capacitance(1.0, "uF").value == pytest.approx(1e-6)
+    assert Resistivity(1.0, "ohm*cm").value == pytest.approx(0.01)
+
+
+def test_resistance_str_falls_back_to_ascii(monkeypatch):
+    import io
+    import sys
+    monkeypatch.setattr(sys, "stdout", io.TextIOWrapper(io.BytesIO(), encoding="cp1252"))
+    assert str(Resistance(5)) == "5.0 [ohm]"
+
+
+def test_top_level_unit_exports():
+    import simweave as sw
+    for name in ("Energy", "Power", "Pressure", "Charge", "Resistance"):
+        assert getattr(sw, name) is getattr(__import__("simweave.units", fromlist=[name]), name)

@@ -12,11 +12,16 @@ tight inner loops without allocating ndarrays.
 """
 
 from __future__ import annotations
+import sys
 import numpy as np
 from dataclasses import dataclass, field
 from typing import ClassVar
 
 _SI_SYMBOLS = ("m", "kg", "A", "K", "mol", "cd", "s")
+
+# Plain numbers a quantity may be scaled by (or divided into).
+_NUMBER = (int, float, np.integer, np.floating)
+_NUMERIC = _NUMBER + (np.ndarray,)
 
 
 def _unit_string(exponents: tuple[int, ...]) -> str:
@@ -36,6 +41,12 @@ def _retype(value: float, exponents: tuple[int, ...]) -> "SIUnit":
     if cls is not None:
         return cls(value)
     return SIUnit(value, _unit_string(exponents), list(exponents))
+
+
+def _scaled(value, scale: float):
+    """value * scale as an ndarray, or a plain float for scalar (0-d) input."""
+    out = np.asarray(value, dtype=float) * scale
+    return float(out) if out.ndim == 0 else out
 
 
 @dataclass(slots=True)
@@ -61,7 +72,13 @@ class SIUnit:
 
     # -- representation ------------------------------------------------
     def __str__(self) -> str:
-        return f"{self.value} [{self.unit}]"
+        unit = self.unit
+        encoding = getattr(sys.stdout, "encoding", None) or "utf-8"
+        try:
+            unit.encode(encoding)
+        except (UnicodeEncodeError, LookupError):
+            unit = unit.replace("Ω", "ohm").replace("·", "*")
+        return f"{self.value} [{unit}]"
 
     def __repr__(self) -> str:  # pragma: no cover - cosmetic
         return f"{type(self).__name__}({self.value}, unit={self.unit!r})"
@@ -112,13 +129,65 @@ class SIUnit:
             return SIUnit(self.value - other.value, self.unit, list(self.exponents))
         return cls(self.value - other.value)  # type: ignore[arg-type]
 
+    def __radd__(self, other: object) -> "SIUnit":
+        # lets sum([q1, q2]) work: sum() starts from the integer 0
+        if isinstance(other, int) and not isinstance(other, bool) and other == 0:
+            return self
+        return NotImplemented
+
+    def __neg__(self) -> "SIUnit":
+        return self * -1.0
+
+    def __abs__(self) -> "SIUnit":
+        if type(self) is SIUnit:
+            return SIUnit(np.abs(self.value), self.unit, list(self.exponents))
+        return type(self)(np.abs(self.value))
+
+    def _check_ordering(self, other: object) -> None:
+        if not isinstance(other, SIUnit):
+            raise TypeError(
+                f"Cannot compare {type(self).__name__} and {type(other).__name__}."
+            )
+        if tuple(self.exponents) != tuple(other.exponents):
+            raise TypeError(
+                f"Cannot compare {self.unit} and {other.unit}: different dimensions."
+            )
+
+    def __lt__(self, other: object):
+        self._check_ordering(other)
+        return self.value < other.value
+
+    def __le__(self, other: object):
+        self._check_ordering(other)
+        return self.value <= other.value
+
+    def __gt__(self, other: object):
+        self._check_ordering(other)
+        return self.value > other.value
+
+    def __ge__(self, other: object):
+        self._check_ordering(other)
+        return self.value >= other.value
+
+    def __float__(self) -> float:
+        if any(self.exponents):
+            raise TypeError(
+                f"Cannot convert {self.unit} quantity to float; only dimensionless "
+                "quantities can. Use .value or .to(unit)."
+            )
+        return float(self.value)
+
+    # numpy must defer to our reflected operators so ndarray * quantity gives one
+    # quantity holding an array, not an object array of quantities.
+    __array_ufunc__ = None
+
     # -- multiplicative -----------------------------------------------
     def __mul__(self, other: object) -> "SIUnit":
-        if isinstance(other, (int, float)):
+        if isinstance(other, _NUMERIC):
             return (
-                type(self)(self.value * float(other))
+                type(self)(self.value * other)
                 if type(self) is not SIUnit
-                else SIUnit(self.value * float(other), self.unit, list(self.exponents))
+                else SIUnit(self.value * other, self.unit, list(self.exponents))
             )
         if isinstance(other, SIUnit):
             new_exp = tuple(a + b for a, b in zip(self.exponents, other.exponents))
@@ -129,16 +198,21 @@ class SIUnit:
         return self.__mul__(other)
 
     def __truediv__(self, other: object) -> "SIUnit":
-        if isinstance(other, (int, float)):
+        if isinstance(other, _NUMERIC):
             return (
-                type(self)(self.value / float(other))
+                type(self)(self.value / other)
                 if type(self) is not SIUnit
-                else SIUnit(self.value / float(other), self.unit, list(self.exponents))
+                else SIUnit(self.value / other, self.unit, list(self.exponents))
             )
         if isinstance(other, SIUnit):
             new_exp = tuple(a - b for a, b in zip(self.exponents, other.exponents))
             return _retype(self.value / other.value, new_exp)
         raise TypeError(f"Unsupported division with {type(other).__name__}.")
+
+    def __rtruediv__(self, other: object) -> "SIUnit":
+        if isinstance(other, _NUMERIC):
+            return _retype(other / self.value, tuple(-e for e in self.exponents))
+        return NotImplemented
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, SIUnit):
@@ -199,7 +273,7 @@ class SIUnit:
             unit_str = unit
 
         if precision is not None:
-            np.round(val, precision)
+            val = np.round(val, precision)
 
         return f"{val} [{unit_str}]"
 
@@ -211,10 +285,10 @@ class SIUnit:
         if not scale_map or not display_units:
             return self.format(precision=precision)
 
+        magnitude = np.max(np.abs(self.value)) if np.size(self.value) else 0.0
         for unit in reversed(display_units):
-            val = self.to(unit)
-            if abs(val) >= 1:
-                return f"{np.round(val, precision)} [{unit}]"
+            if magnitude / scale_map[unit] >= 1:
+                return f"{np.round(self.to(unit), precision)} [{unit}]"
 
         unit = display_units[0]
         return f"{np.round(self.to(unit), precision)} [{unit}]"
@@ -512,8 +586,24 @@ class Area(SIUnit):
 
 
 class Volume(SIUnit):
-    def __init__(self, value: float | SIUnit):
-        super().__init__(value=value, unit="m^3", exponents=[3, 0, 0, 0, 0, 0, 0])
+    _SCALE_MAP: ClassVar[dict[str, float]] = {
+        "m^3": 1.0,
+        "L": 0.001,
+        "mL": 1e-06,
+        "cm^3": 1e-06,
+        "gal": 0.003785411784,
+    }
+
+    def __init__(self, value: float | SIUnit, unit: str = "m^3"):
+        if isinstance(value, SIUnit):
+            value = value.value
+        if unit not in self._SCALE_MAP:
+            raise ValueError(f"Unsupported volume unit: {unit}")
+        super().__init__(
+            value=value * self._SCALE_MAP[unit],
+            unit="m^3",
+            exponents=[3, 0, 0, 0, 0, 0, 0],
+        )
 
 
 class TimeUnit(SIUnit):
@@ -696,21 +786,57 @@ class TemperatureDelta(SIUnit):
 
 # electric relevant units
 class Current(SIUnit):
-    def __init__(self, value: float | SIUnit):
-        super().__init__(value=value, unit="A", exponents=[0, 0, 1, 0, 0, 0, 0])
+    _SCALE_MAP: ClassVar[dict[str, float]] = {
+        "A": 1.0,
+        "mA": 0.001,
+        "uA": 1e-06,
+    }
+
+    def __init__(self, value: float | SIUnit, unit: str = "A"):
+        if isinstance(value, SIUnit):
+            value = value.value
+        if unit not in self._SCALE_MAP:
+            raise ValueError(f"Unsupported current unit: {unit}")
+        super().__init__(
+            value=value * self._SCALE_MAP[unit],
+            unit="A",
+            exponents=[0, 0, 1, 0, 0, 0, 0],
+        )
 
 class Voltage(SIUnit):
-    def __init__(self, value: float | SIUnit):
+    _SCALE_MAP: ClassVar[dict[str, float]] = {
+        "V": 1.0,
+        "mV": 0.001,
+        "kV": 1000.0,
+    }
+
+    def __init__(self, value: float | SIUnit, unit: str = "V"):
+        if isinstance(value, SIUnit):
+            value = value.value
+        if unit not in self._SCALE_MAP:
+            raise ValueError(f"Unsupported voltage unit: {unit}")
         super().__init__(
-            value=value,
+            value=value * self._SCALE_MAP[unit],
             unit="V",
             exponents=[2, 1, -1, 0, 0, 0, -3],
         )
 
 class Resistance(SIUnit):
-    def __init__(self, value: float | SIUnit):
+    _SCALE_MAP: ClassVar[dict[str, float]] = {
+        "Ω": 1.0,
+        "ohm": 1.0,
+        "mohm": 0.001,
+        "kohm": 1000.0,
+        "Mohm": 1000000.0,
+    }
+
+    def __init__(self, value: float | SIUnit, unit: str = "Ω"):
+        if isinstance(value, SIUnit):
+            value = value.value
+        if unit not in self._SCALE_MAP:
+            raise ValueError(f"Unsupported resistance unit: {unit}")
         super().__init__(
-            value=value,
+            value=value * self._SCALE_MAP[unit],
             unit="Ω",
             exponents=[2, 1, -2, 0, 0, 0, -3],
         )
@@ -730,23 +856,44 @@ class Charge(SIUnit):
             raise ValueError(f"Unsupported charge unit: {unit}")
 
         super().__init__(
-            value=float(value) * self._SCALE_MAP[unit],
+            value=_scaled(value, self._SCALE_MAP[unit]),
             unit="C",
             exponents=[0, 0, 1, 0, 0, 0, 1],  # A·s
         )
 
 class Capacitance(SIUnit):
-    def __init__(self, value: float | SIUnit):
+    _SCALE_MAP: ClassVar[dict[str, float]] = {
+        "F": 1.0,
+        "uF": 1e-06,
+        "nF": 1e-09,
+        "pF": 1e-12,
+    }
+
+    def __init__(self, value: float | SIUnit, unit: str = "F"):
+        if isinstance(value, SIUnit):
+            value = value.value
+        if unit not in self._SCALE_MAP:
+            raise ValueError(f"Unsupported capacitance unit: {unit}")
         super().__init__(
-            value=value,
+            value=value * self._SCALE_MAP[unit],
             unit="F",
             exponents=[-2, -1, 2, 0, 0, 0, 4],
         )
 
 class Resistivity(SIUnit):
-    def __init__(self, value: float | SIUnit):
+    _SCALE_MAP: ClassVar[dict[str, float]] = {
+        "Ω·m": 1.0,
+        "ohm*m": 1.0,
+        "ohm*cm": 0.01,
+    }
+
+    def __init__(self, value: float | SIUnit, unit: str = "Ω·m"):
+        if isinstance(value, SIUnit):
+            value = value.value
+        if unit not in self._SCALE_MAP:
+            raise ValueError(f"Unsupported resistivity unit: {unit}")
         super().__init__(
-            value=value,
+            value=value * self._SCALE_MAP[unit],
             unit="Ω·m",
             exponents=[3, 1, -2, 0, 0, 0, -3],
         )
