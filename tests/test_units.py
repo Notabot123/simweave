@@ -608,7 +608,8 @@ def test_new_conversion_tables():
 
 
 def test_resistance_str_falls_back_to_ascii(monkeypatch):
-    import io, sys
+    import io
+    import sys
     monkeypatch.setattr(sys, "stdout", io.TextIOWrapper(io.BytesIO(), encoding="cp1252"))
     assert str(Resistance(5)) == "5.0 [ohm]"
 
